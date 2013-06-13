@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/option1" android:title="@string/option1" android:titleCondensed="@string/option1"></item>
+    <item android:id="@+id/option2" android:title="@string/option2" android:titleCondensed="@string/option2"></item>
+    <!--  <item android:id="@+id/option3" android:title="@string/option3" android:titleCondensed="@string/option3"></item>-->
+</menu>

@@ -1,0 +1,63 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginRight="5dp"
+    android:layout_marginTop="5dp"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".PublishActivity" >
+
+    <EditText
+        android:id="@+id/txtPublishChannel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Enter Channel" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:text="Message size in bytes" />
+
+    <Spinner
+        android:id="@+id/spinnerPublishMsgSize"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:entries="@array/publish_msg_size" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:text="Publish Interval in Seconds" />
+
+    <Spinner
+        android:id="@+id/spinnerPublishMsgInterval"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:entries="@array/publish_msg_interval" />
+
+    <Button
+        android:id="@+id/btnPublishAdd"
+        android:layout_width="151dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="152dp"
+        android:text="Add to Run" />
+
+</LinearLayout>

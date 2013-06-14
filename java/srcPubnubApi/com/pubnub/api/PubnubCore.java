@@ -103,21 +103,21 @@ abstract class PubnubCore {
         }
         return ORIGIN_STR;
     }
-    
+
     private Hashtable hashtableClone(Hashtable ht) {
-    	if (ht == null)
-    		return null;
-    	
-    	Hashtable htresp = new Hashtable();
-    	Enumeration e = ht.keys();
-    	   
+        if (ht == null)
+            return null;
+
+        Hashtable htresp = new Hashtable();
+        Enumeration e = ht.keys();
+
         while(e.hasMoreElements()) {
           Object element = e.nextElement();
           htresp.put(element,ht.get(element));
         }
-    	return htresp;
+        return htresp;
     }
-    
+
 
     /**
      * This method returns all channel names currently subscribed to in form of

@@ -1,8 +1,15 @@
 package com.pubnub.examples.BatteryTest;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.PrintWriter;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Timer;
@@ -18,8 +25,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.TrafficStats;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
@@ -35,10 +45,12 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Process;
 
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubException;
+import com.pubnub.api.PubnubUtil;
 import com.pubnub.examples.BatteryTest.R;
 
 
@@ -73,8 +85,84 @@ class PublishThread implements Runnable {
     public void run() {
         while(run) {
             Pubnub pn = BatteryTest.bt.pubnub;
-            pn.publish(channel, message, new Callback() {});
+            pn.publish(channel, message, new Callback() {
+
+                @Override
+                public void errorCallback(String arg0, Object arg1) {
+                    // TODO Auto-generated method stub
+
+                }
+
+                @Override
+                public void successCallback(String arg0, Object arg1) {
+                    // TODO Auto-generated method stub
+
+                }});
             try {
+                Thread.sleep(this.interval * 1000);
+            } catch (InterruptedException e) {
+            }
+        }
+
+    }
+}
+
+class StatsThread implements Runnable {
+    private int interval;
+    private volatile boolean run = true;
+    String  fileName;
+    private File sdCard = Environment.getExternalStorageDirectory();
+    private File dir = new File(sdCard.getAbsolutePath() + "/battery_app");
+    private PrintWriter logFile;
+    long datetime;
+    private long startAppRxBytes = TrafficStats.getUidRxBytes(Process.myUid());
+    private long startAppTxBytes = TrafficStats.getUidTxBytes(Process.myUid());
+    private long startTotalRxBytes = TrafficStats.getTotalRxBytes();
+    private long startTotalTxBytes = TrafficStats.getTotalTxBytes();
+
+    StatsThread(int interval) {
+        this.interval = interval;
+        dir.mkdirs();
+        try {
+            datetime = new Date().getTime();
+            String name = "Punub_Battery_App_Report-" + datetime + ".csv";
+            fileName = sdCard.getAbsolutePath() + "/battery_app/" + name;
+            logFile = new PrintWriter(new FileOutputStream(new File(dir, name)));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void stop() {
+        run = false;
+        if (logFile != null) logFile.close();
+
+    }
+
+    private void logStats(String stats) {
+        if (logFile == null) return;
+        logFile.println(stats);
+    }
+    private String[] getStats() {
+        String[] stats = new String[6];
+        int i = 0;
+        stats[i++] = String.valueOf(TrafficStats.getUidRxBytes(Process.myUid()) - startAppRxBytes);
+        stats[i++] = String.valueOf(TrafficStats.getUidTxBytes(Process.myUid()) - startAppTxBytes);
+        stats[i++] = String.valueOf(TrafficStats.getTotalRxBytes() - startTotalRxBytes);
+        stats[i++] = String.valueOf(TrafficStats.getTotalTxBytes() - startTotalTxBytes);
+        stats[i++] = String.valueOf(BatteryTest.bt.batteryStats.getCapacity());
+        stats[i++] = String.valueOf(BatteryTest.bt.batteryStats.getCurrent());
+        return stats;
+    }
+
+    @Override
+    public void run() {
+        Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        logStats("Timestamp,AppRxBytes,AppTxBytes,TotalRxBytes,TotalTxBytes,BatteryRemainingInPercentage,BatteryCurrent");
+        while(run) {
+            try {
+                logStats(formatter.format(new Date().getTime()) + "," + PubnubUtil.joinString(getStats(), ","));
                 Thread.sleep(this.interval * 1000);
             } catch (InterruptedException e) {
             }
@@ -125,6 +213,12 @@ class SubscribeSuite extends Suite {
                 @Override
                 public void successCallback(String channel, Object message) {
                     //Log.d("BatteryTest",message.toString());
+                }
+
+                @Override
+                public void errorCallback(String arg0, Object arg1) {
+                    // TODO Auto-generated method stub
+
                 }
             });
         } catch (PubnubException e) {
@@ -177,6 +271,25 @@ class BatteryStats {
             level = rawlevel / scale;
         }
         return level * 100;
+    }
+
+    public double getCurrent() {
+        double current = 0;
+        try {
+            String currentStr = "POWER_SUPPLY_CURRENT_NOW";
+            FileReader fr = new FileReader("/sys/class/power_supply/battery/uevent");
+            BufferedReader br = new BufferedReader(fr);
+            String strLine;
+            while ((strLine = br.readLine()) != null)   {
+                if (strLine.length() > currentStr.length() &&
+                        strLine.substring(0,currentStr.length()).equals(currentStr))
+                    current = Double.parseDouble(strLine.split("=")[1]);
+            }
+            br.close();
+        } catch (Exception e) {
+
+        }
+        return current;
     }
 
     public void setStartCapacity() {
@@ -240,6 +353,7 @@ public class BatteryTest extends Activity {
     public static BatteryTest bt;
     private Handler handler;
     private Runnable runnable;
+    private StatsThread statsThread;
 
     ArrayList<String> listItems = new ArrayList<String>();
     ArrayAdapter<String> adapter;
@@ -305,7 +419,7 @@ public class BatteryTest extends Activity {
         builder.setMessage("Test Stopped. Duration : " +
                 + testDuration +
                 " sec, Battery Usage :" + capacityConsumed +
-                " % , Avg. Current : " +  avgCurrent + " mA");
+                " % , Avg. Current : " +  avgCurrent + " mA" + ", Log File = " + statsThread.fileName);
         final TextView textView = new TextView(this);
         builder.setView(textView);
         builder.setPositiveButton("Done",
@@ -314,10 +428,29 @@ public class BatteryTest extends Activity {
             public void onClick(DialogInterface dialog, int which) {
             }
         });
+        builder.setNegativeButton("Send Report By Email",
+                new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("plain/text");
+                i.putExtra(Intent.EXTRA_SUBJECT, "Pubnub Battery App Report " + formatter.format(statsThread.datetime));
+                i.putExtra(Intent.EXTRA_TEXT   , "Attached is the csv with results of the test");
+                i.putExtra(Intent.EXTRA_STREAM,
+                        Uri.parse("file://" + statsThread.fileName));
+                try {
+                    startActivity(Intent.createChooser(i, "Send mail..."));
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Toast.makeText(BatteryTest.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
         AlertDialog alert = builder.create();
         alert.show();
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -368,6 +501,8 @@ public class BatteryTest extends Activity {
                             testDuration = 60;
                         }
                         testStartTime = System.currentTimeMillis()/1000;
+                        statsThread = new StatsThread(60);
+                        new Thread(statsThread).start();
                         handler = new Handler();
                         runnable = new Runnable(){
 
@@ -403,12 +538,14 @@ public class BatteryTest extends Activity {
                         s.stopSuite();
                     }
                 }
+                statsThread.stop();
                 showBatteryUsage();
                 handler.removeCallbacks(runnable);
                 btnStartTest.setEnabled(true);
                 btnClearAll.setEnabled(true);
                 btnStopTest.setEnabled(false);
             }});
+
         btnStopTest.setEnabled(false);
 
         btnMenu.setOnClickListener(new OnClickListener() {
@@ -466,13 +603,5 @@ public class BatteryTest extends Activity {
         startActivity(nextScreen);
 
     }
-
-
-
-
-
-
-
-
 
 }

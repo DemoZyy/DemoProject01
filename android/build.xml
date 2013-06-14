@@ -46,6 +46,7 @@
     <target depends="create-jar" name="copy_jars_to_examples">
         <copy file="${pubnub_lib_jar}" todir="./examples/PubnubExample/libs/"/>
         <copy file="${pubnub_lib_jar}" todir="./examples/SubscribeAtBoot/libs/"/>
+        <copy file="${pubnub_lib_jar}" todir="./examples/PubnubBatteryUsageTest/libs/"/>
     </target>
 
     <target depends="build-project" name="create-jar">

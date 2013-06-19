@@ -1,8 +1,9 @@
 package com.pubnub.examples.BatteryTest;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
+import com.example.PubnubBatteryUsageTest.R;
 
 public class HistoryActivity extends Activity {
 

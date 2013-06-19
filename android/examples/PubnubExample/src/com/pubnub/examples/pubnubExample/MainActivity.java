@@ -1,17 +1,8 @@
 package com.pubnub.examples.pubnubExample;
 
-import java.util.Hashtable;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.text.InputType;
@@ -20,9 +11,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
-
+import com.example.PubnubExample.R;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.Hashtable;
 
 public class MainActivity extends Activity {
     /*

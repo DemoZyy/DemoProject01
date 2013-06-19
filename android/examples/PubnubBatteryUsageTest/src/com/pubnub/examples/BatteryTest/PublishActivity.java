@@ -1,13 +1,14 @@
 package com.pubnub.examples.BatteryTest;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import com.example.PubnubBatteryUsageTest.R;
 
 public class PublishActivity extends Activity {
 

@@ -114,7 +114,14 @@ public class Pubnub {
     private String CIPHER_KEY = "";
     private boolean SSL = false;
     private String sessionUUID = "";
-    private String parameters = "";
+    public String getUUID() {
+		return sessionUUID;
+	}
+	public void setUUID(String sessionUUID) {
+		this.sessionUUID = sessionUUID;
+	}
+
+	private String parameters = "";
     private int PUBNUB_WEBREQUEST_CALLBACK_INTERVAL = 310000;
     private int PUBNUB_NETWORK_CHECK_RETRIES = 50;
     private int PUBNUB_WEBREQUEST_RETRY_INTERVAL = 10000;

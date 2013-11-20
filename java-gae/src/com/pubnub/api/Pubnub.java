@@ -1058,10 +1058,10 @@ public class Pubnub {
             }
         }
         catch (ConnectException e) {
-            return new JSONArray().put("0").put("0").put("Network Connect Error");
+            return new JSONArray().put("0").put("0").put(e.toString());
         }
         catch (SocketTimeoutException e) {
-            return new JSONArray().put("0").put("1").put("Network Connect Error");
+            return new JSONArray().put("0").put("1").put(e.toString());
         }
         catch (Exception e) {
             // Response If Failed JSONP HTTP Request.
@@ -1069,6 +1069,7 @@ public class Pubnub {
             for (String s: phr.errorMessages()) {
                 jsono.put(s);
             }
+            jsono.put(e.toString());
             return jsono;
         }
     }

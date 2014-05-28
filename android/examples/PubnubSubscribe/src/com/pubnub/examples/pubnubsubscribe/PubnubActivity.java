@@ -19,16 +19,15 @@ import android.widget.ListView;
 
 public class PubnubActivity extends Activity {
 	
-	public static ArrayList<String> list = new ArrayList<String>();
-	public static ArrayAdapter adapter;
+	public ArrayList<String> list = new ArrayList<String>();
+	public ArrayAdapter adapter;
     BroadcastReceiver receiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			PubnubActivity.adapter.notifyDataSetChanged();
-			
+			list.add(0, intent.getStringExtra("data"));
+			adapter.notifyDataSetChanged();
 		}
-    	
     };
 	
     public void onCreate(Bundle savedInstanceState) {

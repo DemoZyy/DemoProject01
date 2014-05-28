@@ -45,14 +45,11 @@ public class PubnubService extends Service {
     private void notifyUser(Object message) {
 
         Message msg = handler.obtainMessage();
-        PubnubActivity.list.add(message.toString());
-        if (PubnubActivity.adapter != null) {
-        	final Intent intent = new Intent("android.intent.action.MAIN");
 
-            intent.putExtra("data", "hi");
-
-            sendBroadcast(intent);
-        }
+    	Intent intent = new Intent("android.intent.action.MAIN");
+        intent.putExtra("data", message.toString());
+        sendBroadcast(intent);
+        /*
         try {
             final String obj = (String) message;
             msg.obj = obj;
@@ -62,38 +59,39 @@ public class PubnubService extends Service {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        */
     }
 
     public void onCreate() {
         super.onCreate();
-        Toast.makeText(this, "PubnubService created...", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "PubnubService created...", Toast.LENGTH_LONG).show();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SubscribeAtBoot");
         if (wl != null) {
             wl.acquire();
             Log.i("PUBNUB", "Partial Wake Lock : " + wl.isHeld());
-            Toast.makeText(this, "Partial Wake Lock : " + wl.isHeld(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "Partial Wake Lock : " + wl.isHeld(), Toast.LENGTH_LONG).show();
         }
 
         Log.i("PUBNUB", "PubnubService created...");
         try {
             pubnub.subscribe(new String[] {channel}, new Callback() {
                 public void connectCallback(String channel) {
-                    notifyUser("CONNECT on channel:" + channel);
+                    //notifyUser("CONNECT on channel:" + channel);
                 }
                 public void disconnectCallback(String channel) {
-                    notifyUser("DISCONNECT on channel:" + channel);
+                    //notifyUser("DISCONNECT on channel:" + channel);
                 }
                 public void reconnectCallback(String channel) {
-                    notifyUser("RECONNECT on channel:" + channel);
+                    //notifyUser("RECONNECT on channel:" + channel);
                 }
                 @Override
                 public void successCallback(String channel, Object message) {
-                    notifyUser(channel + " " + message.toString());
+                    notifyUser(message.toString());
                 }
                 @Override
                 public void errorCallback(String channel, Object message) {
-                    notifyUser(channel + " " + message.toString());
+                    notifyUser(message.toString());
                 }
             });
         } catch (PubnubException e) {

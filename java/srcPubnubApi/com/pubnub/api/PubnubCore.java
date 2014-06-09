@@ -920,6 +920,29 @@ abstract class PubnubCore {
         args.put("callback", callback);
         subscribe(args);
     }
+    
+    /**
+    *
+    * Listen for presence of subscribers on a channel
+    *
+    * @param channels
+    *            Array of channel names on which to listen for join/leave i.e.
+    *            presence events
+    * @param callback
+    *            object of sub class of Callback class
+    * @exception PubnubException
+    *                Throws PubnubException if Callback is null
+    */
+   public void presence(String[] channels, Callback callback)
+           throws PubnubException {
+       Hashtable args = new Hashtable(2);
+       for (int i = 0; i < channels.length; i++) {
+    	   channels[i] = channels[i] + PRESENCE_SUFFIX;
+       }
+       args.put("channels",channels);
+       args.put("callback", callback);
+       subscribe(args);
+   }
 
     /**
      * Read presence information for uuid

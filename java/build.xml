@@ -82,7 +82,7 @@
         <antcall target="unsetDebugTrue" />
     </target>
 
-    <target depends="create-jar, create-test-jar, create-examples-jar, create-demo-console-jar, create-presence-test-jar, clean_bin, doc" name="build-jar"/>
+    <target depends="create-jar, create-test-jar, create-token-request-jar, create-examples-jar, create-demo-console-jar, create-presence-test-jar, clean_bin, doc" name="build-jar"/>
     <target depends="build-project" name="create-jar">
         <jar destfile="${jar_name}"
             basedir="bin"
@@ -191,6 +191,9 @@
             <delete_temp_dirs  />
         </sequential>
     </macrodef>
+    <target name="create-token-request-jar">
+        <create-jar jar.type="examples" jar.classname="com.pubnub.examples.PubnubTokenRequest" jar.filename="PubnubTokenRequest.jar" />
+    </target>
     <target name="create-examples-jar">
         <create-jar jar.type="examples" jar.classname="com.pubnub.examples.PubnubExample" jar.filename="PubnubExample.jar" />
     </target>

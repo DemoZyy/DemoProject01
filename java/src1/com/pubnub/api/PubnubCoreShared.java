@@ -283,8 +283,6 @@ abstract class PubnubCoreShared extends PubnubCore {
 
         if (auth_key != null && auth_key.length() > 0 ) parameters.put("auth", auth_key);
         if (ttl >= -1) parameters.put("ttl", String.valueOf(ttl));
-        
-        System.out.println(parameters);
 
         String[] urlComponents = { getPubnubUrl(), "v1", "auth", "grant", "sub-key",
                                    this.SUBSCRIBE_KEY

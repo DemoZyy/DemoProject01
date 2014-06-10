@@ -181,8 +181,6 @@ class TokenRequestProcessor {
 				pubnub.publish(channel, message, new PrintCallback());
 			}
 			if (command.equalsIgnoreCase("r")) {
-				String channel = getStringFromConsole("Channel Name",
-						false);
 				JSONObject message = new JSONObject();
 				try {
                     message.put("message", "New Message Available");
@@ -194,7 +192,7 @@ class TokenRequestProcessor {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-				pubnub.publish(channel, message, new PrintCallback());
+				pubnub.publish(publicChannel, message, new PrintCallback());
 			}
 			try {
 				Thread.sleep(3000);

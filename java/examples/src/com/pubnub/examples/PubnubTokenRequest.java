@@ -128,6 +128,7 @@ class TokenRequestProcessor {
 				userMessage = reader.nextLine();
 				JSONObject message = new JSONObject();
 				try {
+                    message.put("message", "New Message Available");
 					message.put("timestamp", new SimpleDateFormat(
 							"MM/dd/yy HH:mma").format(new Date()));
 				} catch (JSONException e) {
@@ -169,14 +170,22 @@ class TokenRequestProcessor {
 						//e.printStackTrace();
 					}
 				}
+				if (!parsed) {
+					try {
+						message.put("data", userMessage);
+					} catch (Exception e) {
+						//e.printStackTrace();
+					}
+				}
+             
 				pubnub.publish(channel, message, new PrintCallback());
 			}
 			if (command.equalsIgnoreCase("r")) {
 				String channel = getStringFromConsole("Channel Name",
 						false);
-
 				JSONObject message = new JSONObject();
 				try {
+                    message.put("message", "New Message Available");
 					message.put("timestamp", new SimpleDateFormat(
 							"MM/dd/yy HH:mma").format(new Date()));
 					int index = Math.abs(random.nextInt())
@@ -185,7 +194,6 @@ class TokenRequestProcessor {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-
 				pubnub.publish(channel, message, new PrintCallback());
 			}
 			try {

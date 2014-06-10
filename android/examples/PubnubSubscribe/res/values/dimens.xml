@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="list_padding">5px</dimen>
+    <dimen name="image_max_width">100px</dimen>
+    <dimen name="image_max_height">50px</dimen>
+</resources>

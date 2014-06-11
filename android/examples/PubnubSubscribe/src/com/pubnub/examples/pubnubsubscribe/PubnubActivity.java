@@ -2,9 +2,12 @@ package com.pubnub.examples.pubnubsubscribe;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.pubnub.api.Callback;
+import com.pubnub.api.PubnubError;
 import com.pubnub.examples.pubnubsubscribe.R;
 
 import android.app.Activity;
@@ -32,6 +35,8 @@ public class PubnubActivity extends Activity {
 	private NotificationManager mNotificationManager;
 	public ArrayList<String> list = new ArrayList<String>();
 	public CustomListAdapter adapter;
+	
+	public static boolean activityStarted = false; 
 
 	volatile boolean sendNotification = false;
 
@@ -64,6 +69,7 @@ public class PubnubActivity extends Activity {
 	}
 
 	public void notifyUser(JSONObject message) {
+		Log.i("PUBNUB", "Notify User: " + message.toString());
 		String notification = null;
 		Object data = null;
 		try {
@@ -79,10 +85,25 @@ public class PubnubActivity extends Activity {
 		}
 
 		if (sendNotification) {
+			Log.i("PUBNUB", "Sending notification : " + notification);
 			sendNotification(notification);
 		}
+		Log.i("PUBNUB", "Add to List " + data.toString());
 		list.add(0, data.toString());
-		adapter.notifyDataSetChanged();
+		Log.i("PUBNUB", "List Size : " + list.size());
+		
+		runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+        		try {
+        			adapter.notifyDataSetChanged();
+        		} catch (Exception e) {
+        			Log.i("PUBNUB", "could not notify on adapter " + e.toString());
+        		}
+            }
+        });
+
+		Log.i("PUBNUB", "Adapter Notified");
 
 	}
 
@@ -103,6 +124,8 @@ public class PubnubActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_pubnub);
+		
+		activityStarted = true;
 
 		ListView listview = (ListView) findViewById(R.id.message_list);
 		/*
@@ -120,6 +143,31 @@ public class PubnubActivity extends Activity {
 
 		Intent serviceIntent = new Intent(this, PubnubService.class);
 		startService(serviceIntent);
+		
+		PubnubService.initPubnub();
+		
+		PubnubService.pubnub.history(PubnubService.public_channel, 3, true, new Callback() {
+			@Override
+			public void successCallback(String channel, Object message) {
+				Log.i("PUBNUB", message.toString());
+				JSONArray jsa;
+				try {
+					jsa = (JSONArray) ((JSONArray) message).get(0);
+					Log.i("PUBNUB", "message count : " + jsa.length());
+					for (int i = jsa.length() - 1; i >= 0; i--) {
+						notifyUser((JSONObject) jsa.get(i));
+					}
+				} catch (JSONException e1) {
+					e1.printStackTrace();
+				}
+
+			}
+
+			@Override
+			public void errorCallback(String channel, PubnubError error) {
+
+			}
+		});
 
 		Log.i("PubnubActivity", "PubNub Activity Started!");
 

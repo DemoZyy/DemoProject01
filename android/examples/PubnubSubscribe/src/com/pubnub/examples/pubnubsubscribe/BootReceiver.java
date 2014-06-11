@@ -4,19 +4,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent arg1) {
-        Log.i("PubnubService", "PubNub BootReceiver Starting");
+        Log.i("PUBNUB", "PubNub BootReceiver Starting");
         Intent intent = new Intent(context, PubnubService.class);
         context.startService(intent);
-        Log.i("PubnubService", "PubNub BootReceiver Started");
+        Log.i("PUBNUB", "PubNub BootReceiver Started");
         
-        Intent i = new Intent(context, PubnubActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(i);
     }
 
 }

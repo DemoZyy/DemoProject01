@@ -4,6 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
@@ -29,53 +32,89 @@ public class PubnubService extends Service {
 
 	public static final String ACTION_FROM_SERVICE = null;
 
-	String device_channel = "Android-1";
-	String public_channel = "public";
-	String auth_key = "Android-AuthToken";
-	String uuid = "Android-user1";
+	private static final int NOTIFICATION_ID = 1;
 
-	String publish_key = "pam";
-	String subscribe_key = "pam";
+	public static String device_channel = "Android-1";
+	public static String public_channel = "public";
+	public static String auth_key = "Android-AuthToken";
+	public static String uuid = "Android-user1";
+	private NotificationManager mNotificationManager;
 
-	Pubnub pubnub;
+	public static String publish_key = "pam";
+	public static String subscribe_key = "pam";
+
+	public static Pubnub pubnub = null;
+	
 	PowerManager.WakeLock wl = null;
 
-	private void notifyUser(Object message) {
-		Log.i("PUBNUB", message.toString());
-		Intent intent = new Intent("android.intent.action.MAIN");
-		intent.putExtra("data", message.toString());
-		sendBroadcast(intent);
-	}
-
-	public void onCreate() {
-		super.onCreate();
+	
+	public static void initPubnub() {
+		if (pubnub != null) return;
 		pubnub = new Pubnub(publish_key, subscribe_key, false);
 		pubnub.setUUID(uuid);
 		pubnub.setAuthKey(auth_key);
+		pubnub.setMaxRetries(1000);
+	}
+	
+	private void sendNotification(String msg) {
+		mNotificationManager = (NotificationManager) this
+				.getSystemService(Context.NOTIFICATION_SERVICE);
 
-		pubnub.history(public_channel, 3, true, new Callback() {
-			@Override
-			public void successCallback(String channel, Object message) {
-				Log.i("PUBNUB", message.toString());
-				JSONArray jsa;
-				try {
-					jsa = (JSONArray) ((JSONArray) message).get(0);
-					for (int i = 2; i >= 0; i--) {
-						notifyUser(jsa.get(i));
-					}
-				} catch (JSONException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, PubnubActivity.class), 0);
 
-			}
+		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+				this).setSmallIcon(R.drawable.icon)
+				.setContentTitle("PubNub Notification")
+				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
+				.setContentText(msg);
 
-			@Override
-			public void errorCallback(String channel, PubnubError error) {
+		mBuilder.setContentIntent(contentIntent);
+		mBuilder.setAutoCancel(true);
+		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 
-			}
-		});
+		try {
+			Uri notification = RingtoneManager
+					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+			Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),
+					notification);
+			r.play();
+		} catch (Exception e) {
+			Log.i("PUBNUB", e.toString());
+		}
+	}
+	
+	private void notifyUser(JSONObject message) {
+		Log.i("PUBNUB", message.toString());
+		
+		String notification = null;
+		Object data = null;
+		try {
+			data = message.get("data");
+		} catch (JSONException e1) {
+			Log.i("PUBNUB", e1.toString());
+			return;
+		}
+		try {
+			notification = message.getString("message");
+		} catch (JSONException e) {
+			notification = data.toString();
+		}
 
+		
+		if (PubnubActivity.activityStarted) {
+			Intent intent = new Intent("android.intent.action.MAIN");
+			intent.putExtra("data", message.toString());
+			sendBroadcast(intent);
+		} else {
+			sendNotification(notification);
+		}
+	}
+	
+
+	public void onCreate() {
+		super.onCreate();
+		initPubnub();
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SubscribeAtBoot");
 		if (wl != null) {
@@ -86,37 +125,15 @@ public class PubnubService extends Service {
 		Log.i("PUBNUB", "PubnubService created...");
 
 		try {
-			pubnub.subscribe(public_channel, new Callback() {
-				@Override
-				public void connectCallback(String channel, Object response) {
-					try {
-						pubnub.subscribe(device_channel, new Callback() {
-							@Override
-							public void successCallback(String channel,
-									Object message) {
-								notifyUser(message.toString());
-							}
-
-							@Override
-							public void errorCallback(String channel,
-									Object message) {
-								notifyUser(message.toString());
-							}
-						});
-					} catch (PubnubException e) {
-						Log.i("PUBNUB", e.toString());
-					}
-
-				}
-
+			pubnub.subscribe(new String[]{public_channel, device_channel}, new Callback() {
 				@Override
 				public void successCallback(String channel, Object message) {
-					notifyUser(message.toString());
+					notifyUser((JSONObject) message);
 				}
 
 				@Override
 				public void errorCallback(String channel, Object message) {
-					notifyUser(message.toString());
+					notifyUser((JSONObject) message);
 				}
 			});
 		} catch (PubnubException e) {

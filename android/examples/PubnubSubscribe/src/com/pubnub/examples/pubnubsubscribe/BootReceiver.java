@@ -13,6 +13,10 @@ public class BootReceiver extends BroadcastReceiver {
         Intent intent = new Intent(context, PubnubService.class);
         context.startService(intent);
         Log.i("PubnubService", "PubNub BootReceiver Started");
+        
+        Intent i = new Intent(context, PubnubActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(i);
     }
 
 }

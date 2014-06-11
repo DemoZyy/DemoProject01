@@ -16,11 +16,13 @@ import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -66,13 +68,15 @@ public class PubnubService extends Service {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.icon)
 				.setContentTitle("PubNub Notification")
+				.setLights(Color.RED, 3000, 3000)
+				.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }	)
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
 				.setContentText(msg);
 
 		mBuilder.setContentIntent(contentIntent);
 		mBuilder.setAutoCancel(true);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-
+		
 		try {
 			Uri notification = RingtoneManager
 					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -135,7 +139,26 @@ public class PubnubService extends Service {
 		Log.i("PUBNUB", "PubnubService created...");
 
 		try {
-			pubnub.subscribe(new String[]{public_channel, device_channel}, new Callback() {
+			pubnub.subscribe(public_channel, new Callback() {
+				@Override
+				public void connectCallback(String channel, Object message) {
+					try {
+						pubnub.subscribe(device_channel, new Callback() {
+							@Override
+							public void successCallback(String channel, Object message) {
+								notifyUser((JSONObject) message);
+							}
+
+							@Override
+							public void errorCallback(String channel, Object message) {
+								notifyUser((JSONObject) message);
+							}
+						});
+					} catch (PubnubException e) {
+						Log.i("PUBNUB", e.toString());
+					}
+				}
+				
 				@Override
 				public void successCallback(String channel, Object message) {
 					notifyUser((JSONObject) message);

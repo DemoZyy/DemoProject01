@@ -191,6 +191,9 @@ class TokenRequestProcessor {
 				userMessage = reader.nextLine();
 				JSONObject message = new JSONObject();
 				try {
+					if (command.equals("r")) {
+						message.put("action", "apns");
+					}
                     message.put("message", "New Message Available");
 					message.put("timestamp", new SimpleDateFormat(
 							"MM/dd/yy HH:mma").format(new Date()));
@@ -255,6 +258,9 @@ class TokenRequestProcessor {
 			if (command.equalsIgnoreCase("r")) {
 				JSONObject message = new JSONObject();
 				try {
+					if (command.equals("r")) {
+						message.put("action", "apns");
+					}
                     message.put("message", "New Message Available");
 					message.put("timestamp", new SimpleDateFormat(
 							"MM/dd/yy HH:mma").format(new Date()));

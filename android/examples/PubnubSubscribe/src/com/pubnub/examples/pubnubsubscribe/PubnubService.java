@@ -59,7 +59,7 @@ public class PubnubService extends Service {
 		pubnub.setMaxRetries(1000);
 	}
 
-	private void sendNotification(String msg) {
+	private void sendNotification(String msg, boolean urgent) {
 		mNotificationManager = (NotificationManager) this
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -69,28 +69,30 @@ public class PubnubService extends Service {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.icon)
 				.setContentTitle("PubNub Notification")
-				.setLights(Color.RED, 3000, 3000)
-				.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
 				.setContentText(msg);
 
 		mBuilder.setContentIntent(contentIntent);
 		mBuilder.setAutoCancel(true);
-		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-
-		WakeLock screenOn = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "example");
-		screenOn.acquire();
-
-		try {
-			Uri notification = RingtoneManager
-					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-			Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),
-					notification);
-			r.play();
-		} catch (Exception e) {
-			Log.i("PUBNUB", e.toString());
+		
+		
+		if (urgent) {
+			mBuilder.setLights(Color.RED, 3000, 3000);
+			mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }	);
+			WakeLock screenOn = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "example");
+			screenOn.acquire();
+			screenOn.release();
+			try {
+				Uri notification = RingtoneManager
+						.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+				Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),
+						notification);
+				r.play();
+			} catch (Exception e) {
+				Log.i("PUBNUB", e.toString());
+			}
 		}
-		screenOn.release();
+		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 	}
 
 	private void notifyUser(JSONObject message) {
@@ -115,7 +117,7 @@ public class PubnubService extends Service {
 			intent.putExtra("data", message.toString());
 			sendBroadcast(intent);
 		} else {
-			sendNotification(notification);
+			sendNotification(notification, PubnubActivity.isUrgent(message));
 		}
 
 		if (data.equals("crash")) {

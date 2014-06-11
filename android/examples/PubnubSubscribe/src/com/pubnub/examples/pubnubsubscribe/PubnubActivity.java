@@ -44,38 +44,56 @@ public class PubnubActivity extends Activity {
 
 	volatile boolean sendNotification = false;
 
-	private void sendNotification(String msg) {
+	public static boolean isUrgent(JSONObject message) {
+		boolean urgent = false;
+		
+		try {
+			String action = message.getString("action");
+			if (action != null && action.equals("apns"))
+				urgent = true;
+		} catch (JSONException e) {
+			
+		}
+		
+		return urgent;
+	}
+	
+	private void sendNotification(String msg, boolean urgent) {
 		mNotificationManager = (NotificationManager) this
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 				new Intent(this, PubnubActivity.class), 0);
-
+		
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.icon)
 				.setContentTitle("PubNub Notification")
-				.setLights(Color.RED, 3000, 3000)
-				.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }	)
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
 				.setContentText(msg);
 
 		mBuilder.setContentIntent(contentIntent);
 		mBuilder.setAutoCancel(true);
-		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-		
-		WakeLock screenOn = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "example");
-		screenOn.acquire();
-		
-		try {
-			Uri notification = RingtoneManager
-					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-			Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),
-					notification);
-			r.play();
-		} catch (Exception e) {
-			Log.i("PUBNUB", e.toString());
+	
+		if (urgent) {
+			mBuilder.setLights(Color.RED, 3000, 3000);
+			mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }	);
+			WakeLock screenOn = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "example");
+			screenOn.acquire();
+			screenOn.release();
+			try {
+				Uri notification = RingtoneManager
+						.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+				Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),
+						notification);
+				r.play();
+			} catch (Exception e) {
+				Log.i("PUBNUB", e.toString());
+			}
 		}
-		screenOn.release();
+		
+		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+	
+
 	}
 
 	public void notifyUser(JSONObject message) {
@@ -96,7 +114,7 @@ public class PubnubActivity extends Activity {
 
 		if (sendNotification) {
 			Log.i("PUBNUB", "Sending notification : " + notification);
-			sendNotification(notification);
+			sendNotification(notification, isUrgent(message));
 		}
 		Log.i("PUBNUB", "Add to List " + data.toString());
 		list.add(0, data.toString());

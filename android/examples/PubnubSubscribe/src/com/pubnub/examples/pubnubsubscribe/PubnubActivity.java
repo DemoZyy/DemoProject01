@@ -23,6 +23,8 @@ import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
@@ -61,6 +63,9 @@ public class PubnubActivity extends Activity {
 		mBuilder.setAutoCancel(true);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 		
+		WakeLock screenOn = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "example");
+		screenOn.acquire();
+		
 		try {
 			Uri notification = RingtoneManager
 					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -70,6 +75,7 @@ public class PubnubActivity extends Activity {
 		} catch (Exception e) {
 			Log.i("PUBNUB", e.toString());
 		}
+		screenOn.release();
 	}
 
 	public void notifyUser(JSONObject message) {

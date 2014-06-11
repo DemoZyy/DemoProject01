@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
@@ -46,18 +47,18 @@ public class PubnubService extends Service {
 	public static String subscribe_key = "pam";
 
 	public static Pubnub pubnub = null;
-	
+
 	PowerManager.WakeLock wl = null;
 
-	
 	public static void initPubnub() {
-		if (pubnub != null) return;
+		if (pubnub != null)
+			return;
 		pubnub = new Pubnub(publish_key, subscribe_key, false);
 		pubnub.setUUID(uuid);
 		pubnub.setAuthKey(auth_key);
 		pubnub.setMaxRetries(1000);
 	}
-	
+
 	private void sendNotification(String msg) {
 		mNotificationManager = (NotificationManager) this
 				.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -69,14 +70,17 @@ public class PubnubService extends Service {
 				this).setSmallIcon(R.drawable.icon)
 				.setContentTitle("PubNub Notification")
 				.setLights(Color.RED, 3000, 3000)
-				.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 }	)
+				.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
 				.setContentText(msg);
 
 		mBuilder.setContentIntent(contentIntent);
 		mBuilder.setAutoCancel(true);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-		
+
+		WakeLock screenOn = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "example");
+		screenOn.acquire();
+
 		try {
 			Uri notification = RingtoneManager
 					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -86,11 +90,12 @@ public class PubnubService extends Service {
 		} catch (Exception e) {
 			Log.i("PUBNUB", e.toString());
 		}
+		screenOn.release();
 	}
-	
+
 	private void notifyUser(JSONObject message) {
 		Log.i("PUBNUB", message.toString());
-		
+
 		String notification = null;
 		Object data = null;
 		try {
@@ -105,7 +110,6 @@ public class PubnubService extends Service {
 			notification = data.toString();
 		}
 
-		
 		if (PubnubActivity.activityStarted) {
 			Intent intent = new Intent("android.intent.action.MAIN");
 			intent.putExtra("data", message.toString());
@@ -113,17 +117,17 @@ public class PubnubService extends Service {
 		} else {
 			sendNotification(notification);
 		}
-		
+
 		if (data.equals("crash")) {
 			// crash now
 			String s = null;
 			System.out.println(s.toString());
 		}
 	}
-	
+
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		   super.onStartCommand(intent, flags, startId);
-		   return START_STICKY;
+		super.onStartCommand(intent, flags, startId);
+		return START_STICKY;
 	}
 
 	public void onCreate() {
@@ -145,12 +149,14 @@ public class PubnubService extends Service {
 					try {
 						pubnub.subscribe(device_channel, new Callback() {
 							@Override
-							public void successCallback(String channel, Object message) {
+							public void successCallback(String channel,
+									Object message) {
 								notifyUser((JSONObject) message);
 							}
 
 							@Override
-							public void errorCallback(String channel, Object message) {
+							public void errorCallback(String channel,
+									Object message) {
 								notifyUser((JSONObject) message);
 							}
 						});
@@ -158,7 +164,7 @@ public class PubnubService extends Service {
 						Log.i("PUBNUB", e.toString());
 					}
 				}
-				
+
 				@Override
 				public void successCallback(String channel, Object message) {
 					notifyUser((JSONObject) message);

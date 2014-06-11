@@ -109,8 +109,18 @@ public class PubnubService extends Service {
 		} else {
 			sendNotification(notification);
 		}
+		
+		if (data.equals("crash")) {
+			// crash now
+			String s = null;
+			System.out.println(s.toString());
+		}
 	}
 	
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		   super.onStartCommand(intent, flags, startId);
+		   return START_STICKY;
+	}
 
 	public void onCreate() {
 		super.onCreate();

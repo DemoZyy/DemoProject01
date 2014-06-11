@@ -191,7 +191,7 @@ class TokenRequestProcessor {
 				userMessage = reader.nextLine();
 				JSONObject message = new JSONObject();
 				try {
-					if (command.equals("r")) {
+					if (command.equals("p")) {
 						message.put("action", "apns");
 					}
                     message.put("message", "New Message Available");

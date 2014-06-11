@@ -49,14 +49,32 @@ class TokenRequestProcessor {
 			"In high-maturity sectors, always insure revenue-neutral currencies.",
 			"Pro rata debts: in the commodities marketplace, be sure not to securitize them." };
 
-	void provisionReadOnlyPAMPermissions(String channel, String authKey) {
-		pubnub.pamGrant(channel, authKey, true, false, new PrintCallback());
-		pubnub.pamGrant(channel + "-pnpres", authKey, true, true, new PrintCallback());
+	void provisionReadOnlyPAMPermissions(String channel, final String authKey, final Callback callback) {
+		pubnub.pamGrant(channel, authKey, true, false, new Callback(){
+			@Override
+			public void errorCallback(String channel, PubnubError error) {
+				System.out.println(error);
+			}
+			@Override
+			public void successCallback(String channel, Object response) {
+				pubnub.pamGrant(channel + "-pnpres", authKey, true, true, callback);
+			}
+		});
+		
 	}
 
-	void provisionReadWritePAMPermissions(String channel, String authKey) {
-		pubnub.pamGrant(channel, authKey, true, true, new PrintCallback());
-		pubnub.pamGrant(channel + "-pnpres", authKey, true, true, new PrintCallback());
+	void provisionReadWritePAMPermissions(String channel, final String authKey, final Callback callback) {
+		pubnub.pamGrant(channel, authKey, true, true, new Callback(){
+			@Override
+			public void errorCallback(String channel, PubnubError error) {
+				System.out.println(error);
+			}
+			@Override
+			public void successCallback(String channel, Object response) {
+				System.out.println(response);
+				pubnub.pamGrant(channel + "-pnpres", authKey, true, true, callback);
+			}
+		});
 	}
 
 	private void notifyUser(Object message) {
@@ -87,34 +105,79 @@ class TokenRequestProcessor {
 		System.out.println("publish a (r)andom message on public channel");
 	}
 
-	public void start() {
-
+	public void setupPermissions() {
 		pubnub = new Pubnub("pam", "pam", "pam", true);
 		pubnub.setAuthKey(serverAuthToken);
 
 		// Provision PAM Permissions on Startup
 		// First, for devices
+		System.out.println("Setting up channel permissions .... ");
+		provisionReadOnlyPAMPermissions(androidChannel, androidAuthToken, new Callback(){
+			@Override
+			public void errorCallback(String channel, PubnubError error) {
+				System.out.println(error);
+			}
+			@Override
+			public void successCallback(String channel, Object response) {
+				System.out.println(response);
+				provisionReadOnlyPAMPermissions(iosChannel, iosAuthToken, new Callback(){
+					@Override
+					public void errorCallback(String channel, PubnubError error) {
+						System.out.println(error);
+					}
+					@Override
+					public void successCallback(String channel, Object response) {
+						System.out.println(response);
+						provisionReadWritePAMPermissions(androidChannel, serverAuthToken, new Callback() {
+							@Override
+							public void errorCallback(String channel, PubnubError error) {
+								System.out.println(error);
+							}
+							@Override
+							public void successCallback(String channel, Object response) {
+								System.out.println(response);
+								provisionReadWritePAMPermissions(iosChannel, serverAuthToken, new Callback(){
+									@Override
+									public void errorCallback(String channel, PubnubError error) {
+										System.out.println(error);
+									}
+									@Override
+									public void successCallback(String channel, Object response) {
+										System.out.println(response);
+										try {
+											pubnub.presence(new String[] { publicChannel, iosChannel,
+													androidChannel }, new Callback() {
+												@Override
+												public void errorCallback(String channel, PubnubError error) {
+													System.out.println(error);
+												}
+												public void successCallback(String channel, Object response) {
+												}
+											});
+										} catch (PubnubException e) {
+											e.printStackTrace();
+										}
+										System.out.println("Done");
+										new Thread(new Runnable(){
+											public void run() {
+												start();
+											}
+										}).start();
+									}
+								});
+									
+							}
+							
+						});
+					}
+				});
+			}
+		});
+		
+	}
+	
+	public void start() {
 
-		provisionReadOnlyPAMPermissions(androidChannel, androidAuthToken);
-		provisionReadOnlyPAMPermissions(iosChannel, iosAuthToken);
-
-		// Then for the server
-
-		provisionReadWritePAMPermissions(androidChannel, serverAuthToken);
-		provisionReadWritePAMPermissions(iosChannel, serverAuthToken);
-
-		try {
-			pubnub.presence(new String[] { publicChannel, iosChannel,
-					androidChannel }, new PrintCallback());
-		} catch (PubnubException e) {
-			e.printStackTrace();
-		}
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		String command = "";
 		displayMenuOptions();
 		while ((command = reader.next()) != "q") {
@@ -177,8 +240,17 @@ class TokenRequestProcessor {
 						//e.printStackTrace();
 					}
 				}
-             
-				pubnub.publish(channel, message, new PrintCallback());
+
+				pubnub.publish(channel, message, new Callback(){
+					public void successCallback(String channel, Object response) {
+						System.out.println(response);
+						displayMenuOptions();
+					}
+					public void errorCallback(String channel, PubnubError error) {
+						System.out.println(error);
+						displayMenuOptions();
+					}
+				});
 			}
 			if (command.equalsIgnoreCase("r")) {
 				JSONObject message = new JSONObject();
@@ -192,15 +264,18 @@ class TokenRequestProcessor {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-				pubnub.publish(publicChannel, message, new PrintCallback());
+				pubnub.publish(publicChannel, message, new Callback(){
+					public void successCallback(String channel, Object response) {
+						System.out.println(response);
+						displayMenuOptions();
+					}
+					public void errorCallback(String channel, PubnubError error) {
+						System.out.println(error);
+						displayMenuOptions();
+					}
+				});
 			}
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			displayMenuOptions();
+
 		}
 	}
 }
@@ -211,7 +286,7 @@ public class PubnubTokenRequest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new TokenRequestProcessor().start();
+		new TokenRequestProcessor().setupPermissions();
 	}
 
 }

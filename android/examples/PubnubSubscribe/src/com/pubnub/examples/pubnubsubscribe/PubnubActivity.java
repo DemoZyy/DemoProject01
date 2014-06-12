@@ -153,6 +153,8 @@ public class PubnubActivity extends Activity {
 
 		setContentView(R.layout.activity_pubnub);
 		
+		moveTaskToBack(true);
+		
 		activityStarted = true;
 
 		ListView listview = (ListView) findViewById(R.id.message_list);

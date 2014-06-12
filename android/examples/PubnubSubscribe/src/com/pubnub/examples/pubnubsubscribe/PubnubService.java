@@ -1,5 +1,7 @@
 package com.pubnub.examples.pubnubsubscribe;
 
+import java.lang.Thread.UncaughtExceptionHandler;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,14 +19,17 @@ import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.IBinder;
+import android.provider.SyncStateContract.Constants;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -126,24 +131,15 @@ public class PubnubService extends Service {
 			System.out.println(s.toString());
 		}
 	}
-
+	/*
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
 		return START_STICKY;
 	}
-
-	public void onCreate() {
-		super.onCreate();
-		initPubnub();
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SubscribeAtBoot");
-		if (wl != null) {
-			wl.acquire();
-			Log.i("PUBNUB", "Partial Wake Lock : " + wl.isHeld());
-		}
-
-		Log.i("PUBNUB", "PubnubService created...");
-
+	*/
+	
+	public void listen() {
+		
 		try {
 			pubnub.subscribe(public_channel, new Callback() {
 				@Override
@@ -180,7 +176,41 @@ public class PubnubService extends Service {
 		} catch (PubnubException e) {
 			Log.i("PUBNUB", e.toString());
 		}
+	}
 
+	public void onCreate() {
+		super.onCreate();
+		initPubnub();
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SubscribeAtBoot");
+		if (wl != null) {
+			wl.acquire();
+			Log.i("PUBNUB", "Partial Wake Lock : " + wl.isHeld());
+		}
+	
+		
+		registerReceiver(new BootReceiver(), 
+		         new IntentFilter("com.pubnub.examples.pubnubsubscribe.USER_ACTION"));
+		
+		Intent intent = new Intent(this, PubnubActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		this.startActivity(intent);
+		
+		
+		final UncaughtExceptionHandler defaultUEH = Thread.getDefaultUncaughtExceptionHandler();;
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+	        @Override
+	        public void uncaughtException(Thread paramThread, Throwable paramThrowable) {
+	            Log.i("PUBNUB","Global Exception Service");       
+	            Thread.setDefaultUncaughtExceptionHandler(defaultUEH);
+	            defaultUEH.uncaughtException(paramThread, paramThrowable);
+	            Intent i = new Intent("com.pubnub.examples.pubnubsubscribe.USER_ACTION");
+	            sendBroadcast(i);
+	        }
+	    });
+		
+		Log.i("PUBNUB", "PubnubService created...");
+		listen();
 	}
 
 	@Override

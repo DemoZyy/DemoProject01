@@ -35,7 +35,7 @@ public class PubnubService extends Service {
 
 	public static final String ACTION_FROM_SERVICE = null;
 
-	private static final int NOTIFICATION_ID = 1;
+	private static int NOTIFICATION_ID = 0;
 
 	public static String device_channel = "Android-1";
 	public static String public_channel = "public";
@@ -59,7 +59,11 @@ public class PubnubService extends Service {
 		pubnub.setMaxRetries(1000);
 	}
 
-	private void sendNotification(String msg, boolean urgent) {
+	private void sendNotification(String msg, boolean urgent, int notification_id) {
+		sendNotification(msg, urgent, notification_id, "Pubnub Notification");
+	}
+	
+	private void sendNotification(String msg, boolean urgent, int notifiction_id, String title) {
 		mNotificationManager = (NotificationManager) this
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -68,7 +72,7 @@ public class PubnubService extends Service {
 
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
 				this).setSmallIcon(R.drawable.icon)
-				.setContentTitle("PubNub Notification")
+				.setContentTitle(title)
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
 				.setContentText(msg);
 
@@ -92,7 +96,7 @@ public class PubnubService extends Service {
 				Log.i("PUBNUB", e.toString());
 			}
 		}
-		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+		mNotificationManager.notify(notifiction_id, mBuilder.build());
 	}
 
 	private void notifyUser(JSONObject message) {
@@ -117,7 +121,7 @@ public class PubnubService extends Service {
 			intent.putExtra("data", message.toString());
 			sendBroadcast(intent);
 		} else {
-			sendNotification(notification, PubnubActivity.isUrgent(message));
+			sendNotification(notification, PubnubActivity.isUrgent(message), ++NOTIFICATION_ID);
 		}
 
 		if (data.equals("crash")) {
@@ -158,8 +162,13 @@ public class PubnubService extends Service {
 
 							@Override
 							public void errorCallback(String channel,
-									Object message) {
-								notifyUser((JSONObject) message);
+									PubnubError message) {
+								Log.i("PUBNUB", message.toString());
+								if (message.errorCode == PubnubError.PNERR_FORBIDDEN) {
+									pubnub.unsubscribe(device_channel);
+									sendNotification("Channel : " + device_channel,
+											true, ++NOTIFICATION_ID, "Permissions Expired");  
+								}
 							}
 						});
 					} catch (PubnubException e) {
@@ -173,8 +182,8 @@ public class PubnubService extends Service {
 				}
 
 				@Override
-				public void errorCallback(String channel, Object message) {
-					notifyUser((JSONObject) message);
+				public void errorCallback(String channel, PubnubError message) {
+					Log.i("PUBNUB", message.toString());
 				}
 			});
 		} catch (PubnubException e) {

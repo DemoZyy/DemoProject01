@@ -18,7 +18,7 @@ public class Pubnub extends JavaScriptObject {
     private native void alert(String message) /*-{
     alert(message);
     }-*/;
-    private static native Pubnub _init(String origin, String pubkey, String subkey, boolean ssl) /*-{
+    private static native Pubnub _init(String origin, String pubkey, String subkey, boolean ssl, String uuid) /*-{
         if (ssl)
             ssl_setting = "on";
         else
@@ -29,6 +29,7 @@ public class Pubnub extends JavaScriptObject {
             'subscribe_key' : subkey,
             'ssl'           : ssl_setting,
             'origin'        : origin,
+            'uuid'          : uuid
             });
         return p;
 
@@ -144,14 +145,20 @@ public class Pubnub extends JavaScriptObject {
     //=================== Public Methods
 
     public static Pubnub init() {
-        return _init("pubsub.pubnub.com", "demo", "demo", true);
+        return _init("pubsub.pubnub.com", "demo", "demo", true, null);
     }
 
     public static Pubnub init(String pubkey, String subkey, boolean ssl) {
-        return _init("pubsub.pubnub.com", pubkey, subkey, ssl);
+        return _init("pubsub.pubnub.com", pubkey, subkey, ssl, null);
     }
     public static Pubnub init(String origin, String pubkey, String subkey, boolean ssl) {
-        return _init(origin, pubkey, subkey, ssl);
+        return _init(origin, pubkey, subkey, ssl, null);
+    }
+    public static Pubnub init(String pubkey, String subkey, boolean ssl, String uuid) {
+        return _init("pubsub.pubnub.com", pubkey, subkey, ssl, uuid);
+    }
+    public static Pubnub init(String origin, String pubkey, String subkey, boolean ssl, String uuid) {
+        return _init(origin, pubkey, subkey, ssl, uuid);
     }
     public final void time(Callback cb) {
         _time(cb);

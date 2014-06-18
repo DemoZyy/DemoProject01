@@ -98,7 +98,7 @@ public class PubnubExample implements EntryPoint {
      */
     public void onModuleLoad() {
         final Pubnub pubnub;
-        pubnub = Pubnub.init();
+        pubnub = Pubnub.init("demo", "demo", false, "gwt-test-uuid");
         final Label errorLabel = new Label();
 
 

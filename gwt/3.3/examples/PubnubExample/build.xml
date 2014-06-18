@@ -69,7 +69,7 @@
     </target>
     <!-- Package the JAR file, Javascript, static resources
     and external libraries into a WAR file -->
-    <target name="war" depends="gwt-compile, jar, copy-resources">
+    <target name="war" depends="gwt-compile, jar">
         <war basedir="war" destfile="${war.name}" webxml="war/WEB-INF/web.xml">
             <exclude name="WEB-INF/**" />
             <exclude name="${server.resources.name}/**"/>

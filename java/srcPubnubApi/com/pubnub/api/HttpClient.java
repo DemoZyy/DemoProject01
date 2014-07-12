@@ -31,4 +31,8 @@ abstract class HttpClient {
 
     public abstract HttpResponse fetch(String url, Hashtable headers)
     throws IOException, PubnubException;
+    
+    public abstract HttpResponse fetch(String url, String method, String body, Hashtable headers)
+    throws IOException, PubnubException;
+    
 }

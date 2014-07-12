@@ -6,121 +6,163 @@ import java.util.Hashtable;
 import com.pubnub.api.PubnubUtil;
 
 class HttpRequest {
-    private volatile ResponseHandler responseHandler;
-    private Hashtable headers;
-    private String[] urlComponents;
-    private Hashtable params;
-    private String url;
-    private boolean dar;
-    private boolean subzero;
-    private Worker _worker;
+	private volatile ResponseHandler responseHandler;
+	private Hashtable headers;
+	private String[] urlComponents;
+	private Hashtable params;
+	private String url;
+	private String body;
+	private String method = "GET";
+	private boolean dar;
+	private boolean subzero;
+	private Worker _worker;
 
-    public boolean isSubzero() {
-        return subzero;
-    }
+	public boolean isSubzero() {
+		return subzero;
+	}
 
-    public void setWorker(Worker worker) {
-        this._worker = worker;
-    }
+	public String getMethod() {
+		return method;
+	}
 
-    public Worker getWorker() {
-        return this._worker;
-    }
-    public void setSubzero(boolean subzero) {
-        this.subzero = subzero;
-    }
+	public void setMethod(String method) {
+		this.method = method;
+	}
 
-    public boolean isDar() {
-        return dar;
-    }
+	public void setWorker(Worker worker) {
+		this._worker = worker;
+	}
 
-    public void setDar(boolean dar) {
-        this.dar = dar;
-    }
+	public Worker getWorker() {
+		return this._worker;
+	}
 
-    public HttpRequest(String[] urlComponents, Hashtable params,
-                       Hashtable headers, ResponseHandler rh) {
-        this.setUrlComponents(urlComponents);
-        this.setParams(params);
-        this.setHeaders(headers);
-        this.setResponseHandler(rh);
-    }
+	public void setSubzero(boolean subzero) {
+		this.subzero = subzero;
+	}
 
-    public HttpRequest(String[] urlComponents, Hashtable params,
-                       ResponseHandler rh) {
-        this.setUrlComponents(urlComponents);
-        this.setParams(params);
-        this.setResponseHandler(rh);
-    }
+	public boolean isDar() {
+		return dar;
+	}
 
-    public HttpRequest(String[] urlComponents, ResponseHandler rh) {
-        this.setUrlComponents(urlComponents);
-        this.setResponseHandler(rh);
-    }
+	public void setDar(boolean dar) {
+		this.dar = dar;
+	}
 
-    public String[] getUrlComponents() {
-        return urlComponents;
-    }
+	public HttpRequest(String[] urlComponents, Hashtable params,
+			Hashtable headers, ResponseHandler rh) {
+		this.setUrlComponents(urlComponents);
+		this.setParams(params);
+		this.setHeaders(headers);
+		this.setResponseHandler(rh);
+	}
 
-    public void setUrlComponents(String[] urlComponents) {
-        this.urlComponents = urlComponents;
-    }
+	public HttpRequest(String[] urlComponents, Hashtable params,
+			ResponseHandler rh) {
+		this.setUrlComponents(urlComponents);
+		this.setParams(params);
+		this.setResponseHandler(rh);
+	}
 
-    public Hashtable getParams() {
-        return params;
-    }
+	public HttpRequest(String[] urlComponents, ResponseHandler rh) {
+		this.setUrlComponents(urlComponents);
+		this.setResponseHandler(rh);
+	}
 
-    public void setParams(Hashtable params) {
-        this.params = params;
-    }
+	public HttpRequest(String[] urlComponents, Hashtable params,
+			Hashtable headers, String body, ResponseHandler rh) {
+		this.setUrlComponents(urlComponents);
+		this.setParams(params);
+		this.setHeaders(headers);
+		this.setResponseHandler(rh);
+		this.setBody(body);
+	}
 
-    public ResponseHandler getResponseHandler() {
-        return responseHandler;
-    }
+	public HttpRequest(String[] urlComponents, Hashtable params,
+			String body, ResponseHandler rh) {
+		this.setUrlComponents(urlComponents);
+		this.setParams(params);
+		this.setResponseHandler(rh);
+		this.setBody(body);
+	}
 
-    public void setResponseHandler(ResponseHandler responseHandler) {
-        this.responseHandler = responseHandler;
-    }
+	public HttpRequest(String[] urlComponents, String body, ResponseHandler rh) {
+		this.setUrlComponents(urlComponents);
+		this.setResponseHandler(rh);
+		this.setBody(body);
+	}
 
-    public Hashtable getHeaders() {
-        return headers;
-    }
+	public String[] getUrlComponents() {
+		return urlComponents;
+	}
 
-    public void setHeaders(Hashtable headers) {
-        this.headers = headers;
-    }
+	public void setUrlComponents(String[] urlComponents) {
+		this.urlComponents = urlComponents;
+	}
 
-    public String getUrl() {
+	public Hashtable getParams() {
+		return params;
+	}
 
-        if (url != null) {
-            return url;
-        }
+	public void setParams(Hashtable params) {
+		this.params = params;
+	}
 
-        String url = PubnubUtil.joinString(urlComponents, "/");
+	public ResponseHandler getResponseHandler() {
+		return responseHandler;
+	}
 
-        if (this.params != null && this.params.size() > 0) {
-            StringBuffer sb = new StringBuffer();
-            sb.append(url).append("?");
+	public void setResponseHandler(ResponseHandler responseHandler) {
+		this.responseHandler = responseHandler;
+	}
 
-            Enumeration paramsKeys = this.params.keys();
-            boolean first = true;
-            while (paramsKeys.hasMoreElements()) {
-                if (!first) {
-                    sb.append("&");
-                } else
-                    first = false;
+	public Hashtable getHeaders() {
+		return headers;
+	}
 
-                String key = (String) paramsKeys.nextElement();
-                sb.append(PubnubUtil.urlEncode((String) key))
-                .append("=")
-                .append(PubnubUtil.urlEncode((String) this.params
-                                             .get(key)));
-            }
+	public void setHeaders(Hashtable headers) {
+		this.headers = headers;
+	}
 
-            url = sb.toString();
-        }
-        this.url = url;
+	public String getUrl() {
 
-        return this.url;
-    }
+		if (url != null) {
+			return url;
+		}
+
+		String url = PubnubUtil.joinString(urlComponents, "/");
+
+		if (this.params != null && this.params.size() > 0) {
+			StringBuffer sb = new StringBuffer();
+			sb.append(url).append("?");
+
+			Enumeration paramsKeys = this.params.keys();
+			boolean first = true;
+			while (paramsKeys.hasMoreElements()) {
+				if (!first) {
+					sb.append("&");
+				} else
+					first = false;
+
+				String key = (String) paramsKeys.nextElement();
+				sb.append(PubnubUtil.urlEncode((String) key))
+						.append("=")
+						.append(PubnubUtil.urlEncode((String) this.params
+								.get(key)));
+			}
+
+			url = sb.toString();
+		}
+		this.url = url;
+
+		return this.url;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
+	}
 }

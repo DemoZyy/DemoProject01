@@ -404,7 +404,7 @@ public class PubnubError {
     static final PubnubError PNERROBJ_NOT_FOUND_ERROR                       =
             new PubnubError     (
             PNERR_NOT_FOUND ,
-            "Page Not Found" +
+            "Page Not Found. " +
             "Please verify if network is reachable." +
             "Please contact support with error details."
         );

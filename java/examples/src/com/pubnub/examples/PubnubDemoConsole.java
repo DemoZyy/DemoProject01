@@ -1,3 +1,4 @@
+
 package com.pubnub.examples;
 
 import com.pubnub.api.*;
@@ -423,6 +424,66 @@ public class PubnubDemoConsole {
                 if (uid == null || uid.length() == 0) uid = pubnub.getUUID();
                 whereNow(uid);
                 break;
+            case 32:
+	        	{
+	                String objectId = getStringFromConsole("Object ID", false);
+	                String path = getStringFromConsole("Path",true);
+	                pubnub.read(objectId, path, new Callback(){
+	
+	                    @Override
+	                    public void successCallback(String channel, Object message) {
+	                        System.out.println(System.currentTimeMillis() / 1000 + " : " + message);
+	                    }
+	                    @Override
+	                    public void errorCallback(String channel, PubnubError error) {
+	                        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
+	                    }
+	
+	                });
+	        	}
+                break;
+            case 33:
+	        	{
+	                String objectId = getStringFromConsole("Object ID", false);
+	                String path = getStringFromConsole("Path",true);
+	                String jso = getStringFromConsole("JSON data", false);
+	                try {
+	                    JSONObject js = new JSONObject(jso);
+		                pubnub.write(objectId, path, js, new Callback(){
+		                	
+		                    @Override
+		                    public void successCallback(String channel, Object message) {
+		                        System.out.println(System.currentTimeMillis() / 1000 + " : " + message);
+		                    }
+		                    @Override
+		                    public void errorCallback(String channel, PubnubError error) {
+		                        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
+		                    }
+		
+		                });
+	                } catch (Exception e) {
+	                	System.out.println(System.currentTimeMillis() / 1000 + " : " + "Enter JSON object");
+	                }
+
+	        	}
+            	break;
+            case 34:
+            	{
+	                String objectId = getStringFromConsole("Object ID", false);
+	                pubnub.delete(objectId, new Callback(){
+	                	
+	                    @Override
+	                    public void successCallback(String channel, Object message) {
+	                        System.out.println(System.currentTimeMillis() / 1000 + " : " + message);
+	                    }
+	                    @Override
+	                    public void errorCallback(String channel, PubnubError error) {
+	                        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
+	                    }
+	
+	                });
+            	}
+            	break;
             default:
                 notifyUser("Invalid Input");
             }
@@ -694,6 +755,9 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 29 FOR Getting Subscriber State");
         notifyUser("ENTER 30 FOR Setting Subscriber State");
         notifyUser("ENTER 31 FOR Where Now");
+        notifyUser("Enter 32 FOR Data Sync Get");
+        notifyUser("Enter 33 FOR Data Sync Merge");
+        notifyUser("Enter 34 FOR Data Sync Delete");
         notifyUser("\nENTER 0 to display this menu");
     }
 

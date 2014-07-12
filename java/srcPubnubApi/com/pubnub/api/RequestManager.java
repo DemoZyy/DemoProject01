@@ -96,7 +96,7 @@ class NonSubscribeWorker extends Worker {
         HttpResponse hresp = null;
         try {
             log.debug(hreq.getUrl());
-            hresp = httpclient.fetch(hreq.getUrl(), hreq.getHeaders());
+            hresp = httpclient.fetch(hreq.getUrl(), hreq.getMethod(), hreq.getBody(), hreq.getHeaders());
         } catch (PubnubException pe) {
             log.debug("Pubnub Exception in Fetch : " + pe.getPubnubError());
             if (!_die)

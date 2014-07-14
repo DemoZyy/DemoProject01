@@ -7,7 +7,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PubnubSyncedObject extends JSONObject {
-	private String lastUpdate = "0";
 	private boolean state = false;
 	private Callback callback;
 	private String objectId;
@@ -58,23 +57,33 @@ public class PubnubSyncedObject extends JSONObject {
 	}
 
 	private void applyUpdate(JSONObject o, JSONObject update) throws JSONException {
+		System.out.println(update);
 		String location = update.getString("location");
 		String[] path = PubnubUtil.splitString(location, ".");
+		JSONObject[] pathNodes = new JSONObject[path.length];
 		String last = path[path.length - 1];
 		JSONObject x = o;
+		pathNodes[0] = o;
 		for (int i = 1; i < path.length - 1; i++) {
 			String key = path[i];
-			
 			if (getJSONObjectFromJSONObject(x, key) == null) {
 				x.put(key, new JSONObject());
 			}
 			x = x.getJSONObject(key);
+			pathNodes[i] = x;
 		}
-		System.out.println(x);
+
 		if (update.getString("action").equals("update")) {
 			x.put(last, update.get("value"));
 		} else if (update.getString("action").equals("delete")) {
 			x.remove(last);
+			for (int i = path.length - 2; i >= 2; i--) {
+				if (pathNodes[i] != null && pathNodes[i].length() == 0) {
+					pathNodes[i-1].remove(path[i]);
+				}
+			}
+			if (pathNodes[1] != null && pathNodes[1].length() == 0)
+				o.remove(path[1]);
 		}
 		o.put("last_update", update.getLong("timetoken"));
 
@@ -101,7 +110,7 @@ public class PubnubSyncedObject extends JSONObject {
 		this.callback = callback;
 
 		try {
-			long timetoken = o.getLong(lastUpdate);
+			long timetoken = o.getLong("last_update");
 			pubnub.subscribe("pn_ds_" + objectId, new Callback() {
 				public void successCallback(String channel, Object response) {
 					JSONObject update = (JSONObject) response;
@@ -131,14 +140,11 @@ public class PubnubSyncedObject extends JSONObject {
 				}
 			}, timetoken);
 		} catch (JSONException e1) {
+			e1.printStackTrace();
 			callback.errorCallback("",
 					PubnubError.getErrorObject(
 							PubnubError.PNERROBJ_INVALID_JSON, 13));
 		}
-	}
-
-	public String getLastUpdate() {
-		return lastUpdate;
 	}
 
 	public boolean isState() {

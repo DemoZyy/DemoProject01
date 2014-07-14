@@ -2424,6 +2424,13 @@ abstract class PubnubCore {
 	public PubnubSyncedObject getSyncedObject(String objectId) {
 		PubnubSyncedObject o = new PubnubSyncedObject(objectId);
 		o.setPubnub(this);
+		o.setStale(true);
+		try {
+			o.put("last_update", 0L);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return o;
 	}
 

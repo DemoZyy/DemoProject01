@@ -95,7 +95,7 @@ class HttpClientCore extends HttpClient {
 			String body, Hashtable headers) throws PubnubException,
 			SocketTimeoutException {
 		URL urlobj = null;
-		log.verbose("FETCHING URL : " + url);
+		System.out.println("FETCHING URL : " + url);
 		try {
 			urlobj = new URL(url);
 		} catch (MalformedURLException e3) {

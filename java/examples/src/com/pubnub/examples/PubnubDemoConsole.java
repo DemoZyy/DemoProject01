@@ -2,6 +2,7 @@
 package com.pubnub.examples;
 
 import com.pubnub.api.*;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -432,7 +433,13 @@ public class PubnubDemoConsole {
 	
 	                    @Override
 	                    public void successCallback(String channel, Object message) {
-	                        System.out.println(System.currentTimeMillis() / 1000 + " : " + message);
+	                    	JSONObject jso = (JSONObject)message;
+	                        try {
+								System.out.println(System.currentTimeMillis() / 1000 + " : " + jso.toString(2));
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 	                    }
 	                    @Override
 	                    public void errorCallback(String channel, PubnubError error) {
@@ -470,7 +477,8 @@ public class PubnubDemoConsole {
             case 34:
             	{
 	                String objectId = getStringFromConsole("Object ID", false);
-	                pubnub.delete(objectId, new Callback(){
+	                String path = getStringFromConsole("Path",true);
+	                pubnub.delete(objectId, path, new Callback(){
 	                	
 	                    @Override
 	                    public void successCallback(String channel, Object message) {
@@ -484,6 +492,45 @@ public class PubnubDemoConsole {
 	                });
             	}
             	break;
+            case 35:
+        	{
+                String objectId = getStringFromConsole("Object ID", false);
+                
+                final PubnubSyncedObject jso;
+                jso = pubnub.getSyncedObject(objectId);
+                jso.sync(new Callback(){
+                	public void successCallback(String channel, Object response) {
+                		System.out.println("synced");
+                		try {
+        					System.out.println(jso.toString(2));
+        				} catch (JSONException e) {
+        					// TODO Auto-generated catch block
+        					e.printStackTrace();
+        				}
+                	}
+                	public void errorCallback(String channel, PubnubError error) {
+                		
+                	}
+                });
+                jso.setCallback(new Callback(){
+                	
+                    @Override
+                    public void successCallback(String channel, Object message) {
+                        try {
+							System.out.println(jso.toString(2));
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+                    }
+                    @Override
+                    public void errorCallback(String channel, PubnubError error) {
+                        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
+                    }
+
+                });
+        	}
+        	break;
             default:
                 notifyUser("Invalid Input");
             }
@@ -758,6 +805,7 @@ public class PubnubDemoConsole {
         notifyUser("Enter 32 FOR Data Sync Get");
         notifyUser("Enter 33 FOR Data Sync Merge");
         notifyUser("Enter 34 FOR Data Sync Delete");
+        notifyUser("Enter 35 FOR Data Sync Get synced object notification");
         notifyUser("\nENTER 0 to display this menu");
     }
 

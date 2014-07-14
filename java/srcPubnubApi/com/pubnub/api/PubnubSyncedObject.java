@@ -57,84 +57,83 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 	}
 
-	private void applyUpdate(JSONObject o, JSONObject update) {
-		try {
-			String location = update.getString("location");
-			String[] path = PubnubUtil.splitString(location, ".");
-			String last = path[path.length - 1];
-			JSONObject x = o;
-			for (int i = 1; i < path.length - 1; i++) {
-				String key = path[i];
-				
-				if (getJSONObjectFromJSONObject(x, key) == null) {
-					x.put(key, new JSONObject());
-				}
-				x = x.getJSONObject(key);
+	private void applyUpdate(JSONObject o, JSONObject update) throws JSONException {
+		String location = update.getString("location");
+		String[] path = PubnubUtil.splitString(location, ".");
+		String last = path[path.length - 1];
+		JSONObject x = o;
+		for (int i = 1; i < path.length - 1; i++) {
+			String key = path[i];
+			
+			if (getJSONObjectFromJSONObject(x, key) == null) {
+				x.put(key, new JSONObject());
 			}
-			System.out.println(x);
-			if (update.getString("action").equals("update")) {
-				x.put(last, update.get("value"));
-			} else if (update.getString("action").equals("delete")) {
-				x.remove(last);
-			}
-			o.put("last_update", update.getLong("timetoken"));
-
-		} catch (JSONException e) {
-			e.printStackTrace();
+			x = x.getJSONObject(key);
 		}
+		System.out.println(x);
+		if (update.getString("action").equals("update")) {
+			x.put(last, update.get("value"));
+		} else if (update.getString("action").equals("delete")) {
+			x.remove(last);
+		}
+		o.put("last_update", update.getLong("timetoken"));
 
 	}
 
 	private void applyUpdates(JSONObject o, JSONObject updates,
-			Callback callback) {
+			Callback callback) throws JSONException {
 
 		Iterator keys = updates.keys();
-		try {
-			while (keys.hasNext()) {
-				String key = (String) keys.next();
-				String action = "update";
-				JSONArray updatesArray = updates.getJSONArray(key);
-				for (int i = 0; i < updatesArray.length(); i++) {
-					applyUpdate(o, updatesArray.getJSONObject(i));
-					action = updatesArray.getJSONObject(i).getString("action");
-				}
-				callback.successCallback("", action);
-				updates.remove(key);
+		while (keys.hasNext()) {
+			String key = (String) keys.next();
+			String action = "update";
+			JSONArray updatesArray = updates.getJSONArray(key);
+			for (int i = 0; i < updatesArray.length(); i++) {
+				applyUpdate(o, updatesArray.getJSONObject(i));
+				action = updatesArray.getJSONObject(i).getString("action");
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
+			callback.successCallback("", action);
+			updates.remove(key);
 		}
 	}
 
-	public void setCallback(final Callback callback) {
+	public void setCallback(final Callback callback) throws PubnubException {
 		this.callback = callback;
 
 		try {
+			long timetoken = o.getLong(lastUpdate);
 			pubnub.subscribe("pn_ds_" + objectId, new Callback() {
 				public void successCallback(String channel, Object response) {
 					JSONObject update = (JSONObject) response;
 					try {
-						System.out.println(update.toString(2));
+						applyUpdate(o, update);
 					} catch (JSONException e) {
-						e.printStackTrace();
+						callback.errorCallback("",
+								PubnubError.getErrorObject(
+										PubnubError.PNERROBJ_INVALID_JSON, 14));
 					}
-					applyUpdate(o, update);
 					try {
 						JSONObject callbackData = new JSONObject();
 						callbackData.put("location", update.getString("location"));
 						callbackData.put("action", update.getString("action"));
 						callback.successCallback("", callbackData);
+						o.setStale(false);
 					} catch (JSONException jse) {
-
+						callback.errorCallback(channel,
+								PubnubError.getErrorObject(
+										PubnubError.PNERROBJ_INVALID_JSON, 10));
 					}
 				}
 
 				public void errorCallback(String channel, PubnubError error) {
-
+					o.setStale(true);
+					callback.errorCallback(channel, error);
 				}
-			});
-		} catch (PubnubException e) {
-			e.printStackTrace();
+			}, timetoken);
+		} catch (JSONException e1) {
+			callback.errorCallback("",
+					PubnubError.getErrorObject(
+							PubnubError.PNERROBJ_INVALID_JSON, 13));
 		}
 	}
 
@@ -171,13 +170,17 @@ public class PubnubSyncedObject extends JSONObject {
 				try {
 					deepMerge(o, (JSONObject)response);
 				} catch (JSONException e) {
-					callback.errorCallback("", e.toString());
+					callback.errorCallback(channel,
+							PubnubError.getErrorObject(
+									PubnubError.PNERROBJ_INVALID_JSON, 11));
 				}
 				o.setStale(false);
 				try {
 					o.put("last_update", System.nanoTime() / 100);
 				} catch (JSONException e) {
-					e.printStackTrace();
+					callback.errorCallback(channel,
+							PubnubError.getErrorObject(
+									PubnubError.PNERROBJ_INVALID_JSON, 12));
 				}
 				callback.successCallback("", "updated");
 			}
@@ -194,5 +197,11 @@ public class PubnubSyncedObject extends JSONObject {
 
 	void setStale(boolean stale) {
 		this.stale = stale;
+	}
+	public void merge(String path, JSONObject jso, Callback callback) {
+		pubnub.write(objectId, path, jso, callback);
+	}
+	public void delete(String path , Callback callback) {
+		pubnub.delete(objectId, path, callback);
 	}
 }

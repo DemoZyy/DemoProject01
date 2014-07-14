@@ -269,7 +269,7 @@ public class PubnubDemoConsole {
 
 
         pubnub = new Pubnub(this.publish_key, this.subscribe_key, this.secret_key, this.cipher_key, this.SSL);
-
+        pubnub.setCacheBusting(false);
         displayMenuOptions();
 
         String channelName = null;
@@ -504,7 +504,6 @@ public class PubnubDemoConsole {
                 		try {
         					System.out.println(jso.toString(2));
         				} catch (JSONException e) {
-        					// TODO Auto-generated catch block
         					e.printStackTrace();
         				}
                 	}
@@ -512,23 +511,27 @@ public class PubnubDemoConsole {
                 		
                 	}
                 });
-                jso.setCallback(new Callback(){
-                	
-                    @Override
-                    public void successCallback(String channel, Object message) {
-                        try {
-							System.out.println(jso.toString(2));
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-                    }
-                    @Override
-                    public void errorCallback(String channel, PubnubError error) {
-                        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
-                    }
+                try {
+					jso.setCallback(new Callback(){
+						
+					    @Override
+					    public void successCallback(String channel, Object message) {
+					        try {
+								System.out.println(jso.toString(2));
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+					    }
+					    @Override
+					    public void errorCallback(String channel, PubnubError error) {
+					        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
+					    }
 
-                });
+					});
+				} catch (PubnubException e) {
+					e.printStackTrace();
+				}
         	}
         	break;
             default:

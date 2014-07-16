@@ -229,7 +229,7 @@ abstract class PubnubCoreShared extends PubnubCore {
                          boolean write, int ttl, final Callback callback) {
         pamGrant(channel, null, read, write, ttl, callback);
     }
-
+    
     /** Grant r/w access based on channel and auth key
      * @param channel
      * @param auth_key
@@ -239,6 +239,23 @@ abstract class PubnubCoreShared extends PubnubCore {
      * @param callback
      */
     public void pamGrant(final String channel, String auth_key, boolean read,
+                         boolean write, int ttl, Callback callback) {
+    	pamGrant(channel, auth_key, null, read, write, ttl, callback);
+    }
+
+    /** Grant r/w access based on objectId
+     * @param objectId
+     * @param read
+     * @param write
+     * @param ttl
+     * @param callback
+     */
+    public void pamGrantByObjectId(final String objectId, boolean read,
+                         boolean write, int ttl, Callback callback) {
+    	pamGrant(null, null, objectId, read, write, ttl, callback);
+    }
+    
+    private void pamGrant(final String channel, String auth_key, String objectId, boolean read,
                          boolean write, int ttl, Callback callback) {
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
@@ -261,9 +278,16 @@ abstract class PubnubCoreShared extends PubnubCore {
         if (auth_key != null && auth_key.length() > 0)
             sign_input += "auth=" + auth_key + "&"  ;
 
-        sign_input += "channel=" + PubnubUtil.urlEncode(channel) + "&" + "pnsdk=" + PubnubUtil.urlEncode(getUserAgent()) + "&" + "r=" + r + "&" + "timestamp=" + timestamp
-                            + ((ttl >= -1)?"&" + "ttl=" + ttl:"")
-                            + "&" + "w=" + w;
+        if (channel != null && channel.length() > 0)
+        	sign_input += "channel=" + channel + "&";
+        
+        if (objectId != null && objectId.length() > 0)
+        	sign_input += "obj-id=" + objectId + "&";
+        
+        sign_input += 	"pnsdk=" + PubnubUtil.urlEncode(getUserAgent()) + "&" + 
+        				"r=" + r + "&" + 
+        				"timestamp=" + timestamp + ((ttl >= -1)?"&" + "ttl=" + ttl:"") + "&" + 
+        				"w=" + w;
 
 
         try {
@@ -279,12 +303,11 @@ abstract class PubnubCoreShared extends PubnubCore {
         parameters.put("timestamp", String.valueOf(timestamp));
         parameters.put("signature", signature);
         parameters.put("r", r);
-        parameters.put("channel", channel);
 
         if (auth_key != null && auth_key.length() > 0 ) parameters.put("auth", auth_key);
+        if (objectId != null && objectId.length() > 0 ) parameters.put("obj-id", objectId);
+        if (channel != null && channel.length() > 0 ) parameters.put("channel", channel);
         if (ttl >= -1) parameters.put("ttl", String.valueOf(ttl));
-        
-        System.out.println(parameters);
 
         String[] urlComponents = { getPubnubUrl(), "v1", "auth", "grant", "sub-key",
                                    this.SUBSCRIBE_KEY
@@ -310,56 +333,7 @@ abstract class PubnubCoreShared extends PubnubCore {
      * @param callback
      */
     public void pamAudit(Callback callback) {
-
-        final Callback cb = getWrappedCallback(callback);
-
-        Hashtable parameters = PubnubUtil.hashtableClone(params);
-        parameters.remove("auth");
-
-        String signature = "0";
-
-        int timestamp = (int) ((new Date().getTime()) / 1000);
-
-        if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback("",
-                                   getErrorObject(PNERROBJ_SECRET_KEY_MISSING, 2));
-            return;
-        }
-
-        String sign_input = this.SUBSCRIBE_KEY + "\n" + this.PUBLISH_KEY + "\n"
-                            + "audit" + "\n" + "pnsdk=" + PubnubUtil.urlEncode(getUserAgent()) + "&"
-                            + "timestamp=" + timestamp;
-
-
-        try {
-            signature = pamSign(this.SECRET_KEY, sign_input);
-        } catch (PubnubException e1) {
-            callback.errorCallback("",
-                                   e1.getPubnubError());
-            return;
-        }
-
-        parameters.put("timestamp", String.valueOf(timestamp));
-        parameters.put("signature", signature);
-
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "audit", "sub-key",
-                                   this.SUBSCRIBE_KEY
-                                 };
-
-        HttpRequest hreq = new HttpRequest(urlComponents, parameters,
-        new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 5 );
-            }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
-                return;
-            }
-        });
-
-        _request(hreq, nonSubscribeManager);
-
+    	pamAudit(null, null, null, callback);
     }
 
     /** ULS audit by channel
@@ -368,56 +342,17 @@ abstract class PubnubCoreShared extends PubnubCore {
      */
     public void pamAudit(final String channel,
                          Callback callback) {
-
-        final Callback cb = getWrappedCallback(callback);
-
-        Hashtable parameters = PubnubUtil.hashtableClone(params);
-        parameters.remove("auth");
-
-        String signature = "0";
-
-        int timestamp = (int) ((new Date().getTime()) / 1000);
-
-        if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback(channel,
-                                   getErrorObject(PNERROBJ_SECRET_KEY_MISSING , 3));
-            return;
-        }
-
-        String sign_input = this.SUBSCRIBE_KEY + "\n" + this.PUBLISH_KEY + "\n"
-                            + "audit" + "\n" + "channel="
-                            + PubnubUtil.urlEncode(channel) + "&" + "pnsdk=" + PubnubUtil.urlEncode(getUserAgent()) + "&" + "timestamp=" + timestamp;
-
-        try {
-            signature = pamSign(this.SECRET_KEY, sign_input);
-        } catch (PubnubException e1) {
-            callback.errorCallback(channel,
-                                   e1.getPubnubError());
-            return;
-        }
-
-        parameters.put("timestamp", String.valueOf(timestamp));
-        parameters.put("signature", signature);
-        parameters.put("channel", channel);
-
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "audit", "sub-key",
-                                   this.SUBSCRIBE_KEY
-                                 };
-
-        HttpRequest hreq = new HttpRequest(urlComponents, parameters,
-        new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback(channel, response, "payload", cb, 6);
-            }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(channel, error);
-                return;
-            }
-        });
-
-        _request(hreq, nonSubscribeManager);
-
+    	pamAudit(channel, null, null, callback);
+    }
+    
+    /** ULS audit by channel
+     * @param channel
+     * @param authKey
+     * @param callback
+     */
+    public void pamAudit(final String channel, String authKey,
+                         Callback callback) {
+    	pamAudit(channel, authKey, null, callback);
     }
 
     /** ULS audit by channel and auth key
@@ -425,7 +360,7 @@ abstract class PubnubCoreShared extends PubnubCore {
      * @param auth_key
      * @param callback
      */
-    public void pamAudit(final String channel, String auth_key,
+    private void pamAudit(final String channel, String authKey, String objectId,
                          Callback callback) {
 
         final Callback cb = getWrappedCallback(callback);
@@ -441,11 +376,21 @@ abstract class PubnubCoreShared extends PubnubCore {
             return;
         }
 
-        String sign_input = this.SUBSCRIBE_KEY + "\n" + this.PUBLISH_KEY + "\n"
-                            + "audit" + "\n" + "auth=" + PubnubUtil.urlEncode(auth_key) + "&" + "channel="
-                            + PubnubUtil.urlEncode(channel) + "&" + "pnsdk=" + PubnubUtil.urlEncode(getUserAgent()) + "&" + "timestamp=" + timestamp;
+        String sign_input = this.SUBSCRIBE_KEY + "\n" + this.PUBLISH_KEY + "\n" + "audit" + "\n" ;
 
+        if (authKey != null && authKey.length() > 0)
+            sign_input += "auth=" + authKey + "&"  ;
 
+        if (channel != null && channel.length() > 0)
+        	sign_input += "channel=" + channel + "&";
+        
+        if (objectId != null && objectId.length() > 0)
+        	sign_input += "obj-id=" + objectId + "&";
+        
+        sign_input += 	"pnsdk=" + PubnubUtil.urlEncode(getUserAgent()) + "&" + 
+        				"timestamp=" + timestamp;
+        
+        
         try {
             signature = pamSign(this.SECRET_KEY, sign_input);
         } catch (PubnubException e1) {
@@ -456,8 +401,9 @@ abstract class PubnubCoreShared extends PubnubCore {
 
         parameters.put("timestamp", String.valueOf(timestamp));
         parameters.put("signature", signature);
-        parameters.put("channel", channel);
-        parameters.put("auth", auth_key);
+        if (channel != null && channel.length() > 0 ) parameters.put("channel", channel);
+        if (authKey != null && channel.length() > 0 ) parameters.put("auth", authKey);
+        if (objectId != null && channel.length() > 0 ) parameters.put("obj-id", objectId);
 
         String[] urlComponents = { getPubnubUrl(), "v1", "auth", "audit", "sub-key",
                                    this.SUBSCRIBE_KEY
@@ -496,5 +442,10 @@ abstract class PubnubCoreShared extends PubnubCore {
     public void pamRevoke(String channel, Callback callback) {
         pamGrant(channel, null, false, false, callback);
     }
-
+    public void pamRevokeByObjectId(String objectId, Callback callback) {
+    	pamGrantByObjectId(objectId, false, false, -1, callback);
+    }
+    public void pamAuditByObjectId(String objectId, Callback callback) {
+    	pamAudit(null, null, objectId, callback);
+    }
 }

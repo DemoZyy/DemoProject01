@@ -429,7 +429,7 @@ public class PubnubDemoConsole {
 	        	{
 	                String objectId = getStringFromConsole("Object ID", false);
 	                String path = getStringFromConsole("Path",true);
-	                pubnub.read(objectId, path, new Callback(){
+	                pubnub.get(objectId, path, new Callback(){
 	
 	                    @Override
 	                    public void successCallback(String channel, Object message) {
@@ -456,7 +456,7 @@ public class PubnubDemoConsole {
 	                String jso = getStringFromConsole("JSON data", false);
 	                try {
 	                    JSONObject js = new JSONObject(jso);
-		                pubnub.write(objectId, path, js, new Callback(){
+		                pubnub.merge(objectId, path, js, new Callback(){
 		                	
 		                    @Override
 		                    public void successCallback(String channel, Object message) {
@@ -475,10 +475,35 @@ public class PubnubDemoConsole {
 	        	}
             	break;
             case 34:
+	        	{
+	                String objectId = getStringFromConsole("Object ID", false);
+	                String path = getStringFromConsole("Path",true);
+	                String jso = getStringFromConsole("JSON data", false);
+	                try {
+	                    JSONObject js = new JSONObject(jso);
+		                pubnub.set(objectId, path, js, new Callback(){
+		                	
+		                    @Override
+		                    public void successCallback(String channel, Object message) {
+		                        System.out.println(System.currentTimeMillis() / 1000 + " : " + message);
+		                    }
+		                    @Override
+		                    public void errorCallback(String channel, PubnubError error) {
+		                        System.out.println(System.currentTimeMillis() / 1000 + " : " + error);
+		                    }
+		
+		                });
+	                } catch (Exception e) {
+	                	System.out.println(System.currentTimeMillis() / 1000 + " : " + "Enter JSON object");
+	                }
+
+	        	}
+            	break;
+            case 35:
             	{
 	                String objectId = getStringFromConsole("Object ID", false);
 	                String path = getStringFromConsole("Path",true);
-	                pubnub.delete(objectId, path, new Callback(){
+	                pubnub.remove(objectId, path, new Callback(){
 	                	
 	                    @Override
 	                    public void successCallback(String channel, Object message) {
@@ -492,15 +517,15 @@ public class PubnubDemoConsole {
 	                });
             	}
             	break;
-            case 35:
+            case 36:
         	{
                 String objectId = getStringFromConsole("Object ID", false);
+                String path = getStringFromConsole("Path", true);
                 
                 final PubnubSyncedObject jso;
-                jso = pubnub.getSyncedObject(objectId);
+                jso = pubnub.getSyncedObject(objectId, path);
                 jso.sync(new Callback(){
                 	public void successCallback(String channel, Object response) {
-                		System.out.println("synced");
                 		try {
         					System.out.println(jso.toString(2));
         				} catch (JSONException e) {
@@ -517,6 +542,7 @@ public class PubnubDemoConsole {
 					    @Override
 					    public void successCallback(String channel, Object message) {
 					        try {
+					        	System.out.println(message);
 								System.out.println(jso.toString(2));
 							} catch (JSONException e) {
 								// TODO Auto-generated catch block
@@ -807,8 +833,9 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 31 FOR Where Now");
         notifyUser("Enter 32 FOR Data Sync Get");
         notifyUser("Enter 33 FOR Data Sync Merge");
-        notifyUser("Enter 34 FOR Data Sync Delete");
-        notifyUser("Enter 35 FOR Data Sync Get synced object notification");
+        notifyUser("Enter 34 FOR Data Sync Set");
+        notifyUser("Enter 35 FOR Data Sync Remove");
+        notifyUser("Enter 36 FOR Data Sync Get synced object notification");
         notifyUser("\nENTER 0 to display this menu");
     }
 

@@ -1867,13 +1867,20 @@ abstract class PubnubCore {
 								/*
 								 * Response has multiple channels
 								 */
-
-								String[] _channels = PubnubUtil.splitString(
-										jsa.getString(2), ",");
+								String[] _channels = null;
+								if (jsa.length() > 3) {
+									_channels = PubnubUtil.splitString(
+											jsa.getString(3), ",");
+								} else {
+									_channels = PubnubUtil.splitString(
+											jsa.getString(2), ",");
+								}
 
 								for (int i = 0; i < _channels.length; i++) {
+									
 									Channel _channel = (Channel) subscriptions
 											.getChannel(_channels[i]);
+
 									if (_channel != null) {
 										JSONObject jsobj = null;
 										if (CIPHER_KEY.length() > 0
@@ -2299,19 +2306,21 @@ abstract class PubnubCore {
 		resubscribe();
 	}
 
-	public void read(String objectId, String path, Callback callback) {
+	public void get(String objectId, String path, Callback callback) {
 
 		final Callback cb = getWrappedCallback(callback);
 
 		Hashtable parameters = PubnubUtil.hashtableClone(params);
 		String[] urlargs = null;
 
+		path.replace('.', '/');
+		
 		if (path != null && path.length() > 0) {
-			urlargs = new String[] { getPubnubUrl(), "datasync", "sub-key",
+			urlargs = new String[] { getPubnubUrl(), "v1", "datasync", "sub-key",
 					this.SUBSCRIBE_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId), PubnubUtil.urlEncode(path) };
 		} else {
-			urlargs = new String[] { getPubnubUrl(), "datasync", "sub-key",
+			urlargs = new String[] { getPubnubUrl(), "v1", "datasync", "sub-key",
 					this.SUBSCRIBE_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId) };
 		}
@@ -2330,23 +2339,25 @@ abstract class PubnubCore {
 		_request(hreq, nonSubscribeManager);
 	}
 
-	public void write(String objectId, String path, JSONObject jso,
-			Callback callback) {
+	private void write(String objectId, String path, JSONObject jso,
+			Callback callback, String method) {
 
 		final Callback cb = getWrappedCallback(callback);
 
 		Hashtable parameters = PubnubUtil.hashtableClone(params);
 		String[] urlargs = null;
 
-		parameters.put("method", "PATCH");
+		parameters.put("method", method);
+		
+		path.replace('.', '/');
 
 		if (path != null && path.length() > 0) {
-			urlargs = new String[] { getPubnubUrl(), "datasync", "pub-key",
-					this.PUBLISH_KEY, "sub-key", this.SUBSCRIBE_KEY, "obj-id",
+			urlargs = new String[] { getPubnubUrl(), "v1", "datasync", "sub-key",
+					this.SUBSCRIBE_KEY, "pub-key", this.PUBLISH_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId), PubnubUtil.urlEncode(path) };
 		} else {
-			urlargs = new String[] { getPubnubUrl(), "datasync", "pub-key",
-					this.PUBLISH_KEY, "sub-key", this.SUBSCRIBE_KEY, "obj-id",
+			urlargs = new String[] { getPubnubUrl(), "v1", "datasync", "sub-key",
+					this.SUBSCRIBE_KEY,  "pub-key", this.PUBLISH_KEY,  "obj-id",
 					PubnubUtil.urlEncode(objectId) };
 		}
 
@@ -2364,22 +2375,32 @@ abstract class PubnubCore {
 		hreq.setBody(jso.toString());
 		_request(hreq, nonSubscribeManager);
 	}
+	
+	public void merge(String objectId, String path, JSONObject jso,
+			Callback callback) {
+		write(objectId, path, jso, callback, "PATCH");
+	}
+	public void set(String objectId, String path, JSONObject jso,
+				Callback callback) {
+		write(objectId, path, jso, callback, "PUT");
+	}
 
-	public void delete(String objectId, String path, Callback callback) {
+	public void remove(String objectId, String path, Callback callback) {
 
 		final Callback cb = getWrappedCallback(callback);
 
 		Hashtable parameters = PubnubUtil.hashtableClone(params);
 		String[] urlargs = null;
-
+		
+		path.replace('.', '/');
 
 		if (path != null && path.length() > 0) {
-			urlargs = new String[] { getPubnubUrl(), "datasync", "pub-key",
-					this.PUBLISH_KEY, "sub-key", this.SUBSCRIBE_KEY, "obj-id",
+			urlargs = new String[] { getPubnubUrl(), "v1", "datasync", "sub-key",
+					this.SUBSCRIBE_KEY, "pub-key", this.PUBLISH_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId), PubnubUtil.urlEncode(path) };
 		} else {
-			urlargs = new String[] { getPubnubUrl(), "datasync", "pub-key",
-					this.PUBLISH_KEY, "sub-key", this.SUBSCRIBE_KEY, "obj-id",
+			urlargs = new String[] { getPubnubUrl(), "v1", "datasync", "sub-key",
+					this.SUBSCRIBE_KEY, "pub-key", this.PUBLISH_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId) };
 		}
 
@@ -2420,13 +2441,25 @@ abstract class PubnubCore {
 		}
 	}
 
+	public PubnubSyncedObject getSyncedObject(String objectId, String path) {
+		PubnubSyncedObject o = new PubnubSyncedObject(objectId, path);
+		o.setPubnub(this);
+		o.setStale(true);
+		try {
+			o.meta.put("last_update", 0L);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return o;
+	}
 	
 	public PubnubSyncedObject getSyncedObject(String objectId) {
 		PubnubSyncedObject o = new PubnubSyncedObject(objectId);
 		o.setPubnub(this);
 		o.setStale(true);
 		try {
-			o.put("last_update", 0L);
+			o.meta.put("last_update", 0L);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

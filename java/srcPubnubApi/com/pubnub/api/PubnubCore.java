@@ -2307,6 +2307,10 @@ abstract class PubnubCore {
 	}
 
 	public void get(String objectId, String path, Callback callback) {
+		get(objectId, path, null, callback);
+	}
+	
+	void get(String objectId, String path, String nextPage, Callback callback) {
 
 		final Callback cb = getWrappedCallback(callback);
 
@@ -2324,11 +2328,20 @@ abstract class PubnubCore {
 					"sub-key", this.SUBSCRIBE_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId) };
 		}
-
+		parameters.put("page_max_bytes", "5");
+		
+		if (nextPage != null && nextPage.length() > 0) parameters.put("start_at", nextPage);
+		
 		HttpRequest hreq = new HttpRequest(urlargs, parameters,
 				new ResponseHandler() {
 					public void handleResponse(HttpRequest hreq, String response) {
-						invokeCallback("", response, "payload", cb, 1);
+						//invokeCallback("", response, "payload", cb, 1);
+						try {
+							cb.successCallback("", new JSONObject(response));
+						} catch (JSONException e) {
+							cb.errorCallback("", PubnubError.getErrorObject(
+									PubnubError.PNERROBJ_INVALID_JSON, 21));
+						}
 					}
 
 					public void handleError(HttpRequest hreq, PubnubError error) {

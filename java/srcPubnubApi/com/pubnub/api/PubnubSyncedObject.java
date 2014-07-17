@@ -283,7 +283,7 @@ public class PubnubSyncedObject extends JSONObject {
 			} else {
 				if (value instanceof JSONObject) {
 					JSONObject valueJson = (JSONObject) value;
-					deepMerge(valueJson, target.getJSONObject(key));
+					deepMerge(target.getJSONObject(key), valueJson);
 				} else {
 					target.put(key, value);
 				}
@@ -291,20 +291,38 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 		return target;
 	}
-
-	private void sync(final Callback callback) {
-		try {
-			o.put("pn_ds_meta", new JSONObject());
-			meta = o.getJSONObject("pn_ds_meta");
-			meta.put("last_update", 0);
-		} catch (JSONException e1) {
-			callback.errorCallback("", PubnubError.getErrorObject(
-					PubnubError.PNERROBJ_INVALID_JSON, 15));
+	private static JSONObject put(JSONObject target, Object data, String path) throws JSONException {
+		String[] pathArray = null;
+		if (path != null && path.length() > 0) {
+			pathArray = PubnubUtil.splitString(path, "/");
+			for (int i = 0; i < pathArray.length - 1; i++) {
+				target = target.getJSONObject(pathArray[i]);
+			}
 		}
-		pubnub.get(objectId, this.slashPath, new Callback() {
+		String key = pathArray[pathArray.length - 1];
+		if (key != null) {
+			target.put(key, data);
+		}
+		return target;
+	}
+	private void getByNextPage(final String objectId, final String path, final String nextPage, final Callback callback) {
+		pubnub.get(objectId, path, nextPage, new Callback() {
 			public void successCallback(String channel, Object response) {
+				String nextPage = null;
 				try {
-					deepMerge(o, (JSONObject) response);
+
+					JSONObject data = getJSONObjectFromJSONObject((JSONObject)response,"payload");
+
+					if (data != null)
+						deepMerge(o, data);
+					else 
+						put(o,((JSONObject)response).get("payload"), path);
+					
+					nextPage = getStringFromJSONObject(((JSONObject)response), "next_page");
+					
+					if (nextPage != null && !nextPage.equals("null")) {
+						getByNextPage(objectId, path, nextPage, callback);
+					}
 				} catch (JSONException e) {
 					callback.errorCallback(channel, PubnubError.getErrorObject(
 							PubnubError.PNERROBJ_INVALID_JSON, 11));
@@ -317,7 +335,8 @@ public class PubnubSyncedObject extends JSONObject {
 					callback.errorCallback(channel, PubnubError.getErrorObject(
 							PubnubError.PNERROBJ_INVALID_JSON, 12));
 				}
-				callback.successCallback("", "updated");
+				if (nextPage == null || nextPage.equals("null"))
+					callback.successCallback("", "updated");
 				// synced = true;
 			}
 
@@ -326,6 +345,18 @@ public class PubnubSyncedObject extends JSONObject {
 				callback.errorCallback(channel, response);
 			}
 		});
+	}
+	private void sync(final Callback callback) {
+		try {
+			o.put("pn_ds_meta", new JSONObject());
+			meta = o.getJSONObject("pn_ds_meta");
+			meta.put("last_update", 0);
+		} catch (JSONException e1) {
+			callback.errorCallback("", PubnubError.getErrorObject(
+					PubnubError.PNERROBJ_INVALID_JSON, 15));
+		}
+
+		getByNextPage(this.objectId, this.slashPath, null, callback);
 	}
 
 	public boolean isStale() {

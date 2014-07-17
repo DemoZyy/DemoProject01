@@ -26,6 +26,7 @@ public class PubnubSyncedObject extends JSONObject {
 	JSONObject meta = new JSONObject();
 	private Hashtable transactionsTable = new Hashtable();
 	private boolean stale = true;
+	private boolean synced = false;
 
 	private PubnubCore pubnub;
 
@@ -133,10 +134,10 @@ public class PubnubSyncedObject extends JSONObject {
 			}
 		}
 		((PubnubSyncedObject)o).setStale(false);
-		callback.successCallback("", updatesArray);
+		if (callback != null) callback.successCallback("", updatesArray);
 	}
 	
-	private void applyAllTransaction(Callback callback) throws JSONException {
+	private void applyAllTransactions(Callback callback) throws JSONException {
 		Iterator keys = transactionsTable.entrySet().iterator();
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
@@ -148,7 +149,7 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 	}
 
-	public void setCallback(final Callback callback) throws PubnubException {
+	public void initSync(final Callback callback) throws PubnubException {
 		this.callback = callback;
 
 		try {
@@ -161,6 +162,31 @@ public class PubnubSyncedObject extends JSONObject {
 			};
 			
 			pubnub.subscribe(channels, new Callback() {
+				public void connectCallback(String channel, Object response) {
+					if (((String)channel).equals("pn_ds_" + objectId + 
+							((path != null && path.length() > 0)?"." + path:"")) 
+							&& !synced) {
+						sync(new Callback(){
+							public void successCallback(String channel, Object response) {
+								//callback.successCallback("", response);
+								try {
+									applyAllTransactions(null);
+									synced = true;
+									setStale(false);
+									callback.connectCallback("", objectId);
+								} catch (JSONException e) {
+									callback.errorCallback("",
+											PubnubError.getErrorObject(
+													PubnubError.PNERROBJ_INVALID_JSON, 20));
+								}
+							}
+							public void errorCallback(String channel, PubnubError error) {
+								callback.errorCallback("", error);
+								synced = false;
+							}
+						});
+					}
+				}
 				public void successCallback(String channel, Object response) {
 					JSONObject update = (JSONObject) response;
 					if (getStringFromJSONObject(update, "action") != null) {
@@ -195,8 +221,10 @@ public class PubnubSyncedObject extends JSONObject {
 						if (dst == null) return;
 						dst.transactionComplete = true;
 						try {
-							applyTransaction(o, dst, callback);
-							transactionsTable.remove(transactionId);
+							if (synced) {
+								applyTransaction(o, dst, callback);
+								transactionsTable.remove(transactionId);
+							}
 						} catch (JSONException e) {
 							callback.errorCallback("",
 									PubnubError.getErrorObject(
@@ -220,7 +248,7 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 	}
 
-	public static JSONObject deepMerge(JSONObject target, JSONObject source) throws JSONException {
+	private static JSONObject deepMerge(JSONObject target, JSONObject source) throws JSONException {
 		Iterator keys = source.keys();
 		while(keys.hasNext()) {
 			String key = (String) keys.next();
@@ -239,7 +267,7 @@ public class PubnubSyncedObject extends JSONObject {
 	    return target;
 	}
 	
-	public void sync(final Callback callback) {
+	private void sync(final Callback callback) {
 		try {
 			o.put("pn_ds_meta", new JSONObject());
 			meta = o.getJSONObject("pn_ds_meta");
@@ -258,7 +286,7 @@ public class PubnubSyncedObject extends JSONObject {
 							PubnubError.getErrorObject(
 									PubnubError.PNERROBJ_INVALID_JSON, 11));
 				}
-				o.setStale(false);
+				//o.setStale(false);
 				try {
 					if (meta != null) meta.put("last_update", System.nanoTime() / 100);
 				} catch (JSONException e) {
@@ -267,6 +295,7 @@ public class PubnubSyncedObject extends JSONObject {
 									PubnubError.PNERROBJ_INVALID_JSON, 12));
 				}
 				callback.successCallback("", "updated");
+				//synced = true;
 			}
 			public void errorCallback(String channel, PubnubError response) {
 				o.setStale(true);

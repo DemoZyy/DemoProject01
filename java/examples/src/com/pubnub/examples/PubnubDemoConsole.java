@@ -522,23 +522,20 @@ public class PubnubDemoConsole {
                 String objectId = getStringFromConsole("Object ID", false);
                 String path = getStringFromConsole("Path", true);
                 
-                final PubnubSyncedObject jso;
-                jso = pubnub.getSyncedObject(objectId, path);
-                jso.sync(new Callback(){
-                	public void successCallback(String channel, Object response) {
-                		try {
-        					System.out.println(jso.toString(2));
-        				} catch (JSONException e) {
-        					e.printStackTrace();
-        				}
-                	}
-                	public void errorCallback(String channel, PubnubError error) {
-                		
-                	}
-                });
+                final PubnubSyncedObject jso = pubnub.createSyncObject(objectId, path); 
+                
                 try {
-					jso.setCallback(new Callback(){
-						
+					jso.initSync(new Callback(){
+						@Override
+						public void connectCallback(String channel, Object message) {
+					        try {
+					        	System.out.println("Object Initialized : " + message);
+								System.out.println(jso.toString(2));
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 					    @Override
 					    public void successCallback(String channel, Object message) {
 					        try {

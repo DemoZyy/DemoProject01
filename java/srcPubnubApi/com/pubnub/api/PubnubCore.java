@@ -2441,28 +2441,28 @@ abstract class PubnubCore {
 		}
 	}
 
-	public PubnubSyncedObject getSyncedObject(String objectId, String path) {
+	public PubnubSyncedObject createSyncObject(String objectId, String path) {
 		PubnubSyncedObject o = new PubnubSyncedObject(objectId, path);
 		o.setPubnub(this);
-		o.setStale(true);
+		o.setStale(true);		
+
 		try {
 			o.meta.put("last_update", 0L);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
 		}
 		return o;
 	}
 	
-	public PubnubSyncedObject getSyncedObject(String objectId) {
+	public PubnubSyncedObject createSyncObject(String objectId) {
 		PubnubSyncedObject o = new PubnubSyncedObject(objectId);
 		o.setPubnub(this);
 		o.setStale(true);
+
 		try {
 			o.meta.put("last_update", 0L);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
 		}
 		return o;
 	}

@@ -24,6 +24,7 @@ public class PubnubSyncedObject extends JSONObject {
 	private int depth = 0;
 	private String slashPath = "";
 	JSONObject meta = new JSONObject();
+	JSONObject data;
 	private Hashtable transactionsTable = new Hashtable();
 	private boolean stale = true;
 	private boolean synced = false;
@@ -84,12 +85,16 @@ public class PubnubSyncedObject extends JSONObject {
 
 	private void applyUpdate(JSONObject o, JSONObject update)
 			throws JSONException {
+		System.out.println("OBJECT : " + o.toString(2));
+		System.out.println("UPDATE : " + update.toString(2));
 		String location = update.getString("location");
 		String[] path = PubnubUtil.splitString(location, ".");
+		System.out.println("PATH LENGTH : " + path.length);
+		System.out.println("DEPTH : " + depth);
 		JSONObject[] pathNodes = new JSONObject[path.length];
 		String last = path[path.length - 1];
-		JSONObject x = o;
-		pathNodes[0] = o;
+		JSONObject x = data;
+		pathNodes[0] = data;
 
 		for (int i = 1 + depth; i < path.length - 1; i++) {
 			String key = path[i];
@@ -105,15 +110,15 @@ public class PubnubSyncedObject extends JSONObject {
 			x.put(last, update.get("value"));
 		} else if (update.getString("action").equals("delete")) {
 			x.remove(last);
-			for (int i = path.length - 2; i >= 2 + depth; i--) {
+			for (int i = path.length - 2; i >= 1 + depth; i--) {
 				if (pathNodes[i] != null && pathNodes[i].length() == 0) {
 					pathNodes[i - 1].remove(path[i]);
 				}
 			}
-
-			if (pathNodes[1 + depth] != null
-					&& pathNodes[1 + depth].length() == 0)
-				o.remove(path[1 + depth]);
+			
+			if (pathNodes[depth] != null
+					&& pathNodes[depth].length() == 0)
+				data.remove(path[depth]);
 		}
 		if (meta != null)
 			meta.put("last_update", update.getLong("timetoken"));
@@ -272,7 +277,7 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 	}
 
-	private static JSONObject deepMerge(JSONObject target, JSONObject source)
+	static JSONObject deepMerge(JSONObject target, JSONObject source)
 			throws JSONException {
 		Iterator keys = source.keys();
 		while (keys.hasNext()) {
@@ -291,12 +296,19 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 		return target;
 	}
-	private static JSONObject put(JSONObject target, Object data, String path) throws JSONException {
+	private JSONObject put(JSONObject target, Object data, String path) throws JSONException {
 		String[] pathArray = null;
-		if (path != null && path.length() > 0) {
+		System.out.println(target);
+		System.out.println(data);
+		System.out.println(path);
+		System.out.println(depth);
+
+		if (path != null && path.length() > 0 ) {
 			pathArray = PubnubUtil.splitString(path, "/");
-			for (int i = 0; i < pathArray.length - 1; i++) {
-				target = target.getJSONObject(pathArray[i]);
+			if (!path.equals(this.slashPath)) {
+				for (int i = 0; i < pathArray.length - 1; i++) {
+					target = target.getJSONObject(pathArray[i]);
+				}
 			}
 		}
 		String key = pathArray[pathArray.length - 1];
@@ -306,17 +318,17 @@ public class PubnubSyncedObject extends JSONObject {
 		return target;
 	}
 	private void getByNextPage(final String objectId, final String path, final String nextPage, final Callback callback) {
-		pubnub.get(objectId, path, nextPage, new Callback() {
+		pubnub.getWithPath(objectId, path, nextPage, new Callback() {
 			public void successCallback(String channel, Object response) {
 				String nextPage = null;
 				try {
+					System.out.println(response);
+					JSONObject d = getJSONObjectFromJSONObject((JSONObject)response,"payload");
 
-					JSONObject data = getJSONObjectFromJSONObject((JSONObject)response,"payload");
-
-					if (data != null)
-						deepMerge(o, data);
+					if (d != null)
+						deepMerge(data, d);
 					else 
-						put(o,((JSONObject)response).get("payload"), path);
+						put(data,((JSONObject)response).get("payload"), path);
 					
 					nextPage = getStringFromJSONObject(((JSONObject)response), "next_page");
 					
@@ -351,6 +363,10 @@ public class PubnubSyncedObject extends JSONObject {
 			o.put("pn_ds_meta", new JSONObject());
 			meta = o.getJSONObject("pn_ds_meta");
 			meta.put("last_update", 0);
+			
+			o.put("data", new JSONObject());
+			data = o.getJSONObject("data");
+
 		} catch (JSONException e1) {
 			callback.errorCallback("", PubnubError.getErrorObject(
 					PubnubError.PNERROBJ_INVALID_JSON, 15));

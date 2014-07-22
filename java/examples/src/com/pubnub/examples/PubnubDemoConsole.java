@@ -14,8 +14,8 @@ import static java.lang.System.out;
 public class PubnubDemoConsole {
 
 	Pubnub pubnub;
-	String publish_key = "demo";
-	String subscribe_key = "demo";
+	String publish_key = "pub-c-bf446f9e-dd7f-43fe-8736-d6e5dce3fe67";
+	String subscribe_key = "sub-c-d1c2cc5a-1102-11e4-8880-02ee2ddab7fe";
 	String secret_key = "";
 	String cipher_key = "";
 	boolean SSL;
@@ -274,6 +274,7 @@ public class PubnubDemoConsole {
 		pubnub = new Pubnub(this.publish_key, this.subscribe_key,
 				this.secret_key, this.cipher_key, this.SSL);
 		pubnub.setCacheBusting(false);
+		pubnub.setOrigin("pubsub-beta");
 		displayMenuOptions();
 
 		String channelName = null;

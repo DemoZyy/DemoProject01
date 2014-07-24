@@ -1,11 +1,13 @@
 package com.pubnub.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Stack;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +26,6 @@ public class PubnubSyncedObject extends JSONObject {
 	private int depth = 0;
 	private String slashPath = "";
 	JSONObject meta = new JSONObject();
-	JSONObject data;
 	private Hashtable transactionsTable = new Hashtable();
 	private boolean stale = true;
 	private boolean synced = false;
@@ -84,44 +85,99 @@ public class PubnubSyncedObject extends JSONObject {
 	}
 
 	private void applyUpdate(JSONObject o, JSONObject update)
-			throws JSONException {
-		System.out.println("OBJECT : " + o.toString(2));
-		System.out.println("UPDATE : " + update.toString(2));
+			 {
+		
+		try {
+		System.out.println(update);
+		Stack pathNodes = new Stack();
+		Object data = o.get("data");
+		
 		String location = update.getString("location");
-		String[] path = PubnubUtil.splitString(location, ".");
-		System.out.println("PATH LENGTH : " + path.length);
-		System.out.println("DEPTH : " + depth);
-		JSONObject[] pathNodes = new JSONObject[path.length];
-		String last = path[path.length - 1];
-		JSONObject x = data;
-		pathNodes[0] = data;
+		String[] pathArray = PubnubUtil.splitString(location, ".");
+		//List pathList = Arrays.asList(pathArray);
+		
+		pathArray[0] = "data";
 
-		for (int i = 1 + depth; i < path.length - 1; i++) {
-			String key = path[i];
+		Object value = null;
+		boolean isUpdate = update.getString("action").equals("update");
+		boolean isDelete = update.getString("action").equals("delete");
+		if (isUpdate) value = update.get("value");
+		boolean changeAtTop = location.equals("pn_ds_" + objectId + "." + path);
+		
+		boolean dataIsNonObject =  !(data instanceof JSONObject);
+		
 
-			if (getJSONObjectFromJSONObject(x, key) == null) {
-				x.put(key, new JSONObject());
+
+
+		
+		if (dataIsNonObject) {
+			if (isUpdate) {
+				if (changeAtTop) {
+					o.put("data", value);
+				} else {
+					JSONObject x = new JSONObject();
+					JSONObject y = x;
+					for (int i = depth + 1; i < pathArray.length - 1; i++) {
+						String key = pathArray[i];
+						y.put((String)key, new JSONObject());
+						y = y.getJSONObject((String)key);
+					}
+					y.put((String) pathArray[pathArray.length-1], value);
+					o.put("data", x);
+				}
+			} else if (isDelete) {
+				o.put("data", new JSONObject());
 			}
-			x = x.getJSONObject(key);
-			pathNodes[i] = x;
-		}
+		} else {
+			
+			if (changeAtTop) {
+				if (isUpdate) {
+					o.put("data", value);
+				} else if (isDelete) {
+					o.put("data", new JSONObject());
+				}
+			} else {
 
-		if (update.getString("action").equals("update")) {
-			x.put(last, update.get("value"));
-		} else if (update.getString("action").equals("delete")) {
-			x.remove(last);
-			for (int i = path.length - 2; i >= 1 + depth; i--) {
-				if (pathNodes[i] != null && pathNodes[i].length() == 0) {
-					pathNodes[i - 1].remove(path[i]);
+				JSONObject x = (JSONObject)data;
+
+				for (int i = depth + 1; i < pathArray.length - 1; i++) {
+
+					String key = pathArray[i];
+					JSONObject v = null;
+					if (( v = getJSONObjectFromJSONObject(x,key)) == null) {
+						v = new JSONObject();
+						x.put((String)key, v);
+					}
+					pathNodes.add(new Object[]{v, x, key});
+					x = x.getJSONObject((String)key);
+					
+				}
+				if (isUpdate) {
+					x.put(pathArray[pathArray.length -1], value);
+				} else if (isDelete) {
+					System.out.println(x);
+					x.remove(pathArray[pathArray.length-1]);
+					Object[] n = null;
+					while(!pathNodes.empty()) {
+						n = (Object[])pathNodes.pop();
+						JSONObject node = (JSONObject) n[0];
+						JSONObject parent = (JSONObject) n[1];
+						String key = (String) n[2];
+						
+						if (node.length() == 0)
+							parent.remove(key);
+					}
 				}
 			}
-			
-			if (pathNodes[depth] != null
-					&& pathNodes[depth].length() == 0)
-				data.remove(path[depth]);
 		}
+			
+		
 		if (meta != null)
 			meta.put("last_update", update.getLong("timetoken"));
+		System.out.println(o);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -298,10 +354,12 @@ public class PubnubSyncedObject extends JSONObject {
 	}
 	private JSONObject put(JSONObject target, Object data, String path) throws JSONException {
 		String[] pathArray = null;
+		
 		System.out.println(target);
 		System.out.println(data);
 		System.out.println(path);
 		System.out.println(depth);
+		
 
 		if (path != null && path.length() > 0 ) {
 			pathArray = PubnubUtil.splitString(path, "/");
@@ -312,9 +370,13 @@ public class PubnubSyncedObject extends JSONObject {
 			}
 		}
 		String key = pathArray[pathArray.length - 1];
+		if (path.equals(this.slashPath)) {
+			key = "data";
+		}
 		if (key != null) {
 			target.put(key, data);
 		}
+		data = o.getJSONObject("data");
 		return target;
 	}
 	private void getByNextPage(final String objectId, final String path, final String nextPage, final Callback callback) {
@@ -324,12 +386,18 @@ public class PubnubSyncedObject extends JSONObject {
 				try {
 					System.out.println(response);
 					JSONObject d = getJSONObjectFromJSONObject((JSONObject)response,"payload");
-
-					if (d != null)
-						deepMerge(data, d);
-					else 
-						put(data,((JSONObject)response).get("payload"), path);
-					
+					Object data = o.get("data");
+					if (d != null && data instanceof JSONObject) {
+						deepMerge((JSONObject)data, d);
+					} else {
+						JSONObject tmp = (JSONObject)data;
+						System.out.println(slashPath);
+						System.out.println(path);
+						if (slashPath.equals(path)) 
+							tmp = o;
+							
+						put(tmp,((JSONObject)response).get("payload"), path);
+					}
 					nextPage = getStringFromJSONObject(((JSONObject)response), "next_page");
 					
 					if (nextPage != null && !nextPage.equals("null")) {
@@ -365,7 +433,6 @@ public class PubnubSyncedObject extends JSONObject {
 			meta.put("last_update", 0);
 			
 			o.put("data", new JSONObject());
-			data = o.getJSONObject("data");
 
 		} catch (JSONException e1) {
 			callback.errorCallback("", PubnubError.getErrorObject(

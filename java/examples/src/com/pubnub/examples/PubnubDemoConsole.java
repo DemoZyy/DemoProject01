@@ -135,7 +135,6 @@ public class PubnubDemoConsole {
 							notifyUser("TIMETOKEN: " + timetoken + ", "
 									+ ((JSONObject) message).getString("data3"));
 						} catch (JSONException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 
@@ -447,13 +446,16 @@ public class PubnubDemoConsole {
 
 					@Override
 					public void successCallback(String channel, Object message) {
-						JSONObject jso = (JSONObject) message;
+
 						try {
+							JSONObject jso = (JSONObject) message;
 							System.out.println(System.currentTimeMillis()
 									/ 1000 + " : " + jso.toString(2));
 						} catch (JSONException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
+						} catch (ClassCastException e) {
+							System.out.println(System.currentTimeMillis()
+									/ 1000 + " : " + message.toString());
 						}
 					}
 
@@ -563,7 +565,6 @@ public class PubnubDemoConsole {
 										+ message);
 								System.out.println(jso.toString(2));
 							} catch (JSONException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -575,7 +576,6 @@ public class PubnubDemoConsole {
 								System.out.println(message);
 								System.out.println(jso.toString(2));
 							} catch (JSONException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -596,7 +596,7 @@ public class PubnubDemoConsole {
 			default:
 				notifyUser("Invalid Input");
 			}
-			displayMenuOptions();
+			//displayMenuOptions();
 		}
 		notifyUser("Exiting");
 		pubnub.shutdown();

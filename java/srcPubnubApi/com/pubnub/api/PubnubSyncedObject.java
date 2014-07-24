@@ -84,17 +84,13 @@ public class PubnubSyncedObject extends JSONObject {
 		}
 	}
 
-	private void applyUpdate(JSONObject o, JSONObject update)
-			 {
+	private void applyUpdate(JSONObject o, JSONObject update) throws JSONException {
 		
-		try {
-		System.out.println(update);
 		Stack pathNodes = new Stack();
 		Object data = o.get("data");
 		
 		String location = update.getString("location");
 		String[] pathArray = PubnubUtil.splitString(location, ".");
-		//List pathList = Arrays.asList(pathArray);
 		
 		pathArray[0] = "data";
 
@@ -106,10 +102,6 @@ public class PubnubSyncedObject extends JSONObject {
 		
 		boolean dataIsNonObject =  !(data instanceof JSONObject);
 		
-
-
-
-		
 		if (dataIsNonObject) {
 			if (isUpdate) {
 				if (changeAtTop) {
@@ -119,10 +111,10 @@ public class PubnubSyncedObject extends JSONObject {
 					JSONObject y = x;
 					for (int i = depth + 1; i < pathArray.length - 1; i++) {
 						String key = pathArray[i];
-						y.put((String)key, new JSONObject());
+						y.put(key, new JSONObject());
 						y = y.getJSONObject((String)key);
 					}
-					y.put((String) pathArray[pathArray.length-1], value);
+					y.put(pathArray[pathArray.length-1], value);
 					o.put("data", x);
 				}
 			} else if (isDelete) {
@@ -149,13 +141,12 @@ public class PubnubSyncedObject extends JSONObject {
 						x.put((String)key, v);
 					}
 					pathNodes.add(new Object[]{v, x, key});
-					x = x.getJSONObject((String)key);
+					x = x.getJSONObject(key);
 					
 				}
 				if (isUpdate) {
 					x.put(pathArray[pathArray.length -1], value);
 				} else if (isDelete) {
-					System.out.println(x);
 					x.remove(pathArray[pathArray.length-1]);
 					Object[] n = null;
 					while(!pathNodes.empty()) {
@@ -174,10 +165,6 @@ public class PubnubSyncedObject extends JSONObject {
 		
 		if (meta != null)
 			meta.put("last_update", update.getLong("timetoken"));
-		System.out.println(o);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
 
 	}
 
@@ -242,7 +229,7 @@ public class PubnubSyncedObject extends JSONObject {
 						sync(new Callback() {
 							public void successCallback(String channel,
 									Object response) {
-								// callback.successCallback("", response);
+
 								try {
 									applyAllTransactions(null);
 									synced = true;
@@ -354,12 +341,6 @@ public class PubnubSyncedObject extends JSONObject {
 	}
 	private JSONObject put(JSONObject target, Object data, String path) throws JSONException {
 		String[] pathArray = null;
-		
-		System.out.println(target);
-		System.out.println(data);
-		System.out.println(path);
-		System.out.println(depth);
-		
 
 		if (path != null && path.length() > 0 ) {
 			pathArray = PubnubUtil.splitString(path, "/");
@@ -384,15 +365,12 @@ public class PubnubSyncedObject extends JSONObject {
 			public void successCallback(String channel, Object response) {
 				String nextPage = null;
 				try {
-					System.out.println(response);
 					JSONObject d = getJSONObjectFromJSONObject((JSONObject)response,"payload");
 					Object data = o.get("data");
 					if (d != null && data instanceof JSONObject) {
 						deepMerge((JSONObject)data, d);
 					} else {
 						JSONObject tmp = (JSONObject)data;
-						System.out.println(slashPath);
-						System.out.println(path);
 						if (slashPath.equals(path)) 
 							tmp = o;
 							

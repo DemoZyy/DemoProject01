@@ -2355,11 +2355,7 @@ abstract class PubnubCore {
 	private JSONObject put(JSONObject target, Object data, String path) throws JSONException {
 		String[] pathArray = null;
 		
-		//System.out.println(target);
-		//System.out.println(data);
 		path = path.replace('/','.');
-		//System.out.println(path);
-		//System.out.println(getPath);
 
 		if (path != null && path.length() > 0 ) {
 			pathArray = PubnubUtil.splitString(path, ".");
@@ -2371,7 +2367,6 @@ abstract class PubnubCore {
 		}
 		
 		String key = pathArray[pathArray.length - 1];
-		//System.out.println(key);
 		if (key != null) {
 			target.put(key, data);
 		}
@@ -2383,15 +2378,11 @@ abstract class PubnubCore {
 			public void successCallback(String channel, Object response) {
 				String nextPage = null;
 				try {
-					//System.out.println(response);
 					JSONObject d = getJSONObjectFromJSONObject((JSONObject)response,"payload");
 
 					if (d != null) {
 						PubnubSyncedObject.deepMerge(getObj, d);
 					} else {
-						//System.out.println(getPath);
-						//System.out.println(path);
-						//System.out.println(getPath.equals(path.replace('/', '.')));
 						if (getPath.equals(path.replace('/', '.'))) {
 							callback.successCallback("", ((JSONObject)response).get("payload"));
 							return;

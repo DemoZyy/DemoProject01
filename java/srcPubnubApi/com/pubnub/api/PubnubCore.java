@@ -2325,7 +2325,7 @@ abstract class PubnubCore {
 					"sub-key", this.SUBSCRIBE_KEY, "obj-id",
 					PubnubUtil.urlEncode(objectId) };
 		}
-		parameters.put("page_max_bytes", "5");
+		parameters.put("page_max_bytes", "1");
 		
 		if (nextPage != null && nextPage.length() > 0) parameters.put("start_at", nextPage);
 		
@@ -2409,13 +2409,7 @@ abstract class PubnubCore {
 					callback.errorCallback(channel, PubnubError.getErrorObject(
 							PubnubError.PNERROBJ_INVALID_JSON, 11));
 				}
-				try {
-					if (getObj != null)
-						getObj.put("last_update", System.nanoTime() / 100);
-				} catch (JSONException e) {
-					callback.errorCallback(channel, PubnubError.getErrorObject(
-							PubnubError.PNERROBJ_INVALID_JSON, 12));
-				}
+
 				//if (nextPage == null || nextPage.equals("null"))
 				//	callback.successCallback("", "updated");
 			}

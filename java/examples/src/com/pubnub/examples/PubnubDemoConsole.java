@@ -110,7 +110,7 @@ public class PubnubDemoConsole {
                                + " : " + message.getClass() + " : "
                                + message.toString());
                 }
-
+                @Override
                 public void reconnectCallback(String channel, Object message) {
                     notifyUser("SUBSCRIBE : RECONNECT on channel:" + channel
                                + " : " + message.getClass() + " : "
@@ -118,45 +118,14 @@ public class PubnubDemoConsole {
                 }
 
                 @Override
-                public void successCallback(String channel, Object message, String timetoken) {
-                    //notifyUser("SUBSCRIBE : " + channel + " : "
-                     //          + message.getClass() + " : " + message.toString());
-                    if ( message instanceof JSONObject) {
-                        notifyUser("SUBSCRIBE : " + channel + " : "
-                                + message.getClass() + " : " + message.toString());
-                         try {
-                            notifyUser( "TIMETOKEN: " + timetoken  + ", "+  ((JSONObject)message).getString("data")) ;
-                            notifyUser( "TIMETOKEN: " + timetoken  + ", "+  ((JSONObject)message).getString("data2")) ;
-                            notifyUser( "TIMETOKEN: " + timetoken  + ", "+  ((JSONObject)message).getString("data3")) ;
-                        } catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                public void successCallback(String channel, Object message) {
 
-                    } else {
-                        System.out.println("TIMETOKEN: " + timetoken  + ", "+  "Message not a json object : " + message);
-                    }
-
-
+                    notifyUser("SUBSCRIBE : " + channel + " : "
+                               + message.getClass() + " : " + message.toString());
                 }
 
                 @Override
                 public void errorCallback(String channel, PubnubError error) {
-
-                    /*
-
-                    # Switch on error code, see PubnubError.java
-
-                    if (error.errorCode == 112) {
-                        # Bad Auth Key!
-                        unsubscribe, get a new auth key, subscribe, etc...
-                    } else if (error.errorCode == 113) {
-                        # Need to set Auth Key !
-                        unsubscribe, set auth, resubscribe
-                    }
-
-                    */
-
                     notifyUser("SUBSCRIBE : ERROR on channel " + channel
                                + " : " + error.toString());
                     if (error.errorCode == PubnubError.PNERR_TIMEOUT)

@@ -155,7 +155,9 @@ abstract class RequestManager {
         synchronized (_workers) {
             for (int i = 0; i < maxCalls; ++i) {
                 Worker w = getWorker();
-                w.setThread(new Thread(w, name + "-" + ++count));
+                Thread th = new Thread(w, name + "-" + ++count);
+                th.setDaemon(true);
+                w.setThread(th);
                 _workers[i] = w;
                 log.verbose("Starting new worker " + _workers[i].getThread().getName());
                 w.startWorker();

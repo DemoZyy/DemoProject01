@@ -2,9 +2,12 @@ package com.pubnub.api;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
 
 import org.bouncycastle.crypto.DataLengthException;
@@ -27,6 +30,7 @@ abstract class PubnubCore {
 
     private String HOSTNAME = "pubsub";
     private int HOSTNAME_SUFFIX = 1;
+    private JSONArray filters = null;
     private String DOMAIN = "pubnub.com";
     private String ORIGIN_STR = null;
     protected String PUBLISH_KEY = "";
@@ -1617,6 +1621,39 @@ abstract class PubnubCore {
         args.put("timetoken", String.valueOf(timetoken));
         subscribe(args);
     }
+    
+    /**
+    *
+    * Listen for a message on a channel.
+    *
+    * @param channelsArr
+    *            Array of channel names (string) to listen on
+    * @param filterStrings
+    *            Array of filters (string) to listen on
+    * @param callback
+    *            Callback
+    * @exception PubnubException
+    *                Throws PubnubException if Callback is null
+    */
+   public void subscribe(String[] channelsArr, String[] filterStrings,
+		   Callback callback) throws PubnubException {
+
+       Hashtable args = new Hashtable();
+
+       args.put("channels", channelsArr);
+       args.put("callback", callback);
+       if (filterStrings != null && filterStrings.length > 0) {
+    	   if (filters == null) {
+    		   filters = new JSONArray();
+    	   }
+    	   for (int i = 0; i < filterStrings.length; i++) {
+    		   if (filterStrings[i].length() > 0)
+    			   filters.put(filterStrings[i]);
+    	   }
+    	   
+       }
+       subscribe(args);
+   }
 
     /**
      *
@@ -1707,6 +1744,7 @@ abstract class PubnubCore {
     private void _subscribe(Hashtable args) {
 
         String[] channelList = (String[]) args.get("channels");
+
         if (channelList == null) {
             channelList = new String[] { (String) args.get("channel") };
         }
@@ -1730,6 +1768,7 @@ abstract class PubnubCore {
             if (channelObj == null) {
                 Channel ch = new Channel();
                 ch.name = channel;
+                
                 ch.connected = false;
                 ch.callback = callback;
                 subscriptions.addChannel(ch);
@@ -1774,6 +1813,8 @@ abstract class PubnubCore {
                 PubnubCore.this.SUBSCRIBE_KEY,
                 PubnubUtil.urlEncode(channelString), "0", _timetoken
         };
+        
+
 
         Hashtable params = PubnubUtil.hashtableClone(this.params);
         params.put("uuid", UUID);
@@ -1783,8 +1824,17 @@ abstract class PubnubCore {
 
         if (HEARTBEAT > 5 && HEARTBEAT < 320) params.put("heartbeat", String.valueOf(HEARTBEAT));
         log.verbose("Subscribing with timetoken : " + _timetoken);
-
-        HttpRequest hreq = new HttpRequest(urlComponents, params,
+        
+        Hashtable parameters = PubnubUtil.hashtableClone(params);
+        
+        if (filters != null && filters.length() > 0) {
+        	String filtersString = filters.toString();
+        	String f = "(" + filtersString.substring(1, filtersString.length() - 1) + ")";
+        	f = "tags IN " + f;
+        	parameters.put("filter-expr", f);
+        }
+        
+        HttpRequest hreq = new HttpRequest(urlComponents, parameters,
                 new ResponseHandler() {
 
             public void handleResponse(HttpRequest hreq, String response) {

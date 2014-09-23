@@ -83,7 +83,7 @@
         <antcall target="unsetDebugTrue" />
     </target>
 
-    <target depends="create-jar, create-test-jar, create-examples-jar, create-demo-console-jar, create-push-test-jar, create-presence-test-jar, clean_bin, doc" name="build-jar"/>
+    <target depends="create-jar, create-test-jar, create-examples-jar, create-demo-console-jar, clean_bin, doc" name="build-jar"/>
     <target depends="build-project" name="create-jar">
         <jar destfile="${jar_name}"
             basedir="bin"

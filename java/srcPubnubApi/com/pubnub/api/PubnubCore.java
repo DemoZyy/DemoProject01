@@ -7,8 +7,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -30,7 +32,7 @@ abstract class PubnubCore {
 
     private String HOSTNAME = "pubsub";
     private int HOSTNAME_SUFFIX = 1;
-    private JSONArray filters = null;
+    private Set filters = new LinkedHashSet();
     private String DOMAIN = "pubnub.com";
     private String ORIGIN_STR = null;
     protected String PUBLISH_KEY = "";
@@ -1622,38 +1624,6 @@ abstract class PubnubCore {
         subscribe(args);
     }
     
-    /**
-    *
-    * Listen for a message on a channel.
-    *
-    * @param channelsArr
-    *            Array of channel names (string) to listen on
-    * @param filterStrings
-    *            Array of filters (string) to listen on
-    * @param callback
-    *            Callback
-    * @exception PubnubException
-    *                Throws PubnubException if Callback is null
-    */
-   public void subscribe(String[] channelsArr, String[] filterStrings,
-		   Callback callback) throws PubnubException {
-
-       Hashtable args = new Hashtable();
-
-       args.put("channels", channelsArr);
-       args.put("callback", callback);
-       if (filterStrings != null && filterStrings.length > 0) {
-    	   if (filters == null) {
-    		   filters = new JSONArray();
-    	   }
-    	   for (int i = 0; i < filterStrings.length; i++) {
-    		   if (filterStrings[i].length() > 0)
-    			   filters.put(filterStrings[i]);
-    	   }
-    	   
-       }
-       subscribe(args);
-   }
 
     /**
      *
@@ -1827,8 +1797,8 @@ abstract class PubnubCore {
         
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         
-        if (filters != null && filters.length() > 0) {
-        	String filtersString = filters.toString();
+        if (filters != null && filters.size() > 0) {
+        	String filtersString = new JSONArray(filters).toString();
         	String f = "(" + filtersString.substring(1, filtersString.length() - 1) + ")";
         	f = "tags IN " + f;
         	parameters.put("filter-expr", f);
@@ -2237,4 +2207,20 @@ abstract class PubnubCore {
         resubscribe();
     }
 
+    public void addFilters(String[] filtersArray) {
+		for (int i = 0; i < filtersArray.length; i++) {
+			filters.add(filtersArray[i]);
+		}
+		disconnectAndResubscribe();
+    }
+    public void removeFilters(String[] filtersArray) {
+		for (int i = 0; i < filtersArray.length; i++) {
+			filters.remove(filtersArray[i]);
+		}
+		disconnectAndResubscribe();
+    }
+    public void removeAllFilters() {
+    	filters.clear();
+    	disconnectAndResubscribe();
+    }
 }

@@ -92,10 +92,10 @@ public class PubnubDemoConsole {
 
     }
 
-    private void subscribe(final String channel, String filterString) {
-    	String[] filters = filterString.replace(", " , ",").split(",");
+    private void subscribe(final String channel) {
+
         try {
-            pubnub.subscribe(new String[]{channel}, filters, new Callback() {
+            pubnub.subscribe(channel, new Callback() {
 
                 @Override
                 public void connectCallback(String channel, Object message) {
@@ -253,8 +253,7 @@ public class PubnubDemoConsole {
 
             case 1:
                 channelName = getStringFromConsole("Subscribe: Enter Channel name");
-                String filterString = getStringFromConsole("Subscribe: Enter filters( Comma Separated )",true);
-                subscribe(channelName, filterString);
+                subscribe(channelName);
 
                 notifyUser("Subscribed to following channels: ");
                 notifyUser(PubnubUtil.joinString(
@@ -394,6 +393,21 @@ public class PubnubDemoConsole {
                 String uid = getStringFromConsole("UUID", true);
                 if (uid == null || uid.length() == 0) uid = pubnub.getUUID();
                 whereNow(uid);
+                break;
+            case 32:
+            	{
+                String filterString = getStringFromConsole("Add Filters: Enter filters( Comma Separated )");
+                addFilters(filterString);
+            	}
+                break;
+            case 33:
+            	{
+                String filterString = getStringFromConsole("Remove Filters: Enter filters( Comma Separated )");
+                removeFilters(filterString);
+            	}
+                break;
+            case 34:
+                pubnub.removeAllFilters();
                 break;
             default:
                 notifyUser("Invalid Input");
@@ -631,6 +645,16 @@ public class PubnubDemoConsole {
     private void setNonSubscribeTimeout(int nonSubscribeTimeout) {
         pubnub.setNonSubscribeTimeout(nonSubscribeTimeout);
     }
+    
+    private void addFilters(String filters) {
+    	String[] filtersArray = filters.replace(", ", ",").split(",");
+        pubnub.addFilters(filtersArray);
+    }
+
+    private void removeFilters(String filters) {
+    	String[] filtersArray = filters.replace(", ", ",").split(",");
+        pubnub.removeFilters(filtersArray);
+    }
 
     private void displayMenuOptions() {
         notifyUser("ENTER 1  FOR Subscribe "
@@ -666,6 +690,9 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 29 FOR Getting Subscriber State");
         notifyUser("ENTER 30 FOR Setting Subscriber State");
         notifyUser("ENTER 31 FOR Where Now");
+        notifyUser("ENTER 32 FOR Add filter(s)");
+        notifyUser("ENTER 33 FOR Remove filter(s)");
+        notifyUser("ENTER 34 FOR Remove All Filters");
         notifyUser("\nENTER 0 to display this menu");
     }
 

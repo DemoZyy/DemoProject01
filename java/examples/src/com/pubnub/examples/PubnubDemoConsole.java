@@ -690,9 +690,9 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 29 FOR Getting Subscriber State");
         notifyUser("ENTER 30 FOR Setting Subscriber State");
         notifyUser("ENTER 31 FOR Where Now");
-        notifyUser("ENTER 32 FOR Add filter(s)");
-        notifyUser("ENTER 33 FOR Remove filter(s)");
-        notifyUser("ENTER 34 FOR Remove All Filters");
+        notifyUser("ENTER 32 FOR Add filter(s), ( current filters: " + pubnub.getFiltersAsString() + " )");
+        notifyUser("ENTER 33 FOR Remove filter(s), ( current filters: " + pubnub.getFiltersAsString() + " )");
+        notifyUser("ENTER 34 FOR Remove All Filters, ( current filters: " + pubnub.getFiltersAsString() + " )");
         notifyUser("\nENTER 0 to display this menu");
     }
 

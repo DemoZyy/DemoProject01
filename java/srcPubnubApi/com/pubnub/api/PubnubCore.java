@@ -2223,4 +2223,15 @@ abstract class PubnubCore {
     	filters.clear();
     	disconnectAndResubscribe();
     }
+    public String[] getFilters() {
+    	String[] s = new String[filters.size()];
+    	Object[] fa = filters.toArray();
+    	for (int i = 0; i < fa.length; i++ ) {
+    		s[i] = (String)fa[i];
+    	}
+    	return s;
+    }
+    public String getFiltersAsString() {
+    	return filters.toString();
+    }
 }

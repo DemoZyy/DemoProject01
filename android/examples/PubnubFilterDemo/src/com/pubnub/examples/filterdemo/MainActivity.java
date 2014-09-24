@@ -137,11 +137,11 @@ public class MainActivity extends Activity {
         
         // default values
         textOrigin.setText("registry.devbuild");
-        textChannels.setText("demo");
-        textSubscriberTags.setText("pubnub");
-        textPublishChannel.setText("demo");
-        textPublishMessage.setText("Hi");
-        textPublishTags.setText("pubnub");
+        textChannels.setText("hello");
+        textSubscriberTags.setText("Iraq");
+        textPublishChannel.setText("hello");
+        textPublishMessage.setText("Raining in SF");
+        textPublishTags.setText("Iraq");
         
         
         

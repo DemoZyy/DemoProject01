@@ -189,7 +189,7 @@
                     android:layout_width="fill_parent"
                     android:layout_weight="2"
                     android:layout_height="fill_parent"
-                    android:text="PUBLISH" />
+                    android:text="Publish" />
 
             </LinearLayout>
 

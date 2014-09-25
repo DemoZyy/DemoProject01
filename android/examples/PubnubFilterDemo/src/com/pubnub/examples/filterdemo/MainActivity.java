@@ -22,11 +22,14 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Config;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.View.OnKeyListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -99,6 +102,13 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void hideKeyboard(View view) {
+        InputMethodManager manager = (InputMethodManager) view.getContext()
+                .getSystemService(INPUT_METHOD_SERVICE);
+        if (manager != null)
+            manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -184,6 +194,36 @@ public class MainActivity extends Activity {
 			}
         	
         });
+        
+        textOrigin.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(v);
+				  	if (pubnub != null) {
+				  		pubnub.unsubscribeAll();
+				  		pubnub.disconnectAndResubscribe();
+				  	}
+					pubnub = new Pubnub("demo","demo");
+			        String origin = textOrigin.getEditableText().toString();
+			        String channels = textChannels.getEditableText().toString();
+			        
+			        
+			        pubnub.setCacheBusting(false);
+			        pubnub.setFullHostname(origin);
+			        try {
+						pubnub.subscribe(channels, subscribeCallback);
+					} catch (PubnubException e) {
+					}
+                    return true; //this is required to stop sending key event to parent
+                }
+                return false;
+			}
+        });
+        
+        
+        
+        
         textSubscriberTags.setOnFocusChangeListener(new OnFocusChangeListener(){
 
 			@Override
@@ -200,6 +240,21 @@ public class MainActivity extends Activity {
 			}
         	
         });
+        textSubscriberTags.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(v);
+			        String tags = textSubscriberTags.getEditableText().toString();
+			        pubnub.removeAllFilters();
+			        pubnub.addFilters(tags.replace(",  ",",").split(","));
+			        pubnub.disconnectAndResubscribe();
+                    return true; //this is required to stop sending key event to parent
+                }
+                return false;
+			}
+        });
+        
         textChannels.setOnFocusChangeListener(new OnFocusChangeListener(){
 
 			@Override
@@ -214,6 +269,59 @@ public class MainActivity extends Activity {
 			   }
 			}
         	
+        });
+        textChannels.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(v);
+				  	pubnub.unsubscribeAll();
+			        String channels = textChannels.getEditableText().toString();
+			        try {
+						pubnub.subscribe(channels, subscribeCallback);
+					} catch (PubnubException e) {
+					}
+                    return true; //this is required to stop sending key event to parent
+                }
+                return false;
+			}
+        });
+        
+        
+        textPublishChannel.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(v);
+
+                    return true; //this is required to stop sending key event to parent
+                }
+                return false;
+			}
+        });
+        
+        textPublishTags.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(v);
+
+                    return true; //this is required to stop sending key event to parent
+                }
+                return false;
+			}
+        });
+        
+        textPublishMessage.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                    hideKeyboard(v);
+
+                    return true; //this is required to stop sending key event to parent
+                }
+                return false;
+			}
         });
         
         buttonPublish.setOnClickListener(new OnClickListener(){

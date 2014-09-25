@@ -136,7 +136,7 @@ public class MainActivity extends Activity {
         Button buttonPublish = (Button) findViewById(R.id.buttonPublish);
         
         // default values
-        textOrigin.setText("registry.devbuild");
+        textOrigin.setText("registry.devbuild.pubnub.com");
         textChannels.setText("hello");
         textSubscriberTags.setText("Iraq");
         textPublishChannel.setText("hello");
@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
         pubnub = new Pubnub("demo", "demo");
         
         pubnub.setCacheBusting(false);
-        pubnub.setOrigin(origin);
+        pubnub.setFullHostname(origin);
         pubnub.addFilters(subtags.replace(",  ",",").split(","));
         
         try {
@@ -175,7 +175,7 @@ public class MainActivity extends Activity {
 			        
 			        
 			        pubnub.setCacheBusting(false);
-			        pubnub.setOrigin(origin);
+			        pubnub.setFullHostname(origin);
 			        try {
 						pubnub.subscribe(channels, subscribeCallback);
 					} catch (PubnubException e) {
@@ -225,7 +225,7 @@ public class MainActivity extends Activity {
 		        pubnub.setCacheBusting(false);
 		        String origin = textOrigin.getEditableText().toString();
 		        if (!TextUtils.isEmpty(origin)) {
-		        	pubnub.setOrigin("registry.devbuild");
+		        	pubnub.setFullHostname("registry.devbuild.pubnub.com");
 		        }
 
 		        String ptags = textPublishTags.getEditableText().toString();

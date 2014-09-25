@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 abstract class PubnubCore {
 
+	private String FULL_HOSTNAME = null;
     private String HOSTNAME = "pubsub";
     private int HOSTNAME_SUFFIX = 1;
     private Set filters = new LinkedHashSet();
@@ -292,8 +293,18 @@ abstract class PubnubCore {
     }
 
     protected String getPubnubUrl() {
-
-        if (ORIGIN_STR == null) {
+    	if (FULL_HOSTNAME != null) {
+    		String s = "";
+            if (this.SSL) {
+                s = "https://";
+            } else {
+                s = "http://";
+            }
+            s  += FULL_HOSTNAME;
+    		return s;	    		
+    	} 
+    	else {
+    		if (ORIGIN_STR == null) {
             // SSL On?
             if (this.SSL) {
                 ORIGIN_STR = "https://";
@@ -303,8 +314,9 @@ abstract class PubnubCore {
             ORIGIN_STR  += HOSTNAME;
             ORIGIN_STR  += ((!this.CACHE_BUSTING)?"":"-" + String.valueOf(HOSTNAME_SUFFIX));
             ORIGIN_STR  += "." + DOMAIN;
-        }
-        return ORIGIN_STR;
+    		}
+    		return ORIGIN_STR;
+    	}
     }
     private Callback voidCallback = new Callback()
     {public void successCallback(String channel, Object message) {}};
@@ -2233,5 +2245,11 @@ abstract class PubnubCore {
     }
     public String getFiltersAsString() {
     	return filters.toString();
+    }
+    public void setFullHostname(String hostname) {
+    	FULL_HOSTNAME = hostname;
+    }
+    public String getFullHostname() {
+    	return FULL_HOSTNAME;
     }
 }

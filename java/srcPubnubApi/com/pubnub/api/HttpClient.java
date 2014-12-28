@@ -2,7 +2,6 @@ package com.pubnub.api;
 
 import java.io.IOException;
 import java.util.Hashtable;
-import com.pubnub.api.PubnubException;
 
 abstract class HttpClient {
 
@@ -31,4 +30,7 @@ abstract class HttpClient {
 
     public abstract HttpResponse fetch(String url, Hashtable headers)
     throws IOException, PubnubException;
+
+    public abstract HttpResponse fetch(String url, Hashtable headers, String data, String method)
+            throws IOException, PubnubException;
 }

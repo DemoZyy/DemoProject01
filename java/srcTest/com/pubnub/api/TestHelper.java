@@ -5,11 +5,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class TestHelper {
-    static class SimpleCallback extends Callback {
+    public static class SimpleCallback extends Callback {
 
         protected CountDownLatch latch;
         Object response;
@@ -165,5 +166,38 @@ public class TestHelper {
                 latch.await(10, TimeUnit.SECONDS);
             }
         }
+    }
+
+    public static class SimpleDataSyncCallback extends DataSyncCallback {
+
+        protected CountDownLatch latch;
+        protected Object result;
+
+        public SimpleDataSyncCallback(CountDownLatch latch) {
+            this.latch = latch;
+        }
+        public SimpleDataSyncCallback() {}
+
+        @Override
+        public void readyCallback(SyncedObject syncedObject) {
+            if (this.latch != null) {
+                this.latch.countDown();
+            }
+        }
+
+        @Override
+        public void errorCallback(PubnubError error) {
+            if (this.latch != null) {
+                this.latch.countDown();
+            }
+        }
+
+        public Object getResult() {
+            return result;
+        }
+    }
+
+    public static String random() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 }

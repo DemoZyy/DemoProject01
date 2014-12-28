@@ -12,6 +12,17 @@ public abstract class Callback {
     /**
      * This callback will be invoked when a message is received on the channel
      *
+     * @param message
+     *            Message
+     *
+     */
+    public void successCallback(Object message) {
+
+    }
+
+    /**
+     * This callback will be invoked when a message is received on the channel
+     *
      * @param channel
      *            Channel Name
      * @param message
@@ -36,7 +47,16 @@ public abstract class Callback {
 
     }
 
-    void successWrapperCallback(String channel, Object message, String timetoken) {
+    /**
+     *
+     * @deprecated use {@link #invokeSuccessCallback(String, Object, String)} instead.
+     */
+    public void successWrapperCallback(String channel, Object message, String timetoken) {
+        invokeSuccessCallback(channel, message, timetoken);
+    }
+
+    public void invokeSuccessCallback(String channel, Object message, String timetoken) {
+        successCallback(message);
         successCallback(channel, message);
         successCallback(channel, message, timetoken);
     }
@@ -65,6 +85,22 @@ public abstract class Callback {
      */
     public void errorCallback(String channel, Object message) {
 
+    }
+
+    // TODO: add javadoc
+    public void errorCallback(PubnubError error) {
+
+    }
+
+    // TODO: add javadoc
+    public void invokeErrorCallback(PubnubError error) {
+        invokeErrorCallback(null, error);
+    }
+
+    // TODO: add javadoc
+    public void invokeErrorCallback(String channel, PubnubError error) {
+        errorCallback(error);
+        errorCallback(channel, error);
     }
 
     /**

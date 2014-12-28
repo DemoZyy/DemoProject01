@@ -1,22 +1,17 @@
 package com.pubnub.api;
 
-import java.io.ByteArrayOutputStream;
-import java.util.zip.GZIPInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.Hashtable;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.pubnub.api.PubnubException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.zip.GZIPInputStream;
+
 import static com.pubnub.api.PubnubError.*;
 
 class HttpClientCore extends HttpClient {
@@ -85,8 +80,13 @@ class HttpClientCore extends HttpClient {
 
     public synchronized HttpResponse fetch(String url, Hashtable headers)
     throws PubnubException, SocketTimeoutException {
+        return fetch(url, headers, null, "GET");
+    }
+
+    public synchronized HttpResponse fetch(String url, Hashtable headers, String data, String method)
+    throws PubnubException, SocketTimeoutException {
         URL urlobj = null;
-        log.verbose("FETCHING URL : " + url);
+        log.verbose("FETCHING URL : " + method + " " + url);
         try {
             urlobj = new URL(url);
         } catch (MalformedURLException e3) {
@@ -98,10 +98,13 @@ class HttpClientCore extends HttpClient {
             throw new PubnubException(getErrorObject(PNERROBJ_URL_OPEN, url));
         }
         try {
-            connection.setRequestMethod("GET");
+            connection.setRequestMethod(method);
         } catch (ProtocolException e1) {
             throw new PubnubException(PNERROBJ_PROTOCOL_EXCEPTION);
         }
+
+        connection.setDoOutput(true);
+
         if (_headers != null) {
             Enumeration en = _headers.keys();
             while (en.hasMoreElements()) {
@@ -121,22 +124,23 @@ class HttpClientCore extends HttpClient {
         connection.setReadTimeout(requestTimeout);
         connection.setConnectTimeout(connectionTimeout);
 
-        /*
-        try {
-            connection.connect();
-        } catch (SocketTimeoutException  e) {
-            throw e;
-        } catch (IOException e) {
-            throw new PubnubException(getErrorObject(PNERROBJ_CONNECT_EXCEPTION, url + " : " + e.toString()));
+        if ("POST".equals(connection.getRequestMethod())) {
+            try {
+                OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+                out.write(data);
+                out.close();
+            } catch (IOException e) {
+                // TODO: handle exception
+                e.printStackTrace();
+            }
         }
-        */
+
         int rc = HttpURLConnection.HTTP_INTERNAL_ERROR;
         try {
             rc = connection.getResponseCode();
         } catch (SocketTimeoutException ste) {
             throw ste;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new PubnubException(getErrorObject(PNERROBJ_HTTP_RC_ERROR, url + " : " + e.toString()));
         }
 

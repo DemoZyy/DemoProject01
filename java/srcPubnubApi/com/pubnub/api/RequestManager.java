@@ -96,7 +96,8 @@ class NonSubscribeWorker extends Worker {
         HttpResponse hresp = null;
         try {
             log.debug(hreq.getUrl());
-            hresp = httpclient.fetch(hreq.getUrl(), hreq.getHeaders());
+            hresp = httpclient.fetch(hreq.getUrl(), hreq.getHeaders(),
+                    hreq.getData(), hreq.getMethod());
         } catch (PubnubException pe) {
             log.debug("Pubnub Exception in Fetch : " + pe.getPubnubError());
             if (!_die)
@@ -111,7 +112,7 @@ class NonSubscribeWorker extends Worker {
 
         if (!_die) {
             if (hresp == null) {
-                log.debug("Error in fetching url : " + hreq.getUrl());
+                log.debug("Error in fetching url : " + hreq.getMethod() + " " + hreq.getUrl());
                 hreq.getResponseHandler().handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_HTTP_ERROR , 3));
                 return;
             }

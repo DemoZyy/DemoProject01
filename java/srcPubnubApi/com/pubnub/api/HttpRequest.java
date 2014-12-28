@@ -3,14 +3,14 @@ package com.pubnub.api;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import com.pubnub.api.PubnubUtil;
-
 class HttpRequest {
     private volatile ResponseHandler responseHandler;
     private Hashtable headers;
     private String[] urlComponents;
     private Hashtable params;
     private String url;
+    private String method;
+    private String data;
     private boolean dar;
     private boolean subzero;
     private Worker _worker;
@@ -48,8 +48,15 @@ class HttpRequest {
 
     public HttpRequest(String[] urlComponents, Hashtable params,
                        ResponseHandler rh) {
+        this(urlComponents, params, null, "GET", rh);
+    }
+
+    public HttpRequest(String[] urlComponents, Hashtable params,
+                       String data, String method, ResponseHandler rh) {
         this.setUrlComponents(urlComponents);
         this.setParams(params);
+        this.setData(data);
+        this.setMethod(method);
         this.setResponseHandler(rh);
     }
 
@@ -88,6 +95,22 @@ class HttpRequest {
 
     public void setHeaders(Hashtable headers) {
         this.headers = headers;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
     }
 
     public String getUrl() {

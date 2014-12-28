@@ -1,11 +1,11 @@
 package com.pubnub.api;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -61,6 +61,13 @@ class PubnubUtilCore {
         return splittedList;
     }
 
+    public static String joinString(List sourceArray, String delimiter) {
+        String[] sourceStringArray = new String[sourceArray.size()];
+        sourceStringArray = (String[]) sourceArray.toArray(sourceStringArray);
+
+        return joinString(sourceStringArray, delimiter);
+    }
+
     /**
      * Takes String[] of tokens, and String delimiter as input and returns
      * joined String
@@ -73,7 +80,7 @@ class PubnubUtilCore {
      */
     public static String joinString(String[] sourceArray, String delimiter) {
 
-        if (sourceArray == null || delimiter == null) {
+        if (sourceArray == null || delimiter == null || sourceArray.length == 0) {
             return "";
         }
         StringBuffer sb = new StringBuffer();
@@ -230,5 +237,23 @@ class PubnubUtilCore {
                 obj = ((String) obj).substring(1, ((String) obj).length() -1);
         }
         return obj;
+    }
+
+    /**
+     * Helper for easier checking for blank values
+     *
+     * isBlank("") == true
+     * isBlank(null) == true
+     * isBlank(null) == true
+     */
+    public static boolean isBlank(Object value) {
+        return value == null
+                || (value instanceof String && "".equals(value))
+                || (value instanceof JSONObject && ((JSONObject) value).length() == 0)
+                || (value instanceof JSONArray && ((JSONArray) value).length() == 0);
+    }
+
+    public static boolean isPresent(Object value) {
+        return !isBlank(value);
     }
 }

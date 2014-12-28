@@ -47,6 +47,7 @@ abstract class PubnubCore {
     protected SubscribeManager subscribeManager;
     protected NonSubscribeManager nonSubscribeManager;
     protected TimedTaskManager timedTaskManager;
+    protected SyncedObjectManager syncedObjectManager;
     private volatile String _timetoken = "0";
     private volatile String _saved_timetoken = "0";
 
@@ -571,6 +572,10 @@ abstract class PubnubCore {
         if (timedTaskManager == null)
             timedTaskManager = new TimedTaskManager("TimedTaskManager");
 
+        if (syncedObjectManager == null) {
+            syncedObjectManager = new SyncedObjectManager(this);
+        }
+
         if (params == null)
             params = new Hashtable();
 
@@ -1033,6 +1038,10 @@ abstract class PubnubCore {
         _request(hreq, nonSubscribeManager);
     }
 
+    protected void invokeCallback(String response, Callback callback) {
+        invokeCallback(null, response, "payload", callback, 0);
+    }
+
     protected void invokeCallback(String channel, String response, String key,
             Callback callback, int extendedErrorCode) {
         invokeCallback(channel, response, key, callback, extendedErrorCode, false);
@@ -1056,7 +1065,7 @@ abstract class PubnubCore {
                 payloadJso = (JSONObject) responseJso.get(key);
             } catch (JSONException e) {
                 if (!key_strict) {
-                    callback.successCallback(channel, responseJso);
+                    callback.invokeSuccessCallback(channel, responseJso, null);
                 } else {
                     callback.errorCallback(channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response));
@@ -1064,8 +1073,7 @@ abstract class PubnubCore {
                 return;
 
             }
-            callback.successCallback(channel, payloadJso);
-            return;
+            callback.invokeSuccessCallback(channel, payloadJso, null);
         }
     }
 
@@ -2464,9 +2472,9 @@ abstract class PubnubCore {
                             SubscriptionItem _group = channelGroupSubscriptions.getItem(_groups[i]);
                             SubscriptionItem _channel = channelSubscriptions.getItem(_groups[i]);
 
-                            if (_groupName.equals(_channelName)
-                                && _channel != null
-                                && !isWorkerDead(hreq)
+                            if (
+                                (_groupName.equals(_channelName) && _channel != null && !isWorkerDead(hreq))
+                                || (_channelName.indexOf("pn_ds") == 0 && _group == null)
                             ) {
                                 invokeSubscribeCallback(_channelName, _channel.callback,
                                         message, hreq);
@@ -2794,4 +2802,129 @@ abstract class PubnubCore {
         resubscribe();
     }
 
+    // TODO: refactor to location
+    public SyncedObject sync(String objectID) {
+        return this.sync(objectID, "", null);
+    }
+
+    // TODO: refactor to location
+    public SyncedObject sync(String objectID, DataSyncCallback callback) {
+        return this.sync(objectID, "", callback);
+    }
+
+    /**
+     * Retrieves the Data Sync object with specified full path. The updated object can be retrieved from the returned
+     *      variable and the events can be used to notify the application when a modification to the object has occurred.
+     *
+     * @param objectID string
+     * @param path with max depth of 32
+     * @param callback to invoke
+     * @return new SyncedObject
+     */
+    public SyncedObject sync(String objectID, String path, DataSyncCallback callback) {
+        return syncedObjectManager.add(objectID, path, callback);
+    }
+
+    /**
+     * Merge data to remote object.
+     *
+     * @param args hashtable
+     * @param callback to invoke
+     */
+    public void merge(Hashtable args, final Callback callback) {
+        String location = SyncedObject.getURLizedObjectPath((String) args.get("location"));
+        Object data = args.get("data");
+
+        if (data == null) {
+            data = "";
+        } else if (data instanceof String) {
+            data = "\"" + data +"\"";
+        }
+
+        String method = (String) args.get("method");
+        final Callback cb = getWrappedCallback(callback);
+
+        String[] urlargs = {getPubnubUrl(), "v1", "datasync",
+                "sub-key",
+                this.SUBSCRIBE_KEY,
+                "pub-key",
+                this.PUBLISH_KEY,
+                "obj-id",
+                location
+        };
+
+        Hashtable parameters = PubnubUtil.hashtableClone(params);
+
+        if (PubnubUtil.isBlank(method)) {
+            method = "PATCH";
+        }
+
+        if (method.equals("POST") && args.get("sort_key") != null) {
+            // TODO: validate sort_key with regex [A-Za-z]+
+            parameters.put("sort_key", args.get("sort_key"));
+        }
+
+        parameters.put("method", method);
+
+        HttpRequest hreq = new HttpRequest(urlargs, parameters, data.toString(), "POST",
+                new ResponseHandler() {
+                    public void handleResponse(HttpRequest hreq, String response) {
+                        invokeCallback(response, callback);
+                    }
+
+                    public void handleError(HttpRequest hreq, PubnubError error) {
+                        cb.invokeErrorCallback(null, error);
+                    }
+                });
+
+        _request(hreq, nonSubscribeManager);
+    }
+
+    public void replace(Hashtable args, final Callback callback) {
+        args.put("method", "PUT");
+        merge(args, callback);
+    }
+
+    public void push(Hashtable args, final Callback callback) {
+        args.put("method", "POST");
+        merge(args, callback);
+    }
+
+    public void remove(Hashtable args, final Callback callback) {
+        args.put("method", "DELETE");
+        args.remove("data");
+        merge(args, callback);
+    }
+
+    public void get(Hashtable args, final Callback callback) {
+        String location = SyncedObject.getURLizedObjectPath((String) args.get("location"));
+        String next_page = (String) args.get("next_page");
+        final Callback cb = getWrappedCallback(callback);
+
+        String[] urlargs = {getPubnubUrl(), "v1", "datasync",
+                "sub-key",
+                this.SUBSCRIBE_KEY,
+                "obj-id",
+                location
+        };
+
+        Hashtable parameters = PubnubUtil.hashtableClone(params);
+
+        if (PubnubUtil.isPresent(next_page)) {
+            parameters.put("next_page", next_page);
+        }
+
+        HttpRequest hreq = new HttpRequest(urlargs, parameters,
+                new ResponseHandler() {
+                    public void handleResponse(HttpRequest hreq, String response) {
+                        invokeCallback(response, callback);
+                    }
+
+                    public void handleError(HttpRequest hreq, PubnubError error) {
+                        cb.invokeErrorCallback(null, error);
+                    }
+                });
+
+        _request(hreq, nonSubscribeManager);
+    }
 }

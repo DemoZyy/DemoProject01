@@ -51,8 +51,8 @@ HashMap stateMap = home.getMap();
 
 #### getList()
 ```java
-ArrayList occupantsList = home.getMap("occupants");
-ArrayList occupantsList = occupants.getMap();
+ArrayList occupantsList = home.getList("occupants");
+ArrayList occupantsList = occupants.getList();
 ```
 
 ### Mutate data methods

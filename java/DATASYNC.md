@@ -17,8 +17,8 @@ SyncedObject thermostat = home.child("living_room.thermostat");
 SyncedObject occupants = home.child("occupants");
 ```
 
-### Value getters.
-If value doesn't exist or cannot be casted to getter's type, null will be returned.
+### Value getters
+If value doesn't exist or cannot be cast to getter's type, null will be returned.
 
 #### getString()
 ```java
@@ -46,13 +46,13 @@ Integer state = thermostat.getInteger("state");
 
 #### getMap()
 ```java
-List stateList = home.getMap();
+HashMap stateMap = home.getMap();
 ```
 
 #### getList()
 ```java
-HashMap occupantsMap = home.getMap("occupants");
-HashMap occupantsMap = occupants.getMap();
+ArrayList occupantsList = home.getMap("occupants");
+ArrayList occupantsList = occupants.getMap();
 ```
 
 ### Mutate data methods

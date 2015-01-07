@@ -8,12 +8,12 @@ import java.util.*;
 
 public class SyncedObjectManager {
     private Pubnub pubnub;
-    private Hashtable syncedObjects;
+    private Hashtable<String, SyncedObject> syncedObjects;
     private JSONObject data;
-    private HashMap callbacks;
-    private HashSet channels;
+    private HashMap<String, DataSyncCallback> callbacks;
+    private HashSet<String> channels;
     private HashMap updates;
-    private HashSet objectsSyncPending;
+    private HashSet<String> objectsSyncPending;
 
     private final static String DS_SUBSCRIBE_RESPONSE_ACTION = "action";
     private final static String DS_SUBSCRIBE_RESPONSE_STATUS = "status";
@@ -27,12 +27,12 @@ public class SyncedObjectManager {
 
     public SyncedObjectManager(PubnubCore pubnub) {
         this.pubnub = (Pubnub) pubnub;
-        this.syncedObjects = new Hashtable();
+        this.syncedObjects = new Hashtable<String, SyncedObject>();
         this.data = new JSONObject();
-        this.callbacks = new HashMap();
-        this.channels = new HashSet();
+        this.callbacks = new HashMap<String, DataSyncCallback>();
+        this.channels = new HashSet<String>();
         this.updates = new HashMap();
-        this.objectsSyncPending = new HashSet();
+        this.objectsSyncPending = new HashSet<String>();
     }
 
     public SyncedObject add(String objectID, String path, DataSyncCallback callback) {
@@ -41,7 +41,9 @@ public class SyncedObjectManager {
         SyncedObject object;
 
         this.channels.add(location);
-        this.callbacks.put(location, callback);
+        if (callback != null) {
+            this.callbacks.put(location, callback);
+        }
 
         object = new SyncedObject(this, objectID, path);
 
@@ -81,7 +83,7 @@ public class SyncedObjectManager {
         return null;
     }
 
-    public Object getValue(String location) throws JSONException {
+    protected JSONObject getRawValue(String location) throws JSONException {
         String[] locationParts = PubnubUtil.splitString(location, ".");
         JSONObject current = data;
 
@@ -89,7 +91,29 @@ public class SyncedObjectManager {
             current = current.getJSONObject(locationParts[i]);
         }
 
-        return parseObject(current);
+        return current;
+    }
+
+    public Object getValue(String location) throws JSONException {
+        return parseObject(getRawValue(location));
+    }
+
+    public String firstListKey(String location) throws JSONException {
+        JSONObject value = getRawValue(location);
+
+        return (String) value.sortedKeys().next();
+    }
+
+    public String lastListKey(String location) throws JSONException {
+        JSONObject value = getRawValue(location);
+        Iterator valueKeys = value.sortedKeys();
+        String lastKey = null;
+
+        while (valueKeys.hasNext()) {
+            lastKey = (String) valueKeys.next();
+        }
+
+        return lastKey;
     }
 
     public void invokeActionCallbacks(ArrayList cbs, String action, String updatedAt, List data) {

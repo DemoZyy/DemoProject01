@@ -121,6 +121,28 @@ public class SyncedObject {
         return syncedObjectManager.getValue(glue(objectID, glue(path, relativePath)));
     }
 
+    public Object pop() {
+        try {
+            String lastKey = syncedObjectManager.lastListKey(location);
+            Object result = syncedObjectManager.getValue(glue(location, lastKey));
+            remove(lastKey);
+            return result;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public Object shift() {
+        try {
+            String firstKey = syncedObjectManager.firstListKey(location);
+            Object result = syncedObjectManager.getValue(glue(location, firstKey));
+            remove(firstKey);
+            return result;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
     /**
      * Return child synced object.
      *

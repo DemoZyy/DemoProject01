@@ -18,12 +18,14 @@ import static org.junit.Assert.assertFalse;
 
 public class SyncedObjectValueGettersTest {
     Pubnub pubnub;
+    String playerString;
 
     @Before
     public void setUp() throws InterruptedException {
         pubnub = new Pubnub("demo-36", "demo-36");
 
         pubnub.setCacheBusting(false);
+        playerString = "player";
     }
 
     @Test
@@ -90,5 +92,17 @@ public class SyncedObjectValueGettersTest {
         assertEquals(0, latch1.getCount());
         assertEquals(0, latch2.getCount());
         assertEquals(0, latch3.getCount());
+    }
+
+    @Test
+    public void testGetType() {
+        DataSyncTestHelper.setupSettingsOn(playerString, pubnub, true);
+        SyncedObject player = pubnub.sync(playerString);
+
+        assertEquals(SyncedObject.TYPE_OBJECT, player.getType("settings"));
+        assertEquals(SyncedObject.TYPE_LIST, player.getType("tracks"));
+        assertEquals(SyncedObject.TYPE_INTEGER, player.getType("settings.volume"));
+        assertEquals(SyncedObject.TYPE_STRING, player.getType("settings.locale"));
+        assertEquals(SyncedObject.TYPE_BOOLEAN, player.getType("settings.mute"));
     }
 }

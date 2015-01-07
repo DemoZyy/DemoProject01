@@ -18,6 +18,12 @@ public class SyncedObject {
     private String location;
     private AtomicBoolean isReady;
 
+    public final static String TYPE_LIST = "List";
+    public final static String TYPE_OBJECT = "Object";
+    public final static String TYPE_INTEGER = "Integer";
+    public final static String TYPE_STRING = "String";
+    public final static String TYPE_BOOLEAN = "Boolean";
+
     public SyncedObject(SyncedObjectManager manager, String objectID) {
         this(manager, objectID, "");
     }
@@ -141,6 +147,35 @@ public class SyncedObject {
         } catch (JSONException e) {
             return null;
         }
+    }
+
+    public String getType(String path) {
+        try {
+            JSONObject value = syncedObjectManager.getRawValue(glue(location, path));
+
+            if (value.has("pn_val")) {
+                Object rawValue = value.get("pn_val");
+                if (rawValue instanceof String) {
+                    return TYPE_STRING;
+                } else if (rawValue instanceof Integer) {
+                    return TYPE_INTEGER;
+                } else if (rawValue instanceof Boolean) {
+                    return TYPE_BOOLEAN;
+                } else {
+                    return null;
+                }
+            } else if (SyncedObject.isPnList(value)) {
+                return TYPE_LIST;
+            } else {
+                return TYPE_OBJECT;
+            }
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public Integer size() {
+        return 123;
     }
 
     /**

@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 public class SyncedObjectValueGettersTest {
     Pubnub pubnub;
@@ -25,7 +26,7 @@ public class SyncedObjectValueGettersTest {
         pubnub = new Pubnub("demo-36", "demo-36");
 
         pubnub.setCacheBusting(false);
-        playerString = "player";
+        playerString = "player-" + TestHelper.random();
     }
 
     @Test
@@ -104,5 +105,17 @@ public class SyncedObjectValueGettersTest {
         assertEquals(SyncedObject.TYPE_INTEGER, player.getType("settings.volume"));
         assertEquals(SyncedObject.TYPE_STRING, player.getType("settings.locale"));
         assertEquals(SyncedObject.TYPE_BOOLEAN, player.getType("settings.mute"));
+    }
+
+    @Test
+    public void testGetSize() {
+        DataSyncTestHelper.setupSettingsOn(playerString, pubnub, true);
+        SyncedObject player = pubnub.sync(playerString);
+
+        assertNull(player.size("settings.volume"));
+        assertNull(player.size("settings.locale"));
+        assertNull(player.size("settings.mute"));
+        assertEquals(Integer.valueOf(3), player.size("tracks"));
+        assertEquals(Integer.valueOf(3), player.size("settings"));
     }
 }

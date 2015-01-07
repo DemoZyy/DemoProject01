@@ -149,6 +149,10 @@ public class SyncedObject {
         }
     }
 
+    public String getType() {
+        return getType("");
+    }
+
     public String getType(String path) {
         try {
             JSONObject value = syncedObjectManager.getRawValue(glue(location, path));
@@ -175,7 +179,20 @@ public class SyncedObject {
     }
 
     public Integer size() {
-        return 123;
+        return size("");
+    }
+
+    public Integer size(String path) {
+        try {
+            JSONObject value = syncedObjectManager.getRawValue(glue(location, path));
+            if (!value.has("pn_val")) {
+                return value.length();
+            } else {
+                return null;
+            }
+        } catch (JSONException e) {
+            return null;
+        }
     }
 
     /**

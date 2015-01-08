@@ -239,6 +239,65 @@ public class SyncedObject {
         }
     }
 
+    public Object removeByValue(Object searchValue) {
+        String key = getKeyByValue(searchValue);
+
+        if (key != null) {
+            Object result;
+            try {
+                result = syncedObjectManager.getValue(glue(location, key));
+            } catch (JSONException e) {
+                return null;
+            }
+            remove(key);
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    public Object replaceByValue(Object searchValue, Object data) {
+        String key = getKeyByValue(searchValue);
+
+        if (key != null) {
+            Object result;
+            try {
+                result = syncedObjectManager.getValue(glue(location, key));
+            } catch (JSONException e) {
+                return null;
+            }
+            replace(key, data);
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    public String getKeyByValue(Object searchValue) {
+        if (searchValue == null) return null;
+
+        try {
+            JSONObject value = syncedObjectManager.getRawValue(location);
+            Iterator valueIterator = value.keys();
+            JSONObject currentObject;
+            String currentKey;
+            String resultKey = null;
+
+            while (valueIterator.hasNext()) {
+                currentKey = (String) valueIterator.next();
+                currentObject = value.getJSONObject(currentKey);
+                if (currentObject.has("pn_val") && currentObject.get("pn_val").equals(searchValue)) {
+                    resultKey = currentKey;
+                    break;
+                }
+            }
+
+            return resultKey;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
     public String getType() {
         return getType("");
     }

@@ -151,9 +151,9 @@ public class SyncedObject {
     }
 
     public Object removeByIndex(Integer index) {
-        String key = _keyByIndex(index);
+        String key = getKeyByIndex(index);
 
-        if (_keyByIndex(index) != null) {
+        if (getKeyByIndex(index) != null) {
             try {
                 Object result = syncedObjectManager.getValue(glue(location, key));
                 remove(key);
@@ -167,9 +167,9 @@ public class SyncedObject {
     }
 
     public Object replaceByIndex(Integer index, Object data) {
-        String key = _keyByIndex(index);
+        String key = getKeyByIndex(index);
 
-        if (_keyByIndex(index) != null) {
+        if (getKeyByIndex(index) != null) {
             try {
                 Object result = syncedObjectManager.getValue(glue(location, key));
                 replace(key, data);
@@ -183,9 +183,9 @@ public class SyncedObject {
     }
 
     public Object getByIndex(Integer index) {
-        String key = _keyByIndex(index);
+        String key = getKeyByIndex(index);
 
-        if (_keyByIndex(index) != null) {
+        if (getKeyByIndex(index) != null) {
             try {
                 return syncedObjectManager.getValue(glue(location, key));
             } catch (JSONException e) {
@@ -196,7 +196,7 @@ public class SyncedObject {
         }
     }
 
-    private String _keyByIndex(Integer index) {
+    public String getKeyByIndex(Integer index) {
         try {
             JSONObject value = syncedObjectManager.getRawValue(location);
             if (isPnList(value)) {
@@ -214,6 +214,26 @@ public class SyncedObject {
             } else {
                 return null;
             }
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public Object removeByKey(String key) {
+        try {
+            Object value = syncedObjectManager.getValue(glue(location, key));
+            remove(key);
+            return value;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public Object replaceByKey(String key, Object data) {
+        try {
+            Object value = syncedObjectManager.getValue(glue(location, key));
+            replace(key, data);
+            return value;
         } catch (JSONException e) {
             return null;
         }

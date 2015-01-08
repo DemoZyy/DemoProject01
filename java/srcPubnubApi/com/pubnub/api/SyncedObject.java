@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SyncedObject {
@@ -144,6 +145,75 @@ public class SyncedObject {
             Object result = syncedObjectManager.getValue(glue(location, firstKey));
             remove(firstKey);
             return result;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public Object removeByIndex(Integer index) {
+        String key = _keyByIndex(index);
+
+        if (_keyByIndex(index) != null) {
+            try {
+                Object result = syncedObjectManager.getValue(glue(location, key));
+                remove(key);
+                return result;
+            } catch (JSONException e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public Object replaceByIndex(Integer index, Object data) {
+        String key = _keyByIndex(index);
+
+        if (_keyByIndex(index) != null) {
+            try {
+                Object result = syncedObjectManager.getValue(glue(location, key));
+                replace(key, data);
+                return result;
+            } catch (JSONException e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public Object getByIndex(Integer index) {
+        String key = _keyByIndex(index);
+
+        if (_keyByIndex(index) != null) {
+            try {
+                return syncedObjectManager.getValue(glue(location, key));
+            } catch (JSONException e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private String _keyByIndex(Integer index) {
+        try {
+            JSONObject value = syncedObjectManager.getRawValue(location);
+            if (isPnList(value)) {
+                Integer i = 0;
+                Iterator valueIterator = value.sortedKeys();
+                while (valueIterator.hasNext()) {
+                    if (index.equals(i)) {
+                        return (String) valueIterator.next();
+                    } else {
+                        valueIterator.next();
+                        i++;
+                    }
+                }
+                return null;
+            } else {
+                return null;
+            }
         } catch (JSONException e) {
             return null;
         }

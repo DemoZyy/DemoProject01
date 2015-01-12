@@ -54,6 +54,7 @@ public class SyncedObjectManager {
             subscribe(callback);
         } else if (callback != null) {
             object.setIsReady(true);
+            callback.connectCallback(location);
             callback.invokeReadyCallback(object);
         }
 
@@ -168,22 +169,36 @@ public class SyncedObjectManager {
         return result;
     }
 
+    public String[] getChannelsForUnsubscribe(String objectId) {
+        return new String[]{
+                "pn_ds_" + objectId,
+                "pn_ds_" + objectId + ".*",
+                "pn_dstr_" + PubnubUtil.splitString(objectId, ".")[0]
+        };
+    }
+
     private void subscribe(final DataSyncCallback callback) {
         try {
             pubnub.subscribe(
                     getChannelsForSubscribe(),
                     new Callback() {
+                        @Override
                         public void connectCallback(String channel, Object message) {
-                            if (channel.indexOf("dstr") < 0 && channel.indexOf('*') < 0) {
+                            if (!channel.contains("dstr") && channel.indexOf('*') < 0) {
                                 channel = channel.substring(6);
                                 ArrayList locationElements = new ArrayList(Arrays.asList(PubnubUtil.splitString(channel, ".")));
                                 String objectId = (String) locationElements.remove(0);
                                 String path = PubnubUtil.joinString(locationElements, ".");
 
+                                if (callback != null) {
+                                    callback.connectCallback(channel);
+                                }
+
                                 fetchObject(objectId, path, callback);
                             }
                         }
 
+                        @Override
                         public void successCallback(String channel, Object data) {
                             JSONObject message = (JSONObject) data;
 
@@ -253,8 +268,23 @@ public class SyncedObjectManager {
                             }
                         }
 
+                        @Override
                         public void errorCallback(String channel, PubnubError error) {
                             callback.errorCallback(error);
+                        }
+
+                        @Override
+                        public void reconnectCallback(String channel, Object message) {
+                            if (callback != null && channel != null && channel.indexOf("pn_dstr_") == 0) {
+                                callback.reconnectCallback();
+                            }
+                        }
+
+                        @Override
+                        public void disconnectCallback(String channel, Object message) {
+                            if (callback != null && channel != null && channel.indexOf("pn_dstr_") == 0) {
+                                callback.disconnectCallback();
+                            }
                         }
                     }
             );
@@ -383,6 +413,15 @@ public class SyncedObjectManager {
                 callback.errorCallback(error);
             }
         });
+    }
+
+    protected synchronized void unsubscribe(String location) {
+        this.callbacks.remove(location);
+        this.channels.remove(location);
+        this.objectsSyncPending.remove(location);
+        this.data.remove(location);
+
+        this.pubnub.unsubscribe(getChannelsForUnsubscribe(location));
     }
 
     /**

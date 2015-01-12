@@ -430,6 +430,10 @@ public class SyncedObject {
         pubnub.remove(args, callback);
     }
 
+    public void unsubscribe() {
+        this.syncedObjectManager.unsubscribe(location);
+    }
+
     public static String getURLizedObjectPath(String location) {
         String[] path = PubnubUtil.splitString(location, ".");
 

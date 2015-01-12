@@ -22,13 +22,13 @@ public class DataSyncCallback {
     public void errorCallback(PubnubError error) {
     }
 
-    public void connectCallback(String channel, Object message) {
+    public void connectCallback(String location) {
     }
 
-    public void reconnectCallback(String channel, Object message) {
+    public void reconnectCallback() {
     }
 
-    public void disconnectCallback(String channel, Object message) {
+    public void disconnectCallback() {
     }
 
     public void invokeReadyCallback(SyncedObject syncedObject) {

@@ -3,16 +3,13 @@ package com.pubnub.api;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  *
  * @author PubnubCore
  */
-class PubnubUtilCore {
+abstract class PubnubUtilCore {
 
     /**
      * Takes source and delimiter string as inputs and returns splitted string
@@ -59,13 +56,6 @@ class PubnubUtilCore {
         } while ((index = tmpStr.indexOf(delimiter)) != -1);
 
         return splittedList;
-    }
-
-    public static String joinString(List sourceArray, String delimiter) {
-        String[] sourceStringArray = new String[sourceArray.size()];
-        sourceStringArray = (String[]) sourceArray.toArray(sourceStringArray);
-
-        return joinString(sourceStringArray, delimiter);
     }
 
     /**

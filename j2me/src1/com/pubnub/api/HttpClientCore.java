@@ -96,6 +96,11 @@ public class HttpClientCore extends HttpClient {
     }
 
     public HttpResponse fetch(String url, Hashtable headers) throws PubnubException, IOException {
+        return fetch(url, headers, null, "GET");
+    }
+
+    public HttpResponse fetch(String url, Hashtable headers, String data, String method)
+            throws PubnubException, IOException {
         if (url == null)
             throw new IOException("Invalid Url");
 

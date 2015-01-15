@@ -29,7 +29,7 @@ public class InitialValueTest {
     }
 
     @Test
-    public synchronized void testMergeObjectCallback() throws InterruptedException, JSONException {
+    public void testMergeObjectCallback() throws InterruptedException, JSONException {
         final CountDownLatch latch1 = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
 

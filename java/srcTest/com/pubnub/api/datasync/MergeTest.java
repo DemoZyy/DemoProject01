@@ -29,7 +29,7 @@ public class MergeTest {
     }
 
     @Test
-    public synchronized void testMergeResponse() throws InterruptedException, JSONException {
+    public void testMergeResponse() throws InterruptedException, JSONException {
         final CountDownLatch latch = new CountDownLatch(1);
         TestHelper.SimpleCallback cb = new TestHelper.SimpleCallback(latch);
 
@@ -50,7 +50,7 @@ public class MergeTest {
     }
 
     @Test
-    public synchronized void testMergeObjectResponse() throws InterruptedException, JSONException {
+    public void testMergeObjectResponse() throws InterruptedException, JSONException {
         final CountDownLatch latch = new CountDownLatch(1);
         TestHelper.SimpleCallback cb = new TestHelper.SimpleCallback(latch);
 
@@ -77,7 +77,7 @@ public class MergeTest {
     }
 
     @Test
-    public synchronized void testMergeObjectCallback() throws InterruptedException, JSONException {
+    public void testMergeObjectCallback() throws InterruptedException, JSONException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(2);

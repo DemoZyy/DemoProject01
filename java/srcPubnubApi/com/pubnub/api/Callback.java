@@ -48,8 +48,8 @@ public abstract class Callback {
     }
 
     /**
-     *
-     * @deprecated use {@link #invokeSuccessCallback(String, Object, String)} instead.
+     * @deprecated as of version 3.8.0 and will be removed in 3.9.0.
+     *          Replaced by {@link #invokeSuccessCallback(String, Object, String)} instead.
      */
     public void successWrapperCallback(String channel, Object message, String timetoken) {
         invokeSuccessCallback(channel, message, timetoken);

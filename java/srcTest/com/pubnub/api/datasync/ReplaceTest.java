@@ -77,7 +77,7 @@ public class ReplaceTest {
     }
 
     @Test
-    public synchronized void testReplaceObjectCallback() throws InterruptedException, JSONException {
+    public void testReplaceObjectCallback() throws InterruptedException, JSONException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(2);

@@ -11,8 +11,6 @@ class SubscriptionItem {
     boolean error;
     Callback callback;
 
-    SubscriptionItem() {}
-
     SubscriptionItem(String name, Callback callback) {
         this.name = name;
         this.callback = callback;

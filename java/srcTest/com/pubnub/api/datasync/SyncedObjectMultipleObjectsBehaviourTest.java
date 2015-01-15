@@ -1,9 +1,6 @@
 package com.pubnub.api.datasync;
 
-import com.pubnub.api.DataSyncCallback;
-import com.pubnub.api.Pubnub;
-import com.pubnub.api.SyncedObject;
-import com.pubnub.api.SyncedObjectManager;
+import com.pubnub.api.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -107,7 +104,7 @@ public class SyncedObjectMultipleObjectsBehaviourTest {
 
         Field f = pubnub.getClass().getSuperclass().getSuperclass().getDeclaredField("syncedObjectManager");
         f.setAccessible(true);
-        SyncedObjectManager manager = (SyncedObjectManager) f.get(pubnub);
+        SyncedObjectManagerCore manager = (SyncedObjectManager) f.get(pubnub);
         String[] channels = manager.getChannelsForSubscribe();
         assertEquals(6, channels.length);
         assertFalse(Arrays.asList(channels).contains("pn_ds_player.*"));

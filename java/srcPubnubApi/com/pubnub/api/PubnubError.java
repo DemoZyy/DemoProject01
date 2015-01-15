@@ -212,6 +212,12 @@ public class PubnubError {
      * Error while parsing group name
      */
     public static final int         PNERR_CHANNEL_GROUP_PARSING_ERROR            =       134;
+
+    /**
+     * Empty updates list for transaction
+     */
+    public static final int         DATA_SYNC_NO_UPDATES_FOR_TRANSACTION         =       135;
+
     // Error Objects
 
     static final PubnubError        PNERROBJ_TIMEOUT                           =
@@ -443,6 +449,11 @@ public class PubnubError {
             "Channel group name is invalid"
     );
 
+    static final PubnubError PNERROBJ_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION     =
+            new PubnubError     (
+                    DATA_SYNC_NO_UPDATES_FOR_TRANSACTION ,
+                    "Empty updates list for transaction"
+    );
     public  final int errorCode;
     public  final int errorCodeExtended;
     public  final JSONObject errorObject;

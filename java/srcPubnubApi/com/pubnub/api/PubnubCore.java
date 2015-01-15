@@ -51,7 +51,7 @@ abstract class PubnubCore {
     private volatile String _timetoken = "0";
     private volatile String _saved_timetoken = "0";
 
-    private String PRESENCE_SUFFIX = "-pnpres";
+    private static String PRESENCE_SUFFIX = "-pnpres";
     protected static String VERSION = "";
     private Random generator = new Random();
 
@@ -2374,7 +2374,7 @@ abstract class PubnubCore {
         _subscribe_base(fresh, false, worker);
     }
 
-    private boolean isWorkerDead(HttpRequest hreq) {
+    private static boolean isWorkerDead(HttpRequest hreq) {
         return (hreq == null || hreq.getWorker() == null)?false:hreq.getWorker()._die;
     }
     private void _subscribe_base(boolean fresh, boolean dar, Worker worker) {
@@ -2574,7 +2574,8 @@ abstract class PubnubCore {
         _request(hreq, subscribeManager, fresh);
     }
 
-    private void invokeSubscribeCallback(String channel, Callback callback, Object message,
+    // TODO: reformat view
+    protected void invokeSubscribeCallback(String channel, Callback callback, Object message,
                                          HttpRequest hreq) throws JSONException {
         if (CIPHER_KEY.length() > 0
                 && !channel
@@ -2800,6 +2801,10 @@ abstract class PubnubCore {
         this.AUTH_STR = null;
         params.remove("auth");
         resubscribe();
+    }
+
+    public Hashtable getParams() {
+        return this.params;
     }
 
     // TODO: refactor to location

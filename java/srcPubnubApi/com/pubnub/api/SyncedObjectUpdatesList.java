@@ -10,11 +10,11 @@ public class SyncedObjectUpdatesList extends ArrayList {
         complete = new AtomicBoolean();
     }
 
-    public Boolean isComplete() {
+    public boolean isComplete() {
         return complete.get();
     }
 
-    public void setComplete(Boolean status) {
+    public void setComplete(boolean status) {
         complete.set(status);
     }
 }

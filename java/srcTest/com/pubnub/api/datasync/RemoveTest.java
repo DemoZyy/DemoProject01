@@ -58,7 +58,7 @@ public class RemoveTest {
     }
 
     @Test
-    public synchronized void testRemoveObjectCallback() throws InterruptedException, JSONException {
+    public void testRemoveObjectCallback() throws InterruptedException, JSONException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(1);

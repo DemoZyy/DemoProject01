@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Hashtable;
@@ -88,7 +87,7 @@ public class PushTest {
     }
 
     @Test
-    public synchronized void testPushObjectItemsCallback() throws InterruptedException, JSONException {
+    public void testPushObjectItemsCallback() throws InterruptedException, JSONException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(4);
@@ -124,7 +123,7 @@ public class PushTest {
     }
 
     @Test
-    public synchronized void testPushSortedObject() throws InterruptedException, JSONException {
+    public void testPushSortedObject() throws InterruptedException, JSONException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(4);

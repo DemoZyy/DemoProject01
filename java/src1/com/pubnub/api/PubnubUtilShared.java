@@ -12,7 +12,7 @@ import java.net.URLEncoder;
  * @author Pubnub
  *
  */
-public class PubnubUtil extends PubnubUtilCore {
+public class PubnubUtilShared extends PubnubUtilCore {
 
     /**
      * Returns encoded String

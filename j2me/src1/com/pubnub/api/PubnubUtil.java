@@ -1,10 +1,16 @@
 package com.pubnub.api;
 
+import org.json.me.JSONArray;
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import org.json.me.*;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 public class PubnubUtil extends PubnubUtilCore {
 
@@ -143,5 +149,17 @@ public class PubnubUtil extends PubnubUtilCore {
         }
         return str;
     }
+
+    public static Iterator jsonObjectKeysSortedIterator(JSONObject jsonObject) {
+        Enumeration keysIterator = jsonObject.keys();
+        TreeSet set = new TreeSet();
+
+        while (keysIterator.hasMoreElements()) {
+            set.add(keysIterator.nextElement());
+        }
+
+        return set.iterator();
+    }
+
     private static String _dontNeedEncoding = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ -_.*";
 }

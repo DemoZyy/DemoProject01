@@ -17,7 +17,30 @@ public class SyncedObject {
     private String path;
     private String objectID;
     private String location;
-    private AtomicBoolean isReady;
+
+    /**
+     * Is object ready
+     *
+     * false - just created
+     * true  - when initial data object synchronization with server is done
+     */
+    private AtomicBoolean isReady = new AtomicBoolean(false);
+
+    /**
+     * Is object ready
+     *
+     * false - just created
+     * true  - when initial data object synchronization with server is done
+     */
+    private AtomicBoolean isConnected = new AtomicBoolean(false);
+
+    /**
+     * Is object ready
+     *
+     * false - just created
+     * true  - after #unsubscribe() method invoked
+     */
+    private AtomicBoolean isUnsubscribed = new AtomicBoolean(false);
 
     public final static String TYPE_LIST = "List";
     public final static String TYPE_OBJECT = "Object";
@@ -35,7 +58,6 @@ public class SyncedObject {
         this.objectID = objectID;
         this.path = path;
         this.location = SyncedObject.glue(objectID, path);
-        this.isReady = new AtomicBoolean(false);
     }
 
     public String getPath() {
@@ -50,12 +72,24 @@ public class SyncedObject {
         return location;
     }
 
-    public Boolean getIsReady() {
+    public boolean getIsConnected() {
+        return isConnected.get();
+    }
+
+    public void setIsConnected(boolean isConnected) {
+        this.isConnected.set(isConnected);
+    }
+
+    public boolean getIsReady() {
         return isReady.get();
     }
 
-    public void setIsReady(Boolean isReady) {
+    public void setIsReady(boolean isReady) {
         this.isReady.set(isReady);
+    }
+
+    public boolean getIsUnsubscribed() {
+        return this.isUnsubscribed.get();
     }
 
     /**
@@ -64,7 +98,7 @@ public class SyncedObject {
      * @param relativePath to value
      * @return value as string
      */
-    public String getString(String relativePath) {
+    public synchronized String getString(String relativePath) {
         try {
             return getValue(relativePath).toString();
         } catch (JSONException e) {
@@ -78,7 +112,7 @@ public class SyncedObject {
      * @param relativePath to value
      * @return value as int
      */
-    public Integer getInteger(String relativePath) {
+    public synchronized Integer getInteger(String relativePath) {
         try {
             return new Integer(Integer.parseInt(getValue(relativePath).toString()));
         } catch (JSONException e) {
@@ -92,7 +126,7 @@ public class SyncedObject {
      * @param relativePath to value
      * @return value as boolean
      */
-    public Boolean getBoolean(String relativePath) {
+    public synchronized Boolean getBoolean(String relativePath) {
         try {
             return (Boolean) getValue(relativePath);
         } catch (JSONException e) {
@@ -100,11 +134,11 @@ public class SyncedObject {
         }
     }
 
-    public ArrayList getList() {
+    public synchronized ArrayList getList() {
         return getList(null);
     }
 
-    public ArrayList getList(String relativePath) {
+    public synchronized ArrayList getList(String relativePath) {
         try {
             return (ArrayList) getValue(relativePath);
         } catch (JSONException e) {
@@ -112,11 +146,11 @@ public class SyncedObject {
         }
     }
 
-    public HashMap getMap() {
+    public synchronized HashMap getMap() {
         return getMap(null);
     }
 
-    public HashMap getMap(String relativePath) {
+    public synchronized HashMap getMap(String relativePath) {
         try {
             return (HashMap) getValue(relativePath);
         } catch (JSONException e) {
@@ -124,11 +158,11 @@ public class SyncedObject {
         }
     }
 
-    private Object getValue(String relativePath) throws JSONException {
+    private synchronized Object getValue(String relativePath) throws JSONException {
         return syncedObjectManager.getValue(glue(objectID, glue(path, relativePath)));
     }
 
-    public Object pop() {
+    public synchronized Object pop() {
         try {
             String lastKey = syncedObjectManager.lastListKey(location);
             Object result = syncedObjectManager.getValue(glue(location, lastKey));
@@ -139,7 +173,7 @@ public class SyncedObject {
         }
     }
 
-    public Object shift() {
+    public synchronized Object shift() {
         try {
             String firstKey = syncedObjectManager.firstListKey(location);
             Object result = syncedObjectManager.getValue(glue(location, firstKey));
@@ -150,7 +184,7 @@ public class SyncedObject {
         }
     }
 
-    public Object removeByIndex(Integer index) {
+    public synchronized Object removeByIndex(Integer index) {
         String key = getKeyByIndex(index);
 
         if (getKeyByIndex(index) != null) {
@@ -166,7 +200,7 @@ public class SyncedObject {
         }
     }
 
-    public Object replaceByIndex(Integer index, Object data) {
+    public synchronized Object replaceByIndex(Integer index, Object data) {
         String key = getKeyByIndex(index);
 
         if (getKeyByIndex(index) != null) {
@@ -182,7 +216,7 @@ public class SyncedObject {
         }
     }
 
-    public Object getByIndex(Integer index) {
+    public synchronized Object getByIndex(Integer index) {
         String key = getKeyByIndex(index);
 
         if (getKeyByIndex(index) != null) {
@@ -196,14 +230,15 @@ public class SyncedObject {
         }
     }
 
-    public String getKeyByIndex(Integer index) {
+    public synchronized String getKeyByIndex(Integer index) {
         try {
             JSONObject value = syncedObjectManager.getRawValue(location);
             if (isPnList(value)) {
-                Integer i = 0;
-                Iterator valueIterator = value.sortedKeys();
+                int i = 0;
+                Iterator valueIterator = PubnubUtil.jsonObjectKeysSortedIterator(value);
+
                 while (valueIterator.hasNext()) {
-                    if (index.equals(i)) {
+                    if (index.intValue() == i) {
                         return (String) valueIterator.next();
                     } else {
                         valueIterator.next();
@@ -219,7 +254,7 @@ public class SyncedObject {
         }
     }
 
-    public Object removeByKey(String key) {
+    public synchronized Object removeByKey(String key) {
         try {
             Object value = syncedObjectManager.getValue(glue(location, key));
             remove(key);
@@ -229,7 +264,7 @@ public class SyncedObject {
         }
     }
 
-    public Object replaceByKey(String key, Object data) {
+    public synchronized Object replaceByKey(String key, Object data) {
         try {
             Object value = syncedObjectManager.getValue(glue(location, key));
             replace(key, data);
@@ -239,7 +274,7 @@ public class SyncedObject {
         }
     }
 
-    public Object removeByValue(Object searchValue) {
+    public synchronized Object removeByValue(Object searchValue) {
         String key = getKeyByValue(searchValue);
 
         if (key != null) {
@@ -256,7 +291,7 @@ public class SyncedObject {
         }
     }
 
-    public Object replaceByValue(Object searchValue, Object data) {
+    public synchronized Object replaceByValue(Object searchValue, Object data) {
         String key = getKeyByValue(searchValue);
 
         if (key != null) {
@@ -273,18 +308,19 @@ public class SyncedObject {
         }
     }
 
-    public String getKeyByValue(Object searchValue) {
+    public synchronized String getKeyByValue(Object searchValue) {
         if (searchValue == null) return null;
 
         try {
             JSONObject value = syncedObjectManager.getRawValue(location);
-            Iterator valueIterator = value.keys();
+
+            JSONArray valueKeys = value.names();
             JSONObject currentObject;
             String currentKey;
             String resultKey = null;
 
-            while (valueIterator.hasNext()) {
-                currentKey = (String) valueIterator.next();
+            for (int i = 0; i < valueKeys.length(); i++) {
+                currentKey = (String) valueKeys.get(i);
                 currentObject = value.getJSONObject(currentKey);
                 if (currentObject.has("pn_val") && currentObject.get("pn_val").equals(searchValue)) {
                     resultKey = currentKey;
@@ -298,11 +334,11 @@ public class SyncedObject {
         }
     }
 
-    public String getType() {
+    public synchronized String getType() {
         return getType("");
     }
 
-    public String getType(String path) {
+    public synchronized String getType(String path) {
         try {
             JSONObject value = syncedObjectManager.getRawValue(glue(location, path));
 
@@ -327,15 +363,15 @@ public class SyncedObject {
         }
     }
 
-    public Integer size() {
+    public synchronized Integer size() {
         return size("");
     }
 
-    public Integer size(String path) {
+    public synchronized Integer size(String path) {
         try {
             JSONObject value = syncedObjectManager.getRawValue(glue(location, path));
             if (!value.has("pn_val")) {
-                return value.length();
+                return Integer.valueOf(value.length());
             } else {
                 return null;
             }
@@ -430,8 +466,14 @@ public class SyncedObject {
         pubnub.remove(args, callback);
     }
 
+    public void remove() {
+        this.syncedObjectManager.remove(location);
+        this.isUnsubscribed.set(true);
+    }
+
     public void unsubscribe() {
         this.syncedObjectManager.unsubscribe(location);
+        this.isUnsubscribed.set(true);
     }
 
     public static String getURLizedObjectPath(String location) {
@@ -461,14 +503,17 @@ public class SyncedObject {
             return false;
         }
 
-        JSONArray itemNames = item.names();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (item) {
+            JSONArray itemNames = item.names();
 
-        for (int i = 0; i < itemNames.length(); i++) {
-            try {
-                if (itemNames.getString(i).indexOf("-") == 0 && itemNames.getString(i).indexOf("!") > 0)
-                    return true;
-            } catch (JSONException e) {
-                return false;
+            for (int i = 0; i < itemNames.length(); i++) {
+                try {
+                    if (itemNames.getString(i).indexOf("-") == 0 && itemNames.getString(i).indexOf("!") > 0)
+                        return true;
+                } catch (JSONException e) {
+                    return false;
+                }
             }
         }
 

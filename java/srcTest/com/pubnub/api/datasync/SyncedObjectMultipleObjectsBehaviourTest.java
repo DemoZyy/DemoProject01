@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -66,7 +68,8 @@ public class SyncedObjectMultipleObjectsBehaviourTest {
     }
 
     @Test
-    public void testUnsubscribe() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void testUnsubscribe()
+            throws NoSuchFieldException, IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
         final CountDownLatch settingsLatch = new CountDownLatch(1);
         final CountDownLatch playerLatch = new CountDownLatch(1);
         final CountDownLatch playersLatch = new CountDownLatch(1);
@@ -105,7 +108,11 @@ public class SyncedObjectMultipleObjectsBehaviourTest {
         Field f = pubnub.getClass().getSuperclass().getSuperclass().getDeclaredField("syncedObjectManager");
         f.setAccessible(true);
         SyncedObjectManagerCore manager = (SyncedObjectManager) f.get(pubnub);
-        String[] channels = manager.getChannelsForSubscribe();
+
+        Method m = manager.getClass().getSuperclass().getDeclaredMethod("getChannelsForSubscribe");
+        m.setAccessible(true);
+
+        String[] channels = (String[]) m.invoke(manager, null);
         assertEquals(6, channels.length);
         assertFalse(Arrays.asList(channels).contains("pn_ds_player.*"));
         assertFalse(Arrays.asList(channels).contains("pn_ds_player"));

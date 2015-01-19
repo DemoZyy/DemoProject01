@@ -84,7 +84,7 @@ abstract public class SyncedObjectManagerCore {
         return pubnub;
     }
 
-    public synchronized SyncedObject getAlreadySubscribedObjectIfExists(String location) {
+    private synchronized SyncedObject getAlreadySubscribedObjectIfExists(String location) {
         synchronized (this.syncedObjects) {
             if (this.syncedObjects.containsKey(location)) {
                 return (SyncedObject) this.syncedObjects.get(location);
@@ -115,11 +115,11 @@ abstract public class SyncedObjectManagerCore {
         return current;
     }
 
-    public Object getValue(String location) throws JSONException {
+    protected Object getValue(String location) throws JSONException {
         return parseObject(getRawValue(location));
     }
 
-    public String firstListKey(String location) throws JSONException {
+    protected String firstListKey(String location) throws JSONException {
         JSONObject value = getRawValue(location);
         String result;
 
@@ -131,7 +131,7 @@ abstract public class SyncedObjectManagerCore {
         return  result;
     }
 
-    public String lastListKey(String location) throws JSONException {
+    protected String lastListKey(String location) throws JSONException {
         JSONObject value = getRawValue(location);
         String lastKey = null;
 
@@ -147,7 +147,7 @@ abstract public class SyncedObjectManagerCore {
         return lastKey;
     }
 
-    public void invokeActionCallbacks(ArrayList cbs, String action, String updatedAt, List data) {
+    private void invokeActionCallbacks(ArrayList cbs, String action, String updatedAt, List data) {
         Iterator cbsIterator = cbs.iterator();
 
         //noinspection WhileLoopReplaceableByForEach
@@ -163,11 +163,11 @@ abstract public class SyncedObjectManagerCore {
         }
     }
 
-    public ArrayList getCallbacksByLocation(String location) {
+    private ArrayList getCallbacksByLocation(String location) {
         return getCallbacksByLocation(location, false);
     }
 
-    public ArrayList getCallbacksByLocation(String location, boolean strict) {
+    private ArrayList getCallbacksByLocation(String location, boolean strict) {
         Iterator keys = callbacks.entrySet().iterator();
         ArrayList resultCallbacks = new ArrayList();
         String currentLocation;
@@ -186,7 +186,7 @@ abstract public class SyncedObjectManagerCore {
         return resultCallbacks;
     }
 
-    public String[] getChannelsForSubscribe() {
+    private String[] getChannelsForSubscribe() {
         String[] result;
 
         synchronized (this.syncedObjects) {
@@ -215,7 +215,7 @@ abstract public class SyncedObjectManagerCore {
         return result;
     }
 
-    public String[] getChannelsForUnsubscribe(String objectId) {
+    private String[] getChannelsForUnsubscribe(String objectId) {
         return new String[]{
                 "pn_ds_" + objectId,
                 "pn_ds_" + objectId + ".*",
@@ -518,7 +518,7 @@ abstract public class SyncedObjectManagerCore {
         }
     }
 
-    public void applyAllUpdates() throws JSONException {
+    private void applyAllUpdates() throws JSONException {
         // DANGER: complete transactions of not ready objects can be applied
         synchronized (this.updates) {
             Iterator updatesIterator = this.updates.keySet().iterator();
@@ -532,7 +532,7 @@ abstract public class SyncedObjectManagerCore {
         }
     }
 
-    public void applyUpdates(SyncedObjectUpdatesList updatesList) {
+    private void applyUpdates(SyncedObjectUpdatesList updatesList) {
         if (!updatesList.isComplete()) {
             return;
         }
@@ -577,7 +577,7 @@ abstract public class SyncedObjectManagerCore {
         }
     }
 
-    public synchronized void applyUpdate(SyncedObjectDelta delta) throws JSONException {
+    private synchronized void applyUpdate(SyncedObjectDelta delta) throws JSONException {
         String action = delta.getAction();
 
         if (ACTION_MERGE.equals(action)
@@ -600,11 +600,11 @@ abstract public class SyncedObjectManagerCore {
         return (SyncedObject) this.syncedObjects.get(objectId);
     }
 
-    public boolean isObjectSyncPending(String objectId) {
+    private boolean isObjectSyncPending(String objectId) {
         return this.objectsSyncPending.contains(objectId);
     }
 
-    public void fetchObject(String objectId, String path, final DataSyncCallback callback) {
+    private void fetchObject(String objectId, String path, final DataSyncCallback callback) {
         fetchObject(objectId, path, callback, null);
     }
 

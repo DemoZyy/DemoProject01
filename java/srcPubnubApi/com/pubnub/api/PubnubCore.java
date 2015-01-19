@@ -385,6 +385,23 @@ abstract class PubnubCore {
     }
 
     /**
+     * Set Resume on Reconnect current setting for DataSync thread
+     * @param resumeOnReconnect
+     *            True or False setting for Resume on Reconnect
+     */
+    public void setDataSyncResumeOnReconnect(boolean resumeOnReconnect) {
+        this.syncedObjectManager.setResumeOnReconnect(resumeOnReconnect);
+    }
+
+    /**
+     * Returns Resume on Reconnect current setting for DataSync thread
+     * @return Resume on Reconnect setting
+     */
+    public boolean getDataSyncResumeOnReconnect() {
+        return this.syncedObjectManager.getResumeOnReconnect();
+    }
+
+    /**
      * This method returns unique identifier.
      * @return Unique Identifier .
      */

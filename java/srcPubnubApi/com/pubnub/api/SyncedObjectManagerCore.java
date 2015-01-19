@@ -223,9 +223,12 @@ abstract public class SyncedObjectManagerCore {
         };
     }
 
-    // TODO: refactor HACK!
-    private boolean isResumeOnReconnect() {
-        return resumeOnReconnect;
+    public boolean getResumeOnReconnect() {
+        return this.resumeOnReconnect;
+    }
+
+    public void setResumeOnReconnect(boolean resumeOnReconnect) {
+        this.resumeOnReconnect = resumeOnReconnect;
     }
 
     private void resubscribe() {
@@ -263,11 +266,11 @@ abstract public class SyncedObjectManagerCore {
                 try {
                     jsa = new JSONArray(response);
 
-                    _timetoken = (!_saved_timetoken.equals("0") && isResumeOnReconnect())
+                    _timetoken = (!_saved_timetoken.equals("0") && getResumeOnReconnect())
                             ? _saved_timetoken
                             : jsa.get(1).toString();
 
-                    log.verbose("Resume On Reconnect is " + isResumeOnReconnect());
+                    log.verbose("Resume On Reconnect is " + getResumeOnReconnect());
                     log.verbose("Saved Timetoken : " + _saved_timetoken);
                     log.verbose("In Response Timetoken : " + jsa.get(1).toString());
                     log.verbose("Timetoken value set to " + _timetoken);
@@ -319,7 +322,7 @@ abstract public class SyncedObjectManagerCore {
 
             public void handleTimeout(HttpRequest hreq) {
                 log.verbose("Timeout Occurred, Calling disconnect callbacks on the channels");
-                String timeoutTimetoken = (isResumeOnReconnect()) ?
+                String timeoutTimetoken = (getResumeOnReconnect()) ?
                         (_timetoken.equals("0")) ? _saved_timetoken : _timetoken
                         : "0";
                 log.verbose("Timeout Timetoken : " + timeoutTimetoken);

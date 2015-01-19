@@ -58,6 +58,13 @@ abstract class PubnubUtilCore {
         return splittedList;
     }
 
+    public static String joinString(List sourceArray, String delimiter) {
+        String[] sourceStringArray = new String[sourceArray.size()];
+        sourceStringArray = (String[]) sourceArray.toArray(sourceStringArray);
+
+        return joinString(sourceStringArray, delimiter);
+    }
+
     /**
      * Takes String[] of tokens, and String delimiter as input and returns
      * joined String

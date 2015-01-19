@@ -216,7 +216,7 @@ public class PubnubError {
     /**
      * Empty updates list for transaction
      */
-    public static final int         DATA_SYNC_NO_UPDATES_FOR_TRANSACTION         =       135;
+    public static final int         PNERR_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION   =       135;
 
     // Error Objects
 
@@ -451,7 +451,7 @@ public class PubnubError {
 
     static final PubnubError PNERROBJ_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION     =
             new PubnubError     (
-                    DATA_SYNC_NO_UPDATES_FOR_TRANSACTION ,
+                    PNERR_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION ,
                     "Empty updates list for transaction"
     );
     public  final int errorCode;

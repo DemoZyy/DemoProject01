@@ -27,15 +27,15 @@ public class SyncedObject {
     private AtomicBoolean isReady = new AtomicBoolean(false);
 
     /**
-     * Is object ready
+     * Is object connected
      *
      * false - just created
-     * true  - when initial data object synchronization with server is done
+     * true  - when object is connected to updates channels
      */
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
     /**
-     * Is object ready
+     * Is object explicitly unsubscribed
      *
      * false - just created
      * true  - after #unsubscribe() method invoked

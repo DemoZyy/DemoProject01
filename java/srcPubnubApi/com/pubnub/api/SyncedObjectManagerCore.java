@@ -378,7 +378,7 @@ abstract public class SyncedObjectManagerCore {
             }
         } else if (message.has(DS_SUBSCRIBE_RESPONSE_STATUS)) {
             String status;
-            String transaction;
+            String transactionId;
 
             try {
                 status = message.getString(DS_SUBSCRIBE_RESPONSE_STATUS);
@@ -390,7 +390,7 @@ abstract public class SyncedObjectManagerCore {
             if (!status.equals(DS_SUBSCRIBE_STATUS_COMPLETE)) return;
 
             try {
-                transaction = message.getString("trans_id");
+                transactionId = message.getString("trans_id");
             } catch (JSONException e) {
                 invokeErrorCallback(PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, message.toString()));
                 return;
@@ -398,26 +398,19 @@ abstract public class SyncedObjectManagerCore {
 
             synchronized (this.updates) {
                 SyncedObjectUpdatesList updatesList =
-                        (SyncedObjectUpdatesList) this.updates.get(transaction);
+                        (SyncedObjectUpdatesList) this.updates.get(transactionId);
 
                 if (updatesList == null || updatesList.size() == 0) {
                     invokeErrorCallback(PubnubError.getErrorObject(
                             PubnubError.PNERROBJ_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION,
-                            transaction
+                            transactionId
                     ));
                     return;
                 }
 
                 updatesList.setComplete(true);
 
-                SyncedObjectDelta first = (SyncedObjectDelta) updatesList.get(0);
-
-                String objectId = PubnubUtil.splitString(first.getLocation(), ".")[0];
-
-                if (isObjectSyncPending(objectId)) {
-                    applyUpdates(updatesList);
-                    this.updates.remove(transaction);
-                }
+                applyUpdates(transactionId);
             }
         }
     }
@@ -521,21 +514,44 @@ abstract public class SyncedObjectManagerCore {
         }
     }
 
-    private void applyAllUpdates() throws JSONException {
-        // DANGER: complete transactions of not ready objects can be applied
+    /**
+     * Apply updates that match given location without check for pending objects
+     *
+     * @param location to match
+     * @throws JSONException
+     */
+    private void applyPendingUpdates(String location) throws JSONException {
         synchronized (this.updates) {
             Iterator updatesIterator = this.updates.keySet().iterator();
-            String key;
 
+            //noinspection WhileLoopReplaceableByForEach
             while (updatesIterator.hasNext()) {
-                key = (String) updatesIterator.next();
-
-                applyUpdates((SyncedObjectUpdatesList) this.updates.get(key));
+                applyUpdates((String) updatesIterator.next(), location);
             }
         }
     }
 
-    private void applyUpdates(SyncedObjectUpdatesList updatesList) {
+    /**
+     * Apply updates without pending objects check
+     *
+     * @param transactionId to apply
+     */
+    private void applyUpdates(String transactionId) {
+        if (!isObjectSyncPending(transactionId)) {
+            applyUpdates(transactionId, null);
+        }
+    }
+
+    /**
+     * Apply updates from pending list
+     *
+     * @param transactionId to apply
+     * @param locationFilter for transaction location
+     */
+    private void applyUpdates(String transactionId, String locationFilter) {
+        SyncedObjectUpdatesList updatesList
+                = (SyncedObjectUpdatesList) this.updates.get(transactionId);
+
         if (!updatesList.isComplete()) {
             return;
         }
@@ -547,7 +563,16 @@ abstract public class SyncedObjectManagerCore {
         while (updatesIterator.hasNext()) {
             try {
                 currentDelta = (SyncedObjectDelta) updatesIterator.next();
-                applyUpdate(currentDelta);
+
+                if (locationFilter != null) {
+                    if (currentDelta.getLocation().indexOf(locationFilter) == 0) {
+                        System.out.println(locationFilter + " vs " + currentDelta.getLocation());
+                        applyUpdate(currentDelta);
+                    }
+                } else {
+                    // TODO: check all syncPending objects
+                    applyUpdate(currentDelta);
+                }
             } catch (JSONException e) {
                 invokeErrorCallback(currentDelta.getLocation(), PubnubError.PNERROBJ_JSON_ERROR);
             }
@@ -578,8 +603,17 @@ abstract public class SyncedObjectManagerCore {
         } else if (action.equals(ACTION_REPLACE)) {
             invokeActionCallbacks(cbs, ACTION_REPLACE, updatedAt, updatesList);
         }
+
+        // remove object from pending updates list
+        this.updates.remove(transactionId);
     }
 
+    /**
+     * Apply single update
+     *
+     * @param delta to apply
+     * @throws JSONException
+     */
     private synchronized void applyUpdate(SyncedObjectDelta delta) throws JSONException {
         String action = delta.getAction();
 
@@ -607,6 +641,10 @@ abstract public class SyncedObjectManagerCore {
         return this.objectsSyncPending.contains(objectId);
     }
 
+    private boolean removeObjectFromSyncPending(String objectId) {
+        return this.objectsSyncPending.remove(objectId);
+    }
+
     private void fetchObject(String objectId, String path, final DataSyncCallback callback) {
         fetchObject(objectId, path, callback, null);
     }
@@ -632,10 +670,11 @@ abstract public class SyncedObjectManagerCore {
 
                 if (jsonMessage.isNull("next_page")) {
                     if (callback != null) {
+                        removeObjectFromSyncPending(objectId);
                         getObjectById(objectId).setIsReady(true);
 
                         try {
-                            applyAllUpdates();
+                            applyPendingUpdates(location);
                         } catch (JSONException e) {
                             callback.errorCallback(PubnubError.PNERROBJ_JSON_ERROR);
                         }

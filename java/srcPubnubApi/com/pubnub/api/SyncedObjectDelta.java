@@ -5,7 +5,6 @@ import org.json.JSONObject;
 
 import java.util.UUID;
 
-// TODO: store original data type
 public class SyncedObjectDelta {
 
     private String action;
@@ -14,6 +13,8 @@ public class SyncedObjectDelta {
     private Long timetoken;
     private UUID transID;
     private Object value;
+
+    private static Logger log = new Logger(SyncedObjectDelta.class);
 
     public SyncedObjectDelta(JSONObject updateJSON, String location) {
         try {
@@ -27,8 +28,7 @@ public class SyncedObjectDelta {
                 this.value = updateJSON.get("value");
             }
         } catch (JSONException e) {
-            e.printStackTrace();
-            // TODO: all fields should exist
+            log.verbose("Error parsing DS delta at " + location + ". Message: " + updateJSON.toString());
         }
     }
 

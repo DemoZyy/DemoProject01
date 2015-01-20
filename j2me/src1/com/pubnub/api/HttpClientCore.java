@@ -1,17 +1,15 @@
 package com.pubnub.api;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import com.tinyline.util.GZIPInputStream;
+import org.json.me.JSONArray;
+import org.json.me.JSONException;
+import org.json.me.JSONObject;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
-
-import com.tinyline.util.GZIPInputStream;
-
-import org.json.me.*;
+import java.io.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class HttpClientCore extends HttpClient {
     private int requestTimeout = 310000;
@@ -113,7 +111,13 @@ public class HttpClientCore extends HttpClient {
 
             hc = (HttpConnection) Connector.open(url, Connector.READ_WRITE,
                                                  true);
-            hc.setRequestMethod(HttpConnection.GET);
+            if (method.equals("GET")) {
+                hc.setRequestMethod(HttpConnection.GET);
+            } else if (method.equals("POST")) {
+                hc.setRequestMethod(HttpConnection.POST);
+                hc.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            }
+
             if (_headers != null) {
                 Enumeration en = _headers.keys();
                 while (en.hasMoreElements()) {
@@ -131,9 +135,13 @@ public class HttpClientCore extends HttpClient {
                 }
             }
 
+            if (method.equals("POST")) {
+                OutputStreamWriter out = new OutputStreamWriter(hc.openOutputStream());
+                out.write(data);
+                out.close();
+            }
+
             rc = hc.getResponseCode();
-
-
 
             if (!checkResponse(rc)) {
                 break;

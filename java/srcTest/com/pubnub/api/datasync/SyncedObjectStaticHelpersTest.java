@@ -57,4 +57,17 @@ public class SyncedObjectStaticHelpersTest {
         assertEquals("player.music", SyncedObject.glue("player", "music"));
         assertEquals("music", SyncedObject.glue("", "music"));
     }
+
+    @Test
+    public void testParentCovers() {
+        assertFalse(SyncedObjectManager.parentContains("player", ""));
+        assertFalse(SyncedObjectManager.parentContains("player", "music"));
+        assertFalse(SyncedObjectManager.parentContains("player.settings", "player.music"));
+        assertFalse(SyncedObjectManager.parentContains("", "music"));
+        assertFalse(SyncedObjectManager.parentContains("players", "player.settings.volume"));
+
+        assertTrue(SyncedObjectManager.parentContains("player", "player.settings.volume"));
+        assertTrue(SyncedObjectManager.parentContains("player.settings", "player.settings.volume"));
+        assertTrue(SyncedObjectManager.parentContains("player.settings", "player.settings"));
+    }
 }

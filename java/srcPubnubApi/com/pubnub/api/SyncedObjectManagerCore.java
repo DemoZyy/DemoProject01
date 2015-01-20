@@ -565,13 +565,26 @@ abstract public class SyncedObjectManagerCore {
                 currentDelta = (SyncedObjectDelta) updatesIterator.next();
 
                 if (locationFilter != null) {
-                    if (currentDelta.getLocation().indexOf(locationFilter) == 0) {
-                        System.out.println(locationFilter + " vs " + currentDelta.getLocation());
+                    if (parentContains(locationFilter, currentDelta.getLocation())) {
                         applyUpdate(currentDelta);
                     }
                 } else {
-                    // TODO: check all syncPending objects
-                    applyUpdate(currentDelta);
+                    Iterator pendingObjectsIterator = this.objectsSyncPending.iterator();
+                    boolean matched = false;
+
+                    while (pendingObjectsIterator.hasNext()) {
+                        if (parentContains(
+                                (String) pendingObjectsIterator.next(),
+                                currentDelta.getLocation())
+                        ) {
+                            matched = true;
+                            break;
+                        }
+                    }
+
+                    if (!matched) {
+                        applyUpdate(currentDelta);
+                    }
                 }
             } catch (JSONException e) {
                 invokeErrorCallback(currentDelta.getLocation(), PubnubError.PNERROBJ_JSON_ERROR);
@@ -796,5 +809,9 @@ abstract public class SyncedObjectManagerCore {
         }
 
         return result;
+    }
+
+    public static boolean parentContains(String parent, String child) {
+        return (parent.equals(child) || child.indexOf(parent + ".") == 0);
     }
 }

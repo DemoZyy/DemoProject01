@@ -96,9 +96,15 @@ public class SyncedObjectValueGettersTest {
     }
 
     @Test
-    public void testGetType() {
+    public void testGetType() throws InterruptedException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub, true);
-        SyncedObject player = pubnub.sync(playerString);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        TestHelper.SimpleDataSyncCallback cb = new TestHelper.SimpleDataSyncCallback(latch);
+
+        SyncedObject player = pubnub.sync(playerString, cb);
+
+        latch.await(5, TimeUnit.SECONDS);
 
         assertEquals(SyncedObject.TYPE_OBJECT, player.getType("settings"));
         assertEquals(SyncedObject.TYPE_LIST, player.getType("tracks"));
@@ -108,9 +114,15 @@ public class SyncedObjectValueGettersTest {
     }
 
     @Test
-    public void testGetSize() {
+    public void testGetSize() throws InterruptedException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub, true);
-        SyncedObject player = pubnub.sync(playerString);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        TestHelper.SimpleDataSyncCallback cb = new TestHelper.SimpleDataSyncCallback(latch);
+
+        SyncedObject player = pubnub.sync(playerString, cb);
+
+        latch.await(5, TimeUnit.SECONDS);
 
         assertNull(player.size("settings.volume"));
         assertNull(player.size("settings.locale"));

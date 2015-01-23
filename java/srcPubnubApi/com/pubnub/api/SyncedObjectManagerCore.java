@@ -250,6 +250,7 @@ abstract public class SyncedObjectManagerCore {
 
         if (channelString.isEmpty()) {
             dataSyncManager.resetHttpManager();
+            return;
         }
 
         String[] urlComponents = {pubnub.getPubnubUrl(), "subscribe",
@@ -639,10 +640,10 @@ abstract public class SyncedObjectManagerCore {
             val.put("pn_val", delta.getValue());
             val.put("pn_tt", delta.getTimetoken().toString());
 
-            updateJSONObjectValue(data, val, delta.getLocation());
+            JSONHelper.updateJSONObjectValue(data, val, delta.getLocation());
         } else if (ACTION_REPLACE_DELETE.equals(action)
                 || ACTION_REMOVE.equals(action)) {
-            updateJSONObjectValue(data, null, delta.getLocation());
+            JSONHelper.updateJSONObjectValue(data, null, delta.getLocation());
         }
     }
 
@@ -668,7 +669,7 @@ abstract public class SyncedObjectManagerCore {
         args.put("location", location);
 
         if (nextPage != null) {
-            args.put("nextPage", nextPage);
+            args.put("next_page", nextPage);
         }
 
         pubnub.get(args, new Callback() {
@@ -676,7 +677,11 @@ abstract public class SyncedObjectManagerCore {
                 JSONObject jsonMessage = ((JSONObject) message);
 
                 try {
-                    merge(data, jsonMessage.getJSONObject("data"), location);
+                    JSONObject jsonData = jsonMessage.getJSONObject("data");
+
+                    if (jsonData != null && jsonData.length() > 0) {
+                        data = JSONHelper.merge(data, jsonData, location);
+                    }
                 } catch (JSONException e) {
                     callback.errorCallback(PubnubError.PNERROBJ_JSON_ERROR);
                 }
@@ -709,6 +714,7 @@ abstract public class SyncedObjectManagerCore {
         synchronized (this.syncedObjects) {
             this.data.remove(location);
             unsubscribe(location);
+            resubscribe();
             this.syncedObjects.remove(location);
         }
     }
@@ -719,67 +725,6 @@ abstract public class SyncedObjectManagerCore {
 
         this.pubnub.unsubscribe(getChannelsForUnsubscribe(location));
     }
-
-    /**
-     * Merge JSON objects.
-     *
-     * @param original  - original object
-     * @param newObject - updated values
-     * @param location  - location of updates
-     */
-    public static void merge(JSONObject original, JSONObject newObject, String location) throws JSONException {
-        JSONArray newObjectNames = newObject.names();
-        JSONObject current = getOrCreatePath(original, location);
-
-        for (int i = 0; i < newObjectNames.length(); i++) {
-            String key = newObjectNames.getString(i);
-
-            if (current.has(key)) {
-                current.remove(key);
-            }
-
-            current.put(key, newObject.get(key));
-        }
-    }
-
-    /**
-     * Get or create json path in original JSONObject.
-     *
-     * @param original - JSONObject
-     * @param path     - path
-     * @return JSONObject located at path.
-     */
-    public static JSONObject getOrCreatePath(JSONObject original, String path) throws JSONException {
-        String[] pathElements = PubnubUtil.splitString(path, ".");
-        JSONObject current = original;
-
-        for (int i = 0; i < pathElements.length; i++) {
-            String key = pathElements[i];
-
-            if (!current.has(key)) {
-                current.put(key, new JSONObject());
-            }
-
-            current = current.getJSONObject(key);
-        }
-
-        return current;
-    }
-
-    public static void updateJSONObjectValue(JSONObject original, Object value, String location)
-            throws JSONException {
-        int index = location.lastIndexOf(".");
-        JSONObject current = original;
-        String key = location;
-
-        if (index != -1) {
-            current = getOrCreatePath(original, location.substring(0, index));
-            key = location.substring(index + 1);
-        }
-
-        current.put(key, value);
-    }
-
 
     public static Object parseObject(JSONObject object) {
         if (object.has("pn_val")) {

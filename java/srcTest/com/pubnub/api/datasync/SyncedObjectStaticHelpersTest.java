@@ -1,5 +1,6 @@
 package com.pubnub.api.datasync;
 
+import com.pubnub.api.JSONHelper;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.SyncedObjectManager;
@@ -34,13 +35,13 @@ public class SyncedObjectStaticHelpersTest {
     public void testMergeJson() throws JSONException {
         JSONObject result = new JSONObject("{'music': {'artists':{}}, 'list':['a','b','c']}");
 
-        SyncedObjectManager.merge(result, new JSONObject("{'artists': 12345}"), "music");
+        JSONHelper.merge(result, new JSONObject("{'artists': 12345}"), "music");
         assertEquals(result.getJSONObject("music").getInt("artists"), 12345);
 
-        SyncedObjectManager.updateJSONObjectValue(result, null, "list");
+        JSONHelper.updateJSONObjectValue(result, null, "list");
         assertFalse(result.has("list"));
 
-        SyncedObjectManager.updateJSONObjectValue(result, 55, "a.b.c");
+        JSONHelper.updateJSONObjectValue(result, 55, "a.b.c");
         assertEquals(result.getJSONObject("a").getJSONObject("b").getInt("c"), 55);
     }
 

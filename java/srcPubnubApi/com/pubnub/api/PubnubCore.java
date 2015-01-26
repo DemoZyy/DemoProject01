@@ -12,6 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 
 /**
@@ -2882,8 +2883,12 @@ abstract class PubnubCore {
         }
 
         if (method.equals("POST") && args.get("sort_key") != null) {
-            // TODO: validate sort_key with regex [A-Za-z]+
-            parameters.put("sort_key", args.get("sort_key"));
+            if (Pattern.matches("[A-Za-z]+", (String) args.get("sort_key"))) {
+                parameters.put("sort_key", args.get("sort_key"));
+            } else {
+                cb.invokeErrorCallback(null, PubnubError.PNERROBJ_DATA_SYNC_INVALID_SORT_KEY );
+                return;
+            }
         }
 
         parameters.put("method", method);

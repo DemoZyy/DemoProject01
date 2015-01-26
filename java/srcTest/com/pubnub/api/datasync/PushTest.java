@@ -1,6 +1,7 @@
 package com.pubnub.api.datasync;
 
 import com.pubnub.api.Pubnub;
+import com.pubnub.api.PubnubError;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.TestHelper;
 import org.json.JSONArray;
@@ -156,5 +157,38 @@ public class PushTest {
         assertEquals("track#2", updates.get(2));
 
         assertEquals(0, latch1.getCount());
+    }
+
+    @Test
+    public void testPushWithInvalidSortedKey() throws InterruptedException, JSONException {
+        DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
+
+        final CountDownLatch latch1 = new CountDownLatch(1);
+        final CountDownLatch latch2 = new CountDownLatch(1);
+
+        final TestHelper.SimpleCallback cb1 = new TestHelper.SimpleCallback(latch1) {
+            @Override
+            public void errorCallback(PubnubError error) {
+                System.out.println(error.getErrorString());
+            }
+        };
+        TestHelper.SimpleDataSyncCallback cb2 = new TestHelper.SimpleDataSyncCallback() {
+            @Override
+            public void readyCallback(SyncedObject syncedObject) {
+                syncedObject.push("tracks", "track#1", "123", cb1);
+
+                latch2.countDown();
+            }
+        };
+
+        pubnub.sync(playerString, cb2);
+
+        latch2.await(5, TimeUnit.SECONDS);
+        latch1.await(5, TimeUnit.SECONDS);
+
+        PubnubError error = (PubnubError) cb1.getResponse();
+
+        assertEquals(136, error.errorCode);
+        assertEquals(0, latch2.getCount());
     }
 }

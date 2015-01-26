@@ -41,6 +41,7 @@ public class TestHelper {
         @Override
         public void errorCallback(String channel, PubnubError error) {
             this.error = true;
+            this.response = error;
             if (this.latch != null) {
                 this.latch.countDown();
             }

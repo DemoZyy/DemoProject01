@@ -218,6 +218,11 @@ public class PubnubError {
      */
     public static final int         PNERR_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION   =       135;
 
+    /**
+     * Sort key should match regex [A-Za-z]+
+     */
+    public static final int         PNERR_DATA_SYNC_INVALID_SORT_KEY             =       136;
+
     // Error Objects
 
     static final PubnubError        PNERROBJ_TIMEOUT                           =
@@ -454,6 +459,12 @@ public class PubnubError {
                     PNERR_DATA_SYNC_NO_UPDATES_FOR_TRANSACTION ,
                     "Empty updates list for transaction"
     );
+
+    static final PubnubError PNERROBJ_DATA_SYNC_INVALID_SORT_KEY               =
+            new PubnubError     (
+                    PNERR_DATA_SYNC_INVALID_SORT_KEY ,
+                    "Invalid sort key"
+            );
     public  final int errorCode;
     public  final int errorCodeExtended;
     public  final JSONObject errorObject;

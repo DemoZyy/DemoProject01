@@ -163,10 +163,18 @@ public class SyncedObject {
     }
 
     public synchronized Object pop() {
+        return pop(null);
+    }
+
+    public synchronized Object pop(Callback callback) {
         try {
             String lastKey = syncedObjectManager.lastListKey(location);
             Object result = syncedObjectManager.getValue(glue(location, lastKey));
-            remove(lastKey);
+            if (callback == null) {
+                remove(lastKey);
+            } else {
+                remove(lastKey);
+            }
             return result;
         } catch (JSONException e) {
             return null;

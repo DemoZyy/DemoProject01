@@ -395,6 +395,10 @@ public class SyncedObject {
         return child(relativePath, null);
     }
 
+    public void merge(Object data) {
+        merge("", data);
+    }
+
     public void merge(String path, Object data) {
         merge(path, data, new Callback() {
         });
@@ -410,6 +414,10 @@ public class SyncedObject {
         pubnub.merge(args, callback);
     }
 
+    public void replace(Object data) {
+        replace("", data);
+    }
+
     public void replace(String path, Object data) {
         replace(path, data, new Callback() {
         });
@@ -422,6 +430,10 @@ public class SyncedObject {
         args.put("data", data);
 
         pubnub.replace(args, callback);
+    }
+
+    public void push(Object data) {
+        push("", data);
     }
 
     public void push(String path, Object data) {
@@ -441,6 +453,10 @@ public class SyncedObject {
     public void push(String path, Object data, String key) {
         push(path, data, key, new Callback() {
         });
+    }
+
+    public void push(Object data, String key, Callback callback) {
+        push("", data, key, callback);
     }
 
     public void push(String path, Object data, String key, Callback callback) {

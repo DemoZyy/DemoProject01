@@ -10,6 +10,9 @@ public class DataSyncCallback {
     public void readyCallback(SyncedObject syncedObject) {
     }
 
+    public void changeCallback(List updates, String path) {
+    }
+
     public void mergeCallback(List updates, String path) {
     }
 

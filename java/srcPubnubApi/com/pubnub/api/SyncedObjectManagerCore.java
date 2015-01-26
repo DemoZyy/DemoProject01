@@ -153,6 +153,9 @@ abstract public class SyncedObjectManagerCore {
         //noinspection WhileLoopReplaceableByForEach
         while (cbsIterator.hasNext()) {
             DataSyncCallback cb = (DataSyncCallback) cbsIterator.next();
+
+            cb.changeCallback(data, updatedAt);
+
             if (action.equals(ACTION_MERGE)) {
                 cb.mergeCallback(data, updatedAt);
             } else if (action.equals(ACTION_REPLACE)) {

@@ -80,7 +80,7 @@ public class MergeTest {
     public void testMergeObjectCallback() throws InterruptedException, JSONException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
-        final CountDownLatch latch1 = new CountDownLatch(2);
+        final CountDownLatch latch1 = new CountDownLatch(3);
 
         TestHelper.SimpleDataSyncCallback cb1 = new TestHelper.SimpleDataSyncCallback() {
             @Override
@@ -95,6 +95,11 @@ public class MergeTest {
                 }
 
                 syncedObject.merge("settings", settings);
+                latch1.countDown();
+            }
+
+            @Override
+            public void changeCallback(List updates, String path) {
                 latch1.countDown();
             }
 

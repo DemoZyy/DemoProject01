@@ -1,0 +1,836 @@
+:toc:
+
+== child()
+=== Description
+Return a new data sync reference off an existing data synced reference.
+[TIP]
+Use of the PubNub child() API requires the feature to first be enabled in the Admin console.
+[TIP]
+child() only works against existing data-synced references.
+
+=== Usage:
+[source,java]
+----
+reference.child(path);
+reference.child(path, callback);
+----
+
+=== Examples:
+==== Derive references using child() off the existing house reference.
+[source,java]
+----
+SyncedObject home = pubnub.sync("home");
+SyncedObject thermostat = home.child("living_room.thermostat");
+SyncedObject occupants = home.child("occupants");
+----
+
+== merge()
+=== Description
+Merge data at specific location in a Data Sync object.
+ +
+ +
+The data will be merged with any existing data at the specified location. If the object already contains the same key
+as the new data at that location, the new data will be written. Otherwise the data at the existing location and the new
+data will exist side by side.
+
+[TIP]
+Use of the PubNub merge() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+Merge data relative to the Data Sync reference, with options.
+
+[source,java]
+----
+reference.merge(data);
+reference.merge(path, data);
+reference.merge(path, data, callback);
+----
+
+=== Callbacks
+==== Success callback
+The success callback returns a well-formed object consisting of:
+
+* location
+* op (operation)
+* service
+* status
+* timetoken of operation completion
+
+==== Error Callback
+The error callback returns an PubnubError object which details the description of the error, along with supporting information.
+
+=== Examples
+==== Example 1
+Add the value of {"Jimmy":10} to the data-synced reference scores.
+
+[source,java]
+----
+scores.merge(new JSONObject("{\"Jimmy\":10}"););
+----
+
+==== Example 2
+Add the value of {"Jimmy":10} to the data-synced reference scores, with success and error callbacks defined
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+scores.merge(new JSONObject("{\"Jimmy\":10}"), callback);
+----
+
+==== Example 3
+Same as the previous example, but with an optional path argument, and without the error callback:
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+};
+
+scores.merge("top20", new JSONObject("{\"Frankie\":100}"), callback);
+----
+
+==== Example 4
+Continuing from previous example. Update Frankie’s score directly via path argument with no success or error callbacks.
+
+[source,java]
+----
+scores.merge("top20.Frankie", 200), callback);
+----
+
+== pop()
+=== Description
+Pop data off the end of a Data Sync list structure object.
+
+[TIP]
+Use of the PubNub pop() API requires the feature to first be enabled in the Admin console.
+
+[CAUTION]
+The pop() method decides which data element is last in the array (and thus removed from the list, and returned) based
+on the local copy of the data. If you cannot be 100% confident that the device which is performing pop() is the only
+device that can mutate list data, and/or you cannot be 100% confident that the device which is performing pop() is
+up to date with the server, do not perform pop() on this device. Instead, use remove() with a path argument against the
+list elements key to be 100% sure you are removing the correct data.
+
+=== Usage
+Pop list data relative to the Data Sync reference, with options.
+
+[source,java]
+----
+reference.pop();
+reference.pop(callback);
+----
+
+=== Callbacks
+==== Success callback
+The success callback returns a well-formed object consisting of:
+
+* location
+* op (operation)
+* service
+* status
+* timetoken of operation completion
+
+==== Error Callback
+The error callback returns an PubnubError object which details the description of the error, along with supporting information.
+
+=== Examples:
+
+==== Example 1
+Pop off the last element in the list.
+
+[source,java]
+----
+scores.pop();
+----
+
+==== Example 2
+Pop off the last element in the list, with optional error and success callbacks.
+
+[source,java]
+----
+// callback will be passed to #remove() popped object method
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+scores.pop(callback);
+----
+
+== push()
+
+Push data as a list element at a specific location within a Data Sync object.
+ +
+ +
+The data will be pushed as a list element into a "list structure". List structures are implicitly created when you push,
+and can only contain list elements.
+ +
+ +
+List elements can be of any valid JSON type, and of any nested depth.
+ +
+ +
+If the reference or reference+path already contains list data, push() appends to that list structure.
+ +
+ +
+If the reference or reference+path does not contain any data, push() creates a new list structure at that location,
+appending this new list element value there.
+ +
+ +
+If the reference or reference+path contains any other existing JSON object at this location (which is not list data),
+and you push into it, existing non-list data at that location will be lost, and overwritten by the push() call,
+creating a new list structure at that location, appending this new list element value there.
+ +
+ +
+Treat lists as arrays, as they have order, and can contain duplicate values.
+
+[TIP]
+Especially when using custom sort keys, its important to note that each list element has a unique control key belonging
+to it, which resembles ^-[A-Za-z]*!1[0-9]{16}$ with the [A-Za-z]* portion of the regex being the custom sort key,
+if you choose to push with a custom sort key set.
+ +
+When performing operations on elements in a list, operating on the control key is the only reliable way to operate on a
+given element.
+ +
+ +
+[TIP]
+Use of the PubNub push() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+Push list data relative to the Data Sync reference, with options.
+
+[source,java]
+----
+reference.push(data);
+reference.push(path, data);
+reference.push(path, data, callback);
+----
+
+=== Callbacks
+==== Success callback
+The success callback returns a well-formed object consisting of:
+
+* location
+* op (operation)
+* service
+* status
+* timetoken of operation completion
+
+==== Error Callback
+The error callback returns an PubnubError object which details the description of the error, along with supporting information.
+
+=== Examples
+==== Example 1
+Push into the list defined at the data-synced reference scores with the value of {"Jimmy":10}.
+
+[source,java]
+----
+scores.push(new JSONObject("{\"Jimmy\":10}"););
+----
+
+==== Example 2
+Push the value of {"Jimmy":10} into the data-synced reference scores, with success and error callbacks defined.
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+scores.push(new JSONObject("{\"Jimmy\":10}"), callback);
+----
+
+==== Example 3
+Same as the previous example, without the error callback:
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+};
+
+scores.push(new JSONObject("{\"Frankie\":100}"), callback);
+----
+
+==== Example 4
+Continuing from previous example, but now, using a custom sort key and success callback:
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+};
+
+scores.push(new JSONObject("{\"Frankie\":100}"), "aaab", callback);
+
+// Important to note that the successCallback() will contain the key of the newly inserted element
+// via the +index+ key
+success { status: 200,
+   index: '-aaab!14164287818638280',
+   service: 'DataSync',
+   timetoken: '14164287818638700',
+   location: 'scores.Frankie',
+   op: 'push' }
+----
+
+== remove()
+=== Description
+Remove data relative to a Data Sync object location.
+[CAUTION]
+Calling with no path argument, or with path as null will remove all data from the specified object starting at the reference point. This includes any children of the reference.
+[TIP]
+Use of the PubNub remove() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+[source,java]
+----
+reference.remove();
+reference.remove(path);
+reference.remove(path, callback);
+----
+
+=== Callbacks
+==== Success callback
+The success callback returns a well-formed object consisting of:
+
+* location
+* op (operation)
+* service
+* status
+* timetoken of operation completion
+
+==== Error Callback
+The error callback returns an PubnubError object which details the description of the error, along with supporting information.
+
+=== Examples
+==== Example 1
+Remove all data in "players" Data Sync reference.
+[source,java]
+----
+players.remove();
+----
+
+==== Example 2
+Remove only player charlie from the players Data Sync reference.
+
+[source,java]
+----
+/* Assume following existing data at the "players" reference
+{
+  "alice" : { "age" : 20, "color" : "red" },
+  "bob" : { "age" : 10, "color" : "blue" },
+  "charlie" : { "age" : 30, "color" : "white" }
+}
+*/
+
+players.remove("charlie");
+----
+
+==== Example 3
+Same as Example 2, but with the addition of success and error callbacks:
+
+[source,java]
+----
+/* Assume following data exists on server
+{
+  "alice" : { "age" : 20, "color" : "red" },
+  "bob" : { "age" : 10, "color" : "blue" },
+  "charlie" : { "age" : 30, "color" : "white" }
+}
+*/
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+players.remove("charlie", callback);
+----
+
+== replace()
+=== Description
+Replace data at specific location in a Data Sync object.
+ +
+ +
+The data will be replaced, overwriting any existing data at the specified location. If the object already contains the
+same key as the new data at that location, the new data will be overwritten.
+
+[TIP]
+Use of the PubNub replace() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+Replace data relative to the Data Sync reference, with options.
+
+[source,java]
+----
+reference.replace(data);
+reference.replace(path, data);
+reference.replace(path, data, callback);
+----
+
+=== Callbacks
+==== Success callback
+The success callback returns a well-formed object consisting of:
+
+* location
+* op (operation)
+* service
+* status
+* timetoken of operation completion
+
+==== Error Callback
+The error callback returns an PubnubError object which details the description of the error, along with supporting information.
+
+=== Examples
+==== Example 1
+Replace the value of {"Jimmy":10} at the data-synced reference scores.
+
+[source,java]
+----
+scores.replace(new JSONObject("{\"Jimmy\":10}"););
+----
+
+==== Example 2
+Replace the value of {"Jimmy":10} at the data-synced reference scores, with success and error callbacks defined in the options dictionary.
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+scores.replace(new JSONObject("{\"Jimmy\":10}"), callback);
+----
+
+==== Example 3
+Same as the previous example, but with an optional path argument, and without the error callback:
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+};
+
+scores.replace("top20", new JSONObject("{\"Frankie\":100}"), callback);
+----
+
+==== Example 4
+Continuing from previous example. Update Frankie’s score directly via the optional path argument with no success or error callbacks.
+
+[source,java]
+----
+scores.replace("top20.Frankie", 200), callback);
+----
+
+== sync()
+
+Retrieves the Data Sync object with specified full path. The updated object can be retrieved from the returned variable
+and the events can be used to notify the application when a modification to the object has occurred.
+[TIP]
+Use of the PubNub sync() API requires the feature to first be enabled in the Admin console.
+
+=== Usage:
+[source,java]
+----
+SyncedObject home = pubnub.sync(location);
+SyncedObject home = pubnub.sync(location, callback);
+----
+
+=== Examples:
+
+==== Initialize PubNub SDK and Sync on Top-level object 'home'
+[source,java]
+----
+Pubnub pubnub = new Pubnub("ds", "ds");
+SyncedObject home = pubnub.sync("home");
+----
+
+==== Using the child() method, created another sync reference relative to an existing one.
+[source,java]
+----
+SyncedObject home = home.child("occupants");
+----
+
+==== Use the readyCallback() callback of DataSyncCallback to determine when the object is synced and ready to use.
+[source,java]
+----
+DataSyncCallback callback = new DataSyncCallback() {
+    @Override
+    public void readyCallback(SyncedObject syncedObject) {
+        System.out.println(syncedObject.getMap());
+    }
+};
+
+Pubnub pubnub = new Pubnub("ds", "ds");
+SyncedObject home = pubnub.sync("home", callback);
+----
+
+==== Use the on.error() callback to determine when issues have occurred.
+[source,java]
+----
+DataSyncCallback callback = new DataSyncCallback() {
+    @Override
+    public void errorCallback(PubnubError error) {
+        //...
+    }
+};
+----
+
+==== Use callbacks to monitor changes to your synced object.
+[source,java]
+----
+DataSyncCallback callback = new DataSyncCallback() {
+    // ANY change to to the object can be received via the on.change() method.
+    @Override
+    public void changeCallback(List updates, String path) {
+        // ...
+    }
+
+    // Or, specific callbacks, based on operation, are also provided.
+    @Override
+    public void mergeCallback(List updates, String path) {
+        // Merge and Push (against a list) changes
+    }
+
+    @Override
+    public void replaceCallback(List updates, String path) {
+        // Replace-only changes
+    }
+
+    @Override
+    public void removeCallback(List updates, String path) {
+        // Remove and Pop (against a list) changes
+    }
+};
+----
+
+==== Mutate your data sync object using the mutator methods
+*Merge*
+[source,java]
+----
+// merge(), unlike replace(), will add data to your object WITHOUT truncating existing child data.
+JSONObject scoresUpdate = new JSONObject();
+scoresUpdate.put("Chauncy", 10);
+
+scores.merge(scoresUpdate);
+----
+
+*Replace*
+[source,java]
+----
+// replace(), unlike merge(), will add data to your object, WHILE truncating existing child data.
+JSONObject scoresUpdate = new JSONObject();
+scoresUpdate.put("Scotty", 3);
+
+scores.replace(scoresUpdate);
+----
+
+*Remove*
+[source,java]
+----
+// remove() deletes data
+scores.remove();
+----
+
+==== And specifically for Lists
+
+*Push*
+[source,java]
+----
+// push() appends data to the end of a list container
+JSONObject playersUpdate = new JSONObject();
+JSONObject player1 = new JSONObject();
+
+player1.put("name", "Randy");
+player1.put("weapon", "dagger");
+
+playersUpdate.put("Player_1", player1);
+
+players.push(playersUpdate);
+----
+
+*pop*
+[source,java]
+----
+// pop() pops data off the end of the list
+players.pop();
+----
+
+== size()
+=== Description
+Return size of Object or List element.
+ +
+Internally, it delegates request to #length() method of JSONObject.
+
+=== Usage
+[source,java]
+----
+reference.size();
+reference.size(relativePath);
+----
+
+
+== getType()
+=== Description
+Return type of datasync object
+[TIP]
+If at least one of the object's children keys matches starts with "-" sign and ha
+"!" sign after, this object will be represented as a list in SDK. #isPnList()
+static method is used to detect this.
+
+=== Usage
+[source,java]
+----
+reference.getType();
+reference.getType(relativePath);
+----
+
+=== Return
+One of the next constants:
+
+* SyncedObject.TYPE_BOOLEAN
+* SyncedObject.TYPE_INTEGER
+* SyncedObject.TYPE_STRING
+* SyncedObject.TYPE_OBJECT
+* SyncedObject.TYPE_LIST
+
+=== Examples
+==== Example 1
+Switch over the object's type
+
+[source,java]
+----
+switch (scores.getType()) {
+case SyncedObject.TYPE_OBJECT:
+    System.out.println("Element is JSON object and can be resolved with " +
+            "#getMap() instance method.");
+    break;
+case SyncedObject.TYPE_LIST:
+    System.out.println("Element is JSON array and can be resolved with " +
+            "#geList() instance method.");
+    break;
+case SyncedObject.TYPE_BOOLEAN:
+    System.out.println("Element is JSON boolean and can be resolved with " +
+            "#getBoolean() instance method.");
+    break;
+// etc...
+}
+----
+
+== Value getters
+=== Description
+Renders the native JSON object representation of a Data Sync reference.
+[TIP]
+Use of the PubNub value() API requires the feature to first be enabled in the Admin console.
+[WARNING]
+#getMap() and #getList() methods will parse raw data recursively.  In case these methods contain many nested elements
+it may be a resource consuming operations. Handle with care.
+
+=== Usage
+[source,java]
+----
+reference.getInteger();
+reference.getInteger(relativePath);
+reference.getBoolean();
+reference.getBoolean(relativePath);
+reference.getString();
+reference.getString(relativePath);
+reference.getMap();
+reference.getMap(relativePath);
+reference.getList();
+reference.getList(relativePath);
+----
+
+=== Returns
+Parsed Java object of strictly corresponding type or *null* in next situations:
+
+* Used type does not match. For example #getString() getter used when real object is boolean.
+* There are no matching element for given relative path.
+* JSONException was thrown while parsing raw object.
+
+=== Examples
+==== Example 1
+Render the JSON representation of all data in the players Data Sync reference.
+
+[source,java]
+----
+HashMap goalie = players.getMap();
+System.out.println(goalie.get("firstName"));
+----
+
+==== Example 2
+Render the JSON representation of leaf node of string type.
+
+[source,java]
+----
+String goalieName = players.getString("firstName");
+System.out.println(goalieName);
+----
+
+==== Example 3
+Render the JSON representation of all data in the players Data Sync reference at the top20 child path only.
+
+[source,java]
+----
+ArrayList top20 = players.getList("top20");
+System.out.println(goalie.get("firstName"));
+----
+
+== pamGrantSyncedObject()
+=== Description
+Grant access to data sync object.
+
+[TIP]
+Use of the PubNub grant() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+
+[source,java]
+----
+pamGrantSyncedObject(syncedObject, read, write, callback);
+pamGrantSyncedObject(syncedObject, read, write, ttl, callback);
+pamGrantSyncedObject(syncedObject, auth_key, read, write, callback);
+pamGrantSyncedObject(syncedObject, auth_key, read, write, ttl, callback);
+----
+
+=== Example
+Grant access to "game" datasync object.
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+pubnub.pamGrantSyncedObject("game", true, true, callback);
+----
+
+== pamAuditSyncedObject()
+=== Description
+Audit access permissions to datasync object.
+
+[TIP]
+Use of the PubNub grant() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+
+[source,java]
+----
+pamAuditSyncedObject(syncedObject, callback);
+pamAuditSyncedObject(syncedObject, auth_key, callback);
+----
+
+=== Example
+Audit access permissions to "game" datasync object.
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+pubnub.pamAuditSyncedObject("game", callback);
+----
+
+== pamRevokeSyncedObject()
+=== Description
+Revoke access from datasync object.
+
+[TIP]
+Use of the PubNub grant() API requires the feature to first be enabled in the Admin console.
+
+=== Usage
+
+[source,java]
+----
+pamRevokeSyncedObject(syncedObject, callback);
+pamRevokeSyncedObject(syncedObject, auth_key, callback);
+----
+
+=== Example
+Revoke access permissions from "game" datasync object.
+
+[source,java]
+----
+Callback callback = new Callback() {
+    @Override
+    public void successCallback(Object message) {
+        System.out.println(message.toString());
+    }
+
+    @Override
+    public void errorCallback(PubnubError error) {
+        System.out.println(error.getErrorString());
+    }
+};
+
+pubnub.pamRevokeSyncedObject("game", callback);
+----
+

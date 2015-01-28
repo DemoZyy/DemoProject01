@@ -12,12 +12,10 @@ import java.util.Random;
 
 class EmptyResponseHandler extends ResponseHandler {
 
-	@Override
 	public void handleResponse(HttpRequest hreq, String response) {
 		
 	}
 
-	@Override
 	public void handleError(HttpRequest hreq, PubnubError error) {
 
 	}

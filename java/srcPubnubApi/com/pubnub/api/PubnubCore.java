@@ -10,6 +10,44 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
 
+class EmptyResponseHandler extends ResponseHandler {
+
+	@Override
+	public void handleResponse(HttpRequest hreq, String response) {
+		
+	}
+
+	@Override
+	public void handleError(HttpRequest hreq, PubnubError error) {
+
+	}
+	
+}
+
+class PublishResponseHandler extends ResponseHandler {
+	Callback callback;
+	String channel;
+	public PublishResponseHandler(Callback callback, String channel) {
+		this.callback = callback;
+		this.channel = channel;
+	}
+    public void handleResponse(HttpRequest hreq, String response) {
+        JSONArray jsarr;
+        try {
+            jsarr = new JSONArray(response);
+        } catch (JSONException e) {
+            handleError(hreq,
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+            return;
+        }
+        callback.successCallback(channel, jsarr);
+    }
+
+    public void handleError(HttpRequest hreq, PubnubError error) {
+        callback.errorCallback(channel, error);
+        return;
+    }
+}
 
 /**
  * Pubnub object facilitates querying channels for messages and listening on
@@ -876,25 +914,8 @@ abstract class PubnubCore {
                 PubnubUtil.urlEncode(msgStr)
         };
 
-        class PublishResponseHandler extends ResponseHandler {
-            public void handleResponse(HttpRequest hreq, String response) {
-                JSONArray jsarr;
-                try {
-                    jsarr = new JSONArray(response);
-                } catch (JSONException e) {
-                    handleError(hreq,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
-                    return;
-                }
-                callback.successCallback(channel, jsarr);
-            }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                callback.errorCallback(channel, error);
-                return;
-            }
-        }
-        HttpRequest hreq = new HttpRequest(urlComponents, parameters, new PublishResponseHandler());
+        HttpRequest hreq = new HttpRequest(urlComponents, parameters, new PublishResponseHandler(callback, channel));
 
         _request(hreq, nonSubscribeManager);
     }
@@ -1759,14 +1780,7 @@ abstract class PubnubCore {
 
         params.put("uuid", UUID);
 
-        HttpRequest hreq = new HttpRequest(urlArgs, params,
-                new ResponseHandler() {
-                    public void handleResponse(HttpRequest hreq, String response) {
-                    }
-
-                    public void handleError(HttpRequest hreq, PubnubError error) {
-                    }
-                });
+        HttpRequest hreq = new HttpRequest(urlArgs, params, new EmptyResponseHandler());
 
         _request(hreq, nonSubscribeManager);
     }

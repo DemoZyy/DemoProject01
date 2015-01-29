@@ -4,13 +4,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class SyncedObject {
+public class SyncedObject implements Iterable {
     private Pubnub pubnub;
     private SyncedObjectManager syncedObjectManager;
 
@@ -502,6 +499,36 @@ public class SyncedObject {
             } else {
                 return null;
             }
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Return iterator if synced object instance represents list or object and null if it represents string, integer or boolean
+     *
+     * @return iterator or null
+     */
+    public Iterator iterator() {
+        try {
+            final JSONObject rawValue = syncedObjectManager.getRawValue(location);
+            
+            if (rawValue.has("pn_val")) {
+                return null;
+            }
+
+            final Iterator rawValueIterator = rawValue.sortedKeys();
+
+            return new Iterator() {
+
+                public boolean hasNext() {
+                    return rawValueIterator.hasNext();
+                }
+
+                public Object next() {
+                    return child((String) rawValueIterator.next());
+                }
+            };
         } catch (JSONException e) {
             return null;
         }

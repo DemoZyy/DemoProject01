@@ -112,7 +112,7 @@ public class SyncedObjectMultipleObjectsBehaviourTest {
         Method m = manager.getClass().getSuperclass().getDeclaredMethod("getChannelsForSubscribe");
         m.setAccessible(true);
 
-        String[] channels = (String[]) m.invoke(manager, null);
+        String[] channels = (String[]) m.invoke(manager);
         assertEquals(6, channels.length);
         assertFalse(Arrays.asList(channels).contains("pn_ds_player.*"));
         assertFalse(Arrays.asList(channels).contains("pn_ds_player"));

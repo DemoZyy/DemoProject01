@@ -166,12 +166,8 @@ public class PushTest {
         final CountDownLatch latch1 = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
 
-        final TestHelper.SimpleCallback cb1 = new TestHelper.SimpleCallback(latch1) {
-            @Override
-            public void errorCallback(PubnubError error) {
-                System.out.println(error.getErrorString());
-            }
-        };
+        final TestHelper.SimpleCallback cb1 = new TestHelper.SimpleCallback(latch1);
+
         TestHelper.SimpleDataSyncCallback cb2 = new TestHelper.SimpleDataSyncCallback() {
             @Override
             public void readyCallback(SyncedObject syncedObject) {

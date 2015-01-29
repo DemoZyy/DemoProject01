@@ -93,6 +93,45 @@ public class SyncedObject {
     }
 
     /**
+     * Returns the value mapped by name, or throws if no such mapping exists.
+     *
+     * @param relativePath to element
+     * @return object
+     * @throws PubnubException
+     */
+    public synchronized Object get(String relativePath) throws PubnubException {
+        return getValue(relativePath);
+    }
+
+    /**
+     * Returns the value mapped by name, or null if no such mapping exists.
+     *
+     * @param relativePath to element
+     * @return object
+     */
+    public synchronized Object opt(String relativePath) {
+        try {
+            return getValue(relativePath);
+        } catch (PubnubException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the value mapped by name, or fallback if no such mapping exists.
+     *
+     * @param relativePath to element
+     * @return object
+     */
+    public synchronized Object opt(String relativePath, Object fallback) {
+        try {
+            return getValue(relativePath);
+        } catch (PubnubException e) {
+            return fallback;
+        }
+    }
+
+    /**
      * Returns the value mapped by name if it exists, coercing it if necessary, or throws if no such mapping exists.
      *
      * @param relativePath to value

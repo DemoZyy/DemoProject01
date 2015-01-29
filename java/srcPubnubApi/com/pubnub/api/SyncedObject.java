@@ -93,44 +93,120 @@ public class SyncedObject {
     }
 
     /**
-     * Getter for string endpoint value
+     * Returns the value mapped by name if it exists, coercing it if necessary, or throws if no such mapping exists.
+     *
+     * @param relativePath to value
+     * @return value as string
+     * @throws PubnubException
+     */
+    public synchronized String getString(String relativePath) throws PubnubException {
+        return getValue(relativePath).toString();
+    }
+
+    /**
+     * Returns the value mapped by name if it exists, coercing it if necessary, or the empty string if no such mapping exists.
      *
      * @param relativePath to value
      * @return value as string
      */
-    public synchronized String getString(String relativePath) {
+    public synchronized String optString(String relativePath) {
         try {
-            return getValue(relativePath).toString();
-        } catch (JSONException e) {
-            return null;
+            return getString(relativePath);
+        } catch (PubnubException e) {
+            return "";
         }
     }
 
     /**
-     * Getter for integer endpoint value
+     * Returns the value mapped by name if it exists, coercing it if necessary, or fallback if no such mapping exists.
+     *
+     * @param relativePath to value
+     * @param fallback value
+     * @return value as string
+     */
+    public synchronized String optString(String relativePath, String fallback) {
+        try {
+            return getString(relativePath);
+        } catch (PubnubException e) {
+            return fallback;
+        }
+    }
+
+    /**
+     * Returns the value mapped by name if it exists, coercing it if necessary, or throws if no such mapping exists.
      *
      * @param relativePath to value
      * @return value as int
      */
-    public synchronized Integer getInteger(String relativePath) {
+    public synchronized int getInteger(String relativePath) throws PubnubException {
+        return Integer.parseInt(getValue(relativePath).toString());
+    }
+
+    /**
+     * Returns the value mapped by name if it exists and is an int or can be coerced to an int, or 0 otherwise.
+     *
+     * @param relativePath to value
+     * @return integer
+     */
+    public synchronized int optInteger(String relativePath) {
         try {
-            return new Integer(Integer.parseInt(getValue(relativePath).toString()));
-        } catch (JSONException e) {
-            return null;
+            return getInteger(relativePath);
+        } catch (PubnubException e) {
+            return 0;
         }
     }
 
     /**
-     * Getter for boolean endpoint value
+     * Returns the value mapped by name if it exists and is an int or can be coerced to an int, or fallback otherwise.
      *
      * @param relativePath to value
+     * @param fallback value
+     * @return integer
+     */
+    public synchronized int optInteger(String relativePath, int fallback) {
+        try {
+            return getInteger(relativePath);
+        } catch (PubnubException e) {
+            return fallback;
+        }
+    }
+
+    /**
+     * Returns the value mapped by name if it exists and is a boolean or can be coerced to a boolean, or throws otherwise.
+     *
+     * @param relativePath to element
      * @return value as boolean
      */
-    public synchronized Boolean getBoolean(String relativePath) {
+    public synchronized boolean getBoolean(String relativePath) throws PubnubException {
+        return (Boolean) getValue(relativePath);
+    }
+
+    /**
+     * Returns the value mapped by name if it exists and is a boolean or can be coerced to a boolean, or false otherwise.
+     *
+     * @param relativePath to element
+     * @return value or false
+     */
+    public synchronized boolean optBoolean(String relativePath) {
         try {
-            return (Boolean) getValue(relativePath);
-        } catch (JSONException e) {
-            return null;
+            return getBoolean(relativePath);
+        } catch (PubnubException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns the value mapped by name if it exists and is a boolean or can be coerced to a boolean, or fallback otherwise.
+     *
+     * @param relativePath to element
+     * @param fallback value
+     * @return value or fallback
+     */
+    public synchronized boolean optBoolean(String relativePath, boolean fallback) {
+        try {
+            return getBoolean(relativePath);
+        } catch (PubnubException e) {
+            return fallback;
         }
     }
 
@@ -141,7 +217,7 @@ public class SyncedObject {
     public synchronized ArrayList getList(String relativePath) {
         try {
             return (ArrayList) getValue(relativePath);
-        } catch (JSONException e) {
+        } catch (PubnubException e) {
             return null;
         }
     }
@@ -153,13 +229,17 @@ public class SyncedObject {
     public synchronized HashMap getMap(String relativePath) {
         try {
             return (HashMap) getValue(relativePath);
-        } catch (JSONException e) {
+        } catch (PubnubException e) {
             return null;
         }
     }
 
-    private synchronized Object getValue(String relativePath) throws JSONException {
-        return syncedObjectManager.getValue(glue(objectID, glue(path, relativePath)));
+    private synchronized Object getValue(String relativePath) throws PubnubException {
+        try {
+            return syncedObjectManager.getValue(glue(location, relativePath));
+        } catch (JSONException e) {
+            throw new PubnubException("Unable to reach element by specified location: \"" + location + "\"");
+        }
     }
 
     public synchronized Object pop() {

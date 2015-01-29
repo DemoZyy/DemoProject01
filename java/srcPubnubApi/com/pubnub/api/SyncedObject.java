@@ -101,10 +101,23 @@ public class SyncedObject implements Iterable {
     }
 
     /**
+     * Returns the value mapped by name, or throws if no such mapping exists.
+     *
+     * @return object
+     */
+    public synchronized Object get() {
+        try {
+            return getValue("");
+        } catch (PubnubException e) {
+            return null;
+        }
+    }
+
+    /**
      * Returns the value mapped by name, or null if no such mapping exists.
      *
      * @param relativePath to element
-     * @return object
+     * @return object or null
      */
     public synchronized Object opt(String relativePath) {
         try {
@@ -137,6 +150,19 @@ public class SyncedObject implements Iterable {
      */
     public synchronized String getString(String relativePath) throws PubnubException {
         return getValue(relativePath).toString();
+    }
+
+    /**
+     * Returns the mapped value, coercing it if necessary.
+     *
+     * @return value as string
+     */
+    public synchronized String getString() {
+        try {
+            return getString("");
+        } catch (PubnubException e) {
+            return null;
+        }
     }
 
     /**
@@ -179,6 +205,19 @@ public class SyncedObject implements Iterable {
     }
 
     /**
+     * Returns the mapped value, coercing it if necessary.
+     *
+     * @return value as int
+     */
+    public synchronized int getInteger() {
+        try {
+            return Integer.parseInt(getValue("").toString());
+        } catch (PubnubException e) {
+            return 0;
+        }
+    }
+
+    /**
      * Returns the value mapped by name if it exists and is an int or can be coerced to an int, or 0 otherwise.
      *
      * @param relativePath to value
@@ -212,9 +251,23 @@ public class SyncedObject implements Iterable {
      *
      * @param relativePath to element
      * @return value as boolean
+     * @throws PubnubException
      */
     public synchronized boolean getBoolean(String relativePath) throws PubnubException {
         return (Boolean) getValue(relativePath);
+    }
+
+    /**
+     * Returns the mapped value
+     *
+     * @return value as boolean
+     */
+    public synchronized boolean getBoolean() {
+        try {
+            return getBoolean("");
+        } catch (PubnubException e) {
+            return false;
+        }
     }
 
     /**

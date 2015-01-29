@@ -1,6 +1,7 @@
 package com.pubnub.api.datasync;
 
 import com.pubnub.api.Pubnub;
+import com.pubnub.api.PubnubException;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.TestHelper;
 import org.json.JSONException;
@@ -77,7 +78,7 @@ public class MergeTest {
     }
 
     @Test
-    public void testMergeObjectCallback() throws InterruptedException, JSONException {
+    public void testMergeObjectCallback() throws InterruptedException, JSONException, PubnubException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(3);
@@ -117,13 +118,13 @@ public class MergeTest {
         List updates = (List) cb1.getResult();
         assertEquals(2, updates.size());
 
-        assertEquals(new Integer(70), player.getInteger("settings.volume"));
+        assertEquals(70, player.getInteger("settings.volume"));
         assertEquals("en", player.getString("settings.locale"));
         assertFalse(player.getBoolean("settings.mute"));
 
         SyncedObject settings = player.child("settings");
 
-        assertEquals(new Integer(70), settings.getInteger("volume"));
+        assertEquals(70, settings.getInteger("volume"));
         assertEquals("en", settings.getString("locale"));
         assertFalse(settings.getBoolean("mute"));
 

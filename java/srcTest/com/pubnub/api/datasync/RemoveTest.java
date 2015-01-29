@@ -1,6 +1,7 @@
 package com.pubnub.api.datasync;
 
 import com.pubnub.api.Pubnub;
+import com.pubnub.api.PubnubException;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.TestHelper;
 import org.json.JSONException;
@@ -58,7 +59,7 @@ public class RemoveTest {
     }
 
     @Test
-    public void testRemoveObjectCallback() throws InterruptedException, JSONException {
+    public void testRemoveObjectCallback() throws InterruptedException, JSONException, PubnubException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(1);
@@ -75,7 +76,7 @@ public class RemoveTest {
 
         latch1.await(5, TimeUnit.SECONDS);
 
-        assertEquals(new Integer(70), player.getInteger("settings.volume"));
+        assertEquals(70, player.getInteger("settings.volume"));
         assertEquals("en", player.getString("settings.locale"));
         assertTrue(player.getBoolean("settings.mute"));
 
@@ -83,7 +84,7 @@ public class RemoveTest {
 
         latch2.await(5, TimeUnit.SECONDS);
 
-        assertNull(player.getInteger("settings.volume"));
+        assertEquals(0, player.optInteger("settings.volume"));
         assertEquals("en", player.getString("settings.locale"));
         assertTrue(player.getBoolean("settings.mute"));
 

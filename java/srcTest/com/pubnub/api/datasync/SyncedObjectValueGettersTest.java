@@ -1,6 +1,7 @@
 package com.pubnub.api.datasync;
 
 import com.pubnub.api.Pubnub;
+import com.pubnub.api.PubnubException;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.TestHelper;
 import org.json.JSONException;
@@ -30,7 +31,7 @@ public class SyncedObjectValueGettersTest {
     }
 
     @Test
-    public void testGetValue() throws InterruptedException, JSONException {
+    public void testGetValue() throws InterruptedException, JSONException, PubnubException {
         final CountDownLatch latch1 = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(2);
         final CountDownLatch latch3 = new CountDownLatch(1);
@@ -66,9 +67,9 @@ public class SyncedObjectValueGettersTest {
         // 2nd level
         assertEquals("en", player.getString("settings.locale"));
         assertEquals("73", player.getString("settings.volume"));
-        assertEquals(new Integer(73), player.getInteger("settings.volume"));
+        assertEquals(73, player.getInteger("settings.volume"));
         assertEquals("22", player.getString("settings.position"));
-        assertEquals(new Integer(22), player.getInteger("settings.position"));
+        assertEquals(22, player.getInteger("settings.position"));
         assertFalse(player.getBoolean("settings.mute"));
 
         assertEquals(4, player.getMap("settings").size());
@@ -81,9 +82,9 @@ public class SyncedObjectValueGettersTest {
         // 1st level
         assertEquals("en", settings.getString("locale"));
         assertEquals("73", settings.getString("volume"));
-        assertEquals(new Integer(73), settings.getInteger("volume"));
+        assertEquals(73, settings.getInteger("volume"));
         assertEquals("22", settings.getString("position"));
-        assertEquals(new Integer(22), settings.getInteger("position"));
+        assertEquals(22, settings.getInteger("position"));
         assertFalse(settings.getBoolean("mute"));
 
         assertEquals(4, settings.getMap().size());

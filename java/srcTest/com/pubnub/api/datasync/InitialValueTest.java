@@ -1,6 +1,7 @@
 package com.pubnub.api.datasync;
 
 import com.pubnub.api.Pubnub;
+import com.pubnub.api.PubnubException;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.TestHelper;
 import org.json.JSONException;
@@ -29,7 +30,7 @@ public class InitialValueTest {
     }
 
     @Test
-    public void testMergeObjectCallback() throws InterruptedException, JSONException {
+    public void testMergeObjectCallback() throws InterruptedException, JSONException, PubnubException {
         final CountDownLatch latch1 = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
 
@@ -40,12 +41,12 @@ public class InitialValueTest {
 
         latch1.await(5, TimeUnit.SECONDS);
 
-        assertEquals(new Integer(70), player.getInteger("settings.volume"));
+        assertEquals(70, player.getInteger("settings.volume"));
         assertTrue(player.getBoolean("settings.mute"));
 
         SyncedObject settings = player.child("settings", cb2);
 
-        assertEquals(new Integer(70), settings.getInteger("volume"));
+        assertEquals(70, settings.getInteger("volume"));
         assertTrue(settings.getBoolean("mute"));
 
         assertEquals(0, latch1.getCount());

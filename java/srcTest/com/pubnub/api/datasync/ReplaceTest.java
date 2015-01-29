@@ -1,6 +1,7 @@
 package com.pubnub.api.datasync;
 
 import com.pubnub.api.Pubnub;
+import com.pubnub.api.PubnubException;
 import com.pubnub.api.SyncedObject;
 import com.pubnub.api.TestHelper;
 import org.json.JSONException;
@@ -77,7 +78,7 @@ public class ReplaceTest {
     }
 
     @Test
-    public void testReplaceObjectCallback() throws InterruptedException, JSONException {
+    public void testReplaceObjectCallback() throws InterruptedException, JSONException, PubnubException {
         DataSyncTestHelper.setupSettingsOn(playerString, pubnub);
 
         final CountDownLatch latch1 = new CountDownLatch(2);
@@ -112,14 +113,14 @@ public class ReplaceTest {
         List updates = (List) cb1.getResult();
         assertEquals(3, updates.size());
 
-        assertEquals(new Integer(70), player.getInteger("settings.volume"));
-        assertNull(player.getString("settings.locale"));
+        assertEquals(70, player.getInteger("settings.volume"));
+        assertEquals("", player.optString("settings.locale"));
         assertFalse(player.getBoolean("settings.mute"));
 
         SyncedObject settings = player.child("settings");
 
-        assertEquals(new Integer(70), settings.getInteger("volume"));
-        assertNull(settings.getString("locale"));
+        assertEquals(70, settings.getInteger("volume"));
+        assertEquals("", settings.optString("locale"));
         assertFalse(settings.getBoolean("mute"));
 
         assertEquals(0, latch1.getCount());

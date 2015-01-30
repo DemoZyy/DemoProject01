@@ -1,13 +1,8 @@
 package com.pubnub.examples.subscribeAtBoot;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -19,12 +14,17 @@ import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubException;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class PubnubService extends Service {
 
-    String channel = "hello_world123";
-    Pubnub pubnub = new Pubnub("demo", "demo", false);
+    String channel = "bot_channel";
+    Pubnub pubnub = new Pubnub("demo-36", "demo-36", false);
     PowerManager.WakeLock wl = null;
     static int notificationNo = 1;
+    int first = -1;
+    int count = 0;
 
     private final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
@@ -53,10 +53,11 @@ public class PubnubService extends Service {
             msg.obj = obj;
             handler.sendMessage(msg);
             Log.i("Received msg : ", obj.toString());
-
+            /*
             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), notification);
             mediaPlayer.start();
+
 
             NotificationManager nm = ( NotificationManager ) getSystemService( NOTIFICATION_SERVICE );
             Notification notif = new Notification();
@@ -65,6 +66,7 @@ public class PubnubService extends Service {
             notif.ledOnMS = 100;
             notif.ledOffMS = 100;
             nm.notify(1, notif);
+            */
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,6 +76,11 @@ public class PubnubService extends Service {
     public void onCreate() {
         super.onCreate();
         pubnub.setMaxRetries(1000000000);
+
+        // set uuid so that we can share same channel
+        //pubnub.setUUID("HTC-816-DEV");
+
+
         Toast.makeText(this, "PubnubService created...", Toast.LENGTH_LONG).show();
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SubscribeAtBoot");
@@ -102,7 +109,26 @@ public class PubnubService extends Service {
                 @Override
                 public void successCallback(String channel, Object message) {
                     wl.acquire();
-                    notifyUser(channel + " " + message.toString());
+
+                    JSONObject jso = (JSONObject) message;
+                    try {
+                        int sn = jso.getInt("sn");
+                        if (first == -1) {
+                            first = sn;
+                        }
+                        String msg = pubnub.getUUID() + " - " + first + " : " + sn + " : " + ++count + " : " + (sn - first + 1);
+
+                        notifyUser(msg);
+                        pubnub.publish(channel + "_log", msg, new Callback(){
+                            public void successCallback(String channel, Object message){
+
+                            }
+                        });
+
+                    } catch (JSONException e) {
+
+                    }
+
                     wl.release();
                 }
                 @Override

@@ -87,7 +87,6 @@ public class PubnubDemoConsole {
 
             pubnub.publish(channel, message, store, cb);
         }
-
     }
 
     private void subscribe(final String channel) {
@@ -232,37 +231,58 @@ public class PubnubDemoConsole {
         pubnub.disconnectAndResubscribeWithTimetoken(timetoken);
     }
 
+    private void updateAccountInfo() {
+        String publish_key = getStringFromConsole("publish_key");
+        String subscribe_key = getStringFromConsole("subscribe_key");
+        String secret_key = getStringFromConsole("secret_key", true);
+        String cipher_key = getStringFromConsole("cipher_key", true);
+        Boolean ssl_on = getBooleanFromConsole("SSL");
+
+        this.pubnub = new Pubnub(publish_key, subscribe_key, secret_key, cipher_key, ssl_on);
+    }
+
     public void startDemo() {
+        // HINT: To test Re-connect and catch-up
+        // Disconnect your machine from network/internet and
+        // re-connect your machine after sometime
+
         reader = new Scanner(System.in);
-        notifyUser("HINT:\tTo test Re-connect and catch-up");
-        notifyUser("\tDisconnect your machine from network/internet and");
-        notifyUser("\tre-connect your machine after sometime");
 
-        this.SSL = getBooleanFromConsole("SSL");
+        notifyUser("\nDefault settings are applied:\n");
+        notifyUser("publish_key: " + publish_key);
+        notifyUser("subscribe_key: " + subscribe_key);
+        notifyUser("SSL: " + subscribe_key);
+        notifyUser("secret_key: ");
+        notifyUser("cipher_key: ");
+        notifyUser("\nTo change them choose option #999");
+        notifyUser("====================\n");
 
-        if (this.publish_key.length() == 0) this.publish_key = getStringFromConsole("Publish Key");
-
-        if (this.subscribe_key.length() == 0) this.subscribe_key = getStringFromConsole("Subscribe Key");
-
-        if (this.secret_key.length() == 0) this.secret_key = getStringFromConsole("Secret Key", true);
-
-        if (this.cipher_key.length() == 0) this.cipher_key = getStringFromConsole("Cipher Key", true);
+//        this.SSL = getBooleanFromConsole("SSL");
+//
+//        if (this.publish_key.length() == 0) this.publish_key = getStringFromConsole("Publish Key");
+//
+//        if (this.subscribe_key.length() == 0) this.subscribe_key = getStringFromConsole("Subscribe Key");
+//
+//        if (this.secret_key.length() == 0) this.secret_key = getStringFromConsole("Secret Key", true);
+//
+//        if (this.cipher_key.length() == 0) this.cipher_key = getStringFromConsole("Cipher Key", true);
 
         pubnub = new Pubnub(this.publish_key, this.subscribe_key, this.secret_key, this.cipher_key, this.SSL);
         pubnub.setCacheBusting(false);
         displayMenuOptions();
 
         String channelName = null;
-        int command = 0;
+        int command;
 
         while ((command = reader.nextInt()) != 9) {
             reader.nextLine();
             switch (command) {
-
+                case 999:
+                    updateAccountInfo();
+                    break;
                 case 0:
                     displayMenuOptions();
                     break;
-
                 case 1: {
                     boolean isGroup = getBooleanFromConsole("Group");
 
@@ -933,7 +953,8 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 36 FOR [Channel Group] Remove Group");
         notifyUser("ENTER 37 FOR [Channel Group] List Namespaces");
         notifyUser("ENTER 38 FOR [Channel Group] Remove Namespace");
-        notifyUser("\nENTER 0 to display this menu");
+        notifyUser("\nENTER   0 to display this menu");
+        notifyUser("ENTER 999 to resubscribe with new credentials");
     }
 
     /**

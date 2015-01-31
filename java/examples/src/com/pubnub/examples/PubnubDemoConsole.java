@@ -3,8 +3,10 @@ package com.pubnub.examples;
 import com.pubnub.api.*;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Hashtable;
 import java.util.Scanner;
 
 import static java.lang.System.out;
@@ -490,9 +492,37 @@ public class PubnubDemoConsole {
                     removeNamespace(namespace);
                 }
                 break;
-                default:
-                    notifyUser("Invalid Input");
+            case 39:
+                mergeObject(getStringFromConsole("Object location"), getRawSyncedObjectFromConsole("Value"));
+                break;
+            case 40:
+                replaceObject(getStringFromConsole("Object location"), getRawSyncedObjectFromConsole("Value"));
+                break;
+            case 41:
+                getObject(getStringFromConsole("Object location"));
+                break;
+            case 42:
+                getList(getStringFromConsole("List location"));
+                break;
+            case 43:
+                getMap(getStringFromConsole("Map location"));
+                break;
+            case 44:
+                getInteger(getStringFromConsole("Integer location"));
+                break;
+            case 45:
+                getString(getStringFromConsole("String location"));
+                break;
+            case 46:
+                getBoolean(getStringFromConsole("Boolean location"));
+                break;
+            case 47:
+                removeObject(getStringFromConsole("Remove location"));
+                break;
+            default:
+                notifyUser("Invalid Input");
             }
+
             displayMenuOptions();
         }
 
@@ -742,6 +772,37 @@ public class PubnubDemoConsole {
         return input;
     }
 
+    private Object getRawSyncedObjectFromConsole(String message) {
+
+        int attempt_count = 0;
+        String input;
+        Object result;
+
+        do {
+            if (attempt_count > 0) System.out.print("Invalid input. ");
+            notifyUser("Enter " + message );
+            input = reader.nextLine();
+
+            try {
+                result = new JSONObject(input);
+            } catch (JSONException e) {
+                try {
+                    result = Integer.valueOf(input);
+                } catch (NumberFormatException e2) {
+                    result = input;
+                }
+            } catch (Exception e) {
+                result = null;
+            }
+
+            attempt_count++;
+        } while (result == null);
+
+        notifyUser(message + " : " + result);
+
+        return result;
+    }
+
     private JSONObject getJSONObjectFromConsole(String message, boolean optional) {
         int attempt_count = 0;
         String input;
@@ -824,6 +885,147 @@ public class PubnubDemoConsole {
 
     private boolean getBooleanFromConsole(String message) {
         return getBooleanFromConsole(message, false);
+    }
+
+    private void mergeObject(String location, Object object) {
+        Hashtable<String, Object> args = new Hashtable<>();
+
+        args.put("location", location);
+        args.put("data", object);
+
+        pubnub.merge(args, new Callback() {
+            public void successCallback(Object message) {
+                notifyUser("DS MERGE: " + message.toString());
+            }
+
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS MERGE: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void replaceObject(String location, Object object) {
+        Hashtable<String, Object> args = new Hashtable<>();
+
+        args.put("location", location);
+        args.put("data", object);
+
+        pubnub.replace(args, new Callback() {
+            public void successCallback(Object message) {
+                notifyUser("DS REPLACE: " + message.toString());
+            }
+
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS REPLACE: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void removeObject(String location) {
+        Hashtable<String, Object> args = new Hashtable<>();
+
+        args.put("location", location);
+
+        pubnub.remove(args, new Callback() {
+            public void successCallback(Object message) {
+                notifyUser("DS REMOVE: " + message.toString());
+            }
+
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS REMOVE: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void getObject(String location) {
+        Hashtable<String, String> args = new Hashtable<>();
+
+        args.put("location", location);
+
+        pubnub.get(args, new Callback (){
+            public void successCallback(Object message) {
+                try {
+                    JSONObject result = ((JSONObject) message).getJSONObject("data");
+                    notifyUser("DS LOAD OBJECT: " + result);
+                } catch (JSONException e) {
+                    notifyUser("DS LOAD OBJECT: " + e);
+                }
+            }
+
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS LOAD OBJECT: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void getList(String location) {
+        pubnub.sync(location, new DataSyncCallback() {
+            @Override
+            public void readyCallback(SyncedObject syncedObject) {
+                notifyUser("DS GET LIST: " + syncedObject.getList().toString());
+            }
+
+            @Override
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS GET LIST: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void getMap(String location) {
+        pubnub.sync(location, new DataSyncCallback() {
+            @Override
+            public void readyCallback(SyncedObject syncedObject) {
+                notifyUser("DS GET MAP: " + syncedObject.getMap().toString());
+            }
+
+            @Override
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS GET MAP: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void getInteger(String location) {
+        pubnub.sync(location, new DataSyncCallback() {
+            @Override
+            public void readyCallback(SyncedObject syncedObject) {
+                notifyUser("DS GET INTEGER: " + syncedObject.getInteger());
+            }
+
+            @Override
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS GET INTEGER: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void getString(String location) {
+        pubnub.sync(location, new DataSyncCallback() {
+            @Override
+            public void readyCallback(SyncedObject syncedObject) {
+                notifyUser("DS GET STRING: " + syncedObject.getString());
+            }
+
+            @Override
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS GET STRING: " + error.getErrorString());
+            }
+        });
+    }
+
+    private void getBoolean(String location) {
+        pubnub.sync(location, new DataSyncCallback() {
+            @Override
+            public void readyCallback(SyncedObject syncedObject) {
+                notifyUser("DS GET BOOLEAN: " + Boolean.valueOf(syncedObject.getBoolean()).toString());
+            }
+
+            @Override
+            public void errorCallback(PubnubError error) {
+                notifyUser("DS GET BOOLEAN: " + error.getErrorString());
+            }
+        });
     }
 
     private void pamGrant() {
@@ -953,8 +1155,17 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 36 FOR [Channel Group] Remove Group");
         notifyUser("ENTER 37 FOR [Channel Group] List Namespaces");
         notifyUser("ENTER 38 FOR [Channel Group] Remove Namespace");
+        notifyUser("ENTER 39 FOR [Data Sync] Merge Message");
+        notifyUser("ENTER 40 FOR [Data Sync] Replace Message");
+        notifyUser("ENTER 41 FOR [Data Sync] Get Object");
+        notifyUser("ENTER 42 FOR [Data Sync] Get List Value");
+        notifyUser("ENTER 43 FOR [Data Sync] Get Map Value");
+        notifyUser("ENTER 44 FOR [Data Sync] Get Integer Value");
+        notifyUser("ENTER 45 FOR [Data Sync] Get String Value");
+        notifyUser("ENTER 46 FOR [Data Sync] Get Boolean Value");
+        notifyUser("ENTER 47 FOR [Data Sync] Remove object");
         notifyUser("\nENTER   0 to display this menu");
-        notifyUser("ENTER 999 to resubscribe with new credentials");
+        notifyUser("ENTER 999 to resubscribe with new credentials\n");
     }
 
     /**

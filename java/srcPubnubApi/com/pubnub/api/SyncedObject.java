@@ -570,7 +570,13 @@ public class SyncedObject implements Iterable {
                 return null;
             }
 
-            final Iterator rawValueIterator = rawValue.sortedKeys();
+            final Iterator rawValueIterator;
+
+            if (isPnList(rawValue)) {
+                rawValueIterator = PubnubUtil.jsonObjectKeysSortedIterator(rawValue);
+            } else {
+                rawValueIterator = rawValue.keys();
+            }
 
             return new Iterator() {
 
@@ -613,7 +619,6 @@ public class SyncedObject implements Iterable {
 
     public void merge(String path, Object data, final Callback callback) {
         Hashtable args = new Hashtable();
-
 
         args.put("location", glue(location, path));
         args.put("data", data);

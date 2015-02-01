@@ -3,9 +3,9 @@
 == child()
 === Description
 Return a new data sync reference off an existing data synced reference.
-[TIP]
+[NOTICE]
 Use of the PubNub child() API requires the feature to first be enabled in the Admin console.
-[TIP]
+[NOTICE]
 child() only works against existing data-synced references.
 
 === Usage:
@@ -33,7 +33,7 @@ The data will be merged with any existing data at the specified location. If the
 as the new data at that location, the new data will be written. Otherwise the data at the existing location and the new
 data will exist side by side.
 
-[TIP]
+[NOTICE]
 Use of the PubNub merge() API requires the feature to first be enabled in the Admin console.
 
 === Usage
@@ -115,7 +115,7 @@ scores.merge("top20.Frankie", 200), callback);
 === Description
 Pop data off the end of a Data Sync list structure object.
 
-[TIP]
+[NOTICE]
 Use of the PubNub pop() API requires the feature to first be enabled in the Admin console.
 
 [CAUTION]
@@ -204,7 +204,7 @@ creating a new list structure at that location, appending this new list element 
  +
 Treat lists as arrays, as they have order, and can contain duplicate values.
 
-[TIP]
+[NOTICE]
 Especially when using custom sort keys, its important to note that each list element has a unique control key belonging
 to it, which resembles ^-[A-Za-z]*!1[0-9]{16}$ with the [A-Za-z]* portion of the regex being the custom sort key,
 if you choose to push with a custom sort key set.
@@ -213,7 +213,7 @@ When performing operations on elements in a list, operating on the control key i
 given element.
  +
  +
-[TIP]
+[NOTICE]
 Use of the PubNub push() API requires the feature to first be enabled in the Admin console.
 
 === Usage
@@ -312,7 +312,7 @@ success { status: 200,
 Remove data relative to a Data Sync object location.
 [CAUTION]
 Calling with no path argument, or with path as null will remove all data from the specified object starting at the reference point. This includes any children of the reference.
-[TIP]
+[NOTICE]
 Use of the PubNub remove() API requires the feature to first be enabled in the Admin console.
 
 === Usage
@@ -395,7 +395,7 @@ Replace data at specific location in a Data Sync object.
 The data will be replaced, overwriting any existing data at the specified location. If the object already contains the
 same key as the new data at that location, the new data will be overwritten.
 
-[TIP]
+[NOTICE]
 Use of the PubNub replace() API requires the feature to first be enabled in the Admin console.
 
 === Usage
@@ -477,7 +477,7 @@ scores.replace("top20.Frankie", 200), callback);
 
 Retrieves the Data Sync object with specified full path. The updated object can be retrieved from the returned variable
 and the events can be used to notify the application when a modification to the object has occurred.
-[TIP]
+[NOTICE]
 Use of the PubNub sync() API requires the feature to first be enabled in the Admin console.
 
 === Usage:
@@ -624,7 +624,7 @@ reference.size(relativePath);
 == getType()
 === Description
 Return type of datasync object
-[TIP]
+[NOTICE]
 If at least one of the object's children keys matches starts with "-" sign and ha
 "!" sign after, this object will be represented as a list in SDK. #isPnList()
 static method is used to detect this.
@@ -671,7 +671,7 @@ case SyncedObject.TYPE_BOOLEAN:
 == Value getters
 === Description
 Renders the native JSON object representation of a Data Sync reference.
-[TIP]
+[NOTICE]
 Use of the PubNub value() API requires the feature to first be enabled in the Admin console.
 [WARNING]
 #getMap() and #getList() methods will parse raw data recursively.  In case these methods contain many nested elements
@@ -680,12 +680,26 @@ it may be a resource consuming operations. Handle with care.
 === Usage
 [source,java]
 ----
+reference.get();
+reference.get(relativePath);
+reference.opt(relativePath);
+reference.opt(relativePath, relativePath);
+
 reference.getInteger();
 reference.getInteger(relativePath);
+reference.optInteger(relativePath);
+reference.optInteger(relativePath, fallback);
+
 reference.getBoolean();
 reference.getBoolean(relativePath);
+reference.optBoolean(relativePath);
+reference.optBoolean(relativePath, fallback);
+
 reference.getString();
 reference.getString(relativePath);
+reference.optString(relativePath);
+reference.optString(relativePath, fallback);
+
 reference.getMap();
 reference.getMap(relativePath);
 reference.getList();
@@ -693,11 +707,12 @@ reference.getList(relativePath);
 ----
 
 === Returns
-Parsed Java object of strictly corresponding type or *null* in next situations:
+Parsed Java object of strictly corresponding type. PubnubException will be thrown in 
+#get*() methods and *null/fallback* will be returned in #opt*() methods in next situations:
 
 * Used type does not match. For example #getString() getter used when real object is boolean.
 * There are no matching element for given relative path.
-* JSONException was thrown while parsing raw object.
+* PubnubException was thrown while parsing raw object.
 
 === Examples
 ==== Example 1
@@ -714,11 +729,24 @@ Render the JSON representation of leaf node of string type.
 
 [source,java]
 ----
-String goalieName = players.getString("firstName");
+String goalieName = players.optString("firstName");
 System.out.println(goalieName);
 ----
 
 ==== Example 3
+The same as above, but using #getString() method and try/catch blocks
+
+[source,java]
+----
+try {
+    String goalieName = players.getString("firstName");
+    System.out.println(goalieName);
+} catch (PubnubException e) {
+    System.out.println("Failed to get the goalie name");
+}
+----
+
+==== Example 4
 Render the JSON representation of all data in the players Data Sync reference at the top20 child path only.
 
 [source,java]
@@ -727,11 +755,37 @@ ArrayList top20 = players.getList("top20");
 System.out.println(goalie.get("firstName"));
 ----
 
+== iterator()
+=== Description
+Iterator for object or list
+
+=== Usage
+
+[source,java]
+----
+reference.iterator();
+----
+
+=== Examples
+==== Example 1
+Iterate over players list
+
+[source,java]
+----
+Iterator iterator = players.iterator();
+SyncedObject current;
+
+while (iterator.hasNext()) {
+    current = (SyncedObject) iterator.next();
+    System.out.println(current.getString("name"));
+}
+----
+
 == pamGrantSyncedObject()
 === Description
 Grant access to data sync object.
 
-[TIP]
+[NOTICE]
 Use of the PubNub grant() API requires the feature to first be enabled in the Admin console.
 
 === Usage
@@ -768,7 +822,7 @@ pubnub.pamGrantSyncedObject("game", true, true, callback);
 === Description
 Audit access permissions to datasync object.
 
-[TIP]
+[NOTICE]
 Use of the PubNub grant() API requires the feature to first be enabled in the Admin console.
 
 === Usage
@@ -803,7 +857,7 @@ pubnub.pamAuditSyncedObject("game", callback);
 === Description
 Revoke access from datasync object.
 
-[TIP]
+[NOTICE]
 Use of the PubNub grant() API requires the feature to first be enabled in the Admin console.
 
 === Usage

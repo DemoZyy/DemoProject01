@@ -888,7 +888,7 @@ public class PubnubDemoConsole {
     }
 
     private void mergeObject(String location, Object object) {
-        Hashtable<String, Object> args = new Hashtable<>();
+        Hashtable args = new Hashtable();
 
         args.put("location", location);
         args.put("data", object);
@@ -905,7 +905,7 @@ public class PubnubDemoConsole {
     }
 
     private void replaceObject(String location, Object object) {
-        Hashtable<String, Object> args = new Hashtable<>();
+        Hashtable args = new Hashtable();
 
         args.put("location", location);
         args.put("data", object);
@@ -922,7 +922,7 @@ public class PubnubDemoConsole {
     }
 
     private void removeObject(String location) {
-        Hashtable<String, Object> args = new Hashtable<>();
+        Hashtable args = new Hashtable();
 
         args.put("location", location);
 
@@ -938,7 +938,7 @@ public class PubnubDemoConsole {
     }
 
     private void getObject(String location) {
-        Hashtable<String, String> args = new Hashtable<>();
+        Hashtable args = new Hashtable();
 
         args.put("location", location);
 

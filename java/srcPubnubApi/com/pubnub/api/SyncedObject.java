@@ -565,29 +565,16 @@ public class SyncedObject implements Iterable {
     public Iterator iterator() {
         try {
             final JSONObject rawValue = syncedObjectManager.getRawValue(location);
-            
+
             if (rawValue.has("pn_val")) {
                 return null;
             }
 
-            final Iterator rawValueIterator;
-
             if (isPnList(rawValue)) {
-                rawValueIterator = PubnubUtil.jsonObjectKeysSortedIterator(rawValue);
+                return new SyncedObjectIterator(this, PubnubUtil.jsonObjectKeysSortedIterator(rawValue));
             } else {
-                rawValueIterator = rawValue.keys();
+                return new SyncedObjectIterator(this, rawValue.keys());
             }
-
-            return new Iterator() {
-
-                public boolean hasNext() {
-                    return rawValueIterator.hasNext();
-                }
-
-                public Object next() {
-                    return child((String) rawValueIterator.next());
-                }
-            };
         } catch (JSONException e) {
             return null;
         }

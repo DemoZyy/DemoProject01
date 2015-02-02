@@ -96,7 +96,7 @@ public class PubnubService extends Service {
 
             @Override
             public void run() {
-                String m = "System time (s) : " + (System.currentTimeMillis() / 1000) + ", " +
+                String m = pubnub.getUUID() + " - System time (s) : " + (System.currentTimeMillis() / 1000) + ", " +
                         "Local time (s) : " + t;
                 pubnub.publish(channel + "_time", m, new Callback(){
                     public void successCallback(String channel, Object message){

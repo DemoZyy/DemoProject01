@@ -17,6 +17,9 @@ import com.pubnub.api.PubnubException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class PubnubService extends Service {
 
     String channel = "bot_channel";
@@ -25,6 +28,7 @@ public class PubnubService extends Service {
     static int notificationNo = 1;
     int first = -1;
     int count = 0;
+    volatile long t = 0;
 
     private final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
@@ -76,6 +80,38 @@ public class PubnubService extends Service {
     public void onCreate() {
         super.onCreate();
         pubnub.setMaxRetries(1000000000);
+        t = System.currentTimeMillis() / 1000;
+
+        Timer timer = new Timer();
+
+        timer.scheduleAtFixedRate(new TimerTask(){
+
+            @Override
+            public void run() {
+                t++;
+            }
+        }, 0, 1000);
+
+        timer.scheduleAtFixedRate(new TimerTask(){
+
+            @Override
+            public void run() {
+                String m = "System time (s) : " + (System.currentTimeMillis() / 1000) + ", " +
+                        "Local time (s) : " + t;
+                pubnub.publish(channel + "_time", m, new Callback(){
+                    public void successCallback(String channel, Object message){
+
+                    }
+                });
+            }
+        }, 10000, 10000);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }).start();
 
         // set uuid so that we can share same channel
         //pubnub.setUUID("HTC-816-DEV");

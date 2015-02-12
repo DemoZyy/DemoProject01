@@ -254,7 +254,13 @@ public class SyncedObject implements Iterable {
      * @throws PubnubException
      */
     public synchronized boolean getBoolean(String relativePath) throws PubnubException {
-        return (Boolean) getValue(relativePath);
+        Object value = getValue(relativePath);
+
+        if (value instanceof Boolean) {
+            return value.equals(Boolean.TRUE);
+        } else {
+            throw new PubnubException("Element by given location is not of Boolean type: \"" + location + "\"");
+        }
     }
 
     /**

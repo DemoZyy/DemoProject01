@@ -1775,8 +1775,9 @@ abstract class PubnubCore {
      * Unsubscribe from channels.
      *
      * @param channels String array containing channel names
+     * @return 
      */
-    public void unsubscribe(String[] channels) {
+    public String unsubscribe(String[] channels) {
         for (int i = 0; i < channels.length; i++) {
             String channel = channels[i];
             channelSubscriptions.removeItem(channel);
@@ -1785,29 +1786,32 @@ abstract class PubnubCore {
         }
 
         resubscribe();
+        return _timetoken;
     }
 
     /**
      * Unsubscribe/Disconnect from channel.
      *
      * @param channel channel name as String.
+     * @return 
      */
-    public void unsubscribe(String channel) {
-        unsubscribe(new String[]{channel});
+    public String unsubscribe(String channel) {
+        return unsubscribe(new String[]{channel});
     }
 
     /**
      * Unsubscribe/Disconnect from channel.
      *
      * @param args Hashtable containing channel name.
+     * @return 
      */
-    protected void unsubscribe(Hashtable args) {
+    protected String unsubscribe(Hashtable args) {
         String[] channelList = (String[]) args.get("channels");
         if (channelList == null) {
             channelList = new String[]{(String) args.get("channel")};
         }
 
-        unsubscribe(channelList);
+        return unsubscribe(channelList);
     }
 
     /**
@@ -1823,8 +1827,9 @@ abstract class PubnubCore {
      * Unsubscribe from multiple channel groups
      *
      * @param groups to unsubscribe
+     * @return 
      */
-    public void channelGroupUnsubscribe(String[] groups) {
+    public String channelGroupUnsubscribe(String[] groups) {
         for (int i = 0; i < groups.length; i++) {
             String group = groups[i];
             channelGroupSubscriptions.removeItem(group);
@@ -1832,21 +1837,24 @@ abstract class PubnubCore {
         }
 
         resubscribe();
+        return _timetoken;
     }
 
     /**
      * Unsubscribe from presence channel.
      *
      * @param channel channel name as String.
+     * @return 
      */
-    public void unsubscribePresence(String channel) {
-        unsubscribe(new String[]{channel + PRESENCE_SUFFIX});
+    public String unsubscribePresence(String channel) {
+        return unsubscribe(new String[]{channel + PRESENCE_SUFFIX});
     }
 
     /**
      * Unsubscribe from all channel and channel groups.
+     * @return 
      */
-    public void unsubscribeAll() {
+    public String unsubscribeAll() {
         String[] channels = channelSubscriptions.getItemNames();
         String[] groups = channelGroupSubscriptions.getItemNames();
 
@@ -1863,12 +1871,14 @@ abstract class PubnubCore {
         }
 
         disconnectAndResubscribe();
+        return _timetoken;
     }
 
     /**
      * Unsubscribe from all channel.
+     * @return 
      */
-    public void unsubscribeAllChannels() {
+    public String unsubscribeAllChannels() {
         String[] channels = channelSubscriptions.getItemNames();
 
         for (int i = 0; i < channels.length; i++) {
@@ -1878,12 +1888,14 @@ abstract class PubnubCore {
         }
 
         disconnectAndResubscribe();
+        return _timetoken;
     }
 
     /**
      * Unsubscribe from all channel groups.
+     * @return 
      */
-    public void channelGroupUnsubscribeAllGroups() {
+    public String channelGroupUnsubscribeAllGroups() {
         String[] groups = channelGroupSubscriptions.getItemNames();
 
         for (int i = 0; i < groups.length; i++) {
@@ -1893,6 +1905,7 @@ abstract class PubnubCore {
         }
 
         disconnectAndResubscribe();
+        return _timetoken;
     }
 
     /**

@@ -5,9 +5,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.UUID;
+import java.util.*;
 
 import static com.pubnub.api.PubnubError.PNERROBJ_SECRET_KEY_MISSING;
 import static com.pubnub.api.PubnubError.getErrorObject;
@@ -21,6 +19,13 @@ import static com.pubnub.api.PubnubError.getErrorObject;
  */
 
 abstract class PubnubCoreShared extends PubnubCore {
+
+    private boolean originManagerExplicitlyEnabled;
+    private int originHeartbeatInterval;
+    private int originHeartbeatIntervalAfterFailure;
+    private int originHeartbeatMaxRetries;
+    private Set<String> originsPool;
+    private OriginManager originManager;
 
     /**
      * Pubnub Constructor
@@ -114,6 +119,14 @@ abstract class PubnubCoreShared extends PubnubCore {
         super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
     }
 
+    @Override
+    protected void init(String publish_key, String subscribe_key,
+                        String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
+        super.init(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
+
+        originManagerExplicitlyEnabled = false;
+    }
+
     /**
      * Sets value for UUID
      *
@@ -128,6 +141,12 @@ abstract class PubnubCoreShared extends PubnubCore {
         return java.util.UUID.randomUUID().toString();
     }
 
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        getOriginManager().stop();
+    }
+
     /**
      * This method sets timeout value for subscribe/presence. Default value is
      * 310000 milliseconds i.e. 310 seconds
@@ -135,6 +154,7 @@ abstract class PubnubCoreShared extends PubnubCore {
      * @param timeout
      *            Timeout value in milliseconds for subscribe/presence
      */
+    @Override
     public void setSubscribeTimeout(int timeout) {
         super.setSubscribeTimeout(timeout);
     }
@@ -144,6 +164,7 @@ abstract class PubnubCoreShared extends PubnubCore {
      *
      * @return Timeout value in milliseconds for subscribe/presence
      */
+    @Override
     public int getSubscribeTimeout() {
         return super.getSubscribeTimeout();
     }
@@ -156,16 +177,153 @@ abstract class PubnubCoreShared extends PubnubCore {
      *            Timeout value in milliseconds for Non subscribe operations
      *            like publish, history, hereNow
      */
+    @Override
     public void setNonSubscribeTimeout(int timeout) {
         super.setNonSubscribeTimeout(timeout);
     }
+
     /**
      * This method returns timeout value for non subscribe operations like publish, history, hereNow
      *
      * @return Timeout value in milliseconds for for Non subscribe operations like publish, history, hereNow
      */
+    @Override
     public int getNonSubscribeTimeout() {
         return super.getNonSubscribeTimeout();
+    }
+
+    public String getPrimaryOrigin() {
+        return super.getOrigin();
+    }
+
+    /**
+     * Returns current origin
+     *
+     * @return origin
+     */
+    @Override
+    public String getOrigin() {
+        if (isOriginManagerRunning()) {
+            return (String) originsPool.toArray()[0];
+        } else {
+            return getPrimaryOrigin();
+        }
+    }
+
+    public Set<String> getOriginsPool() {
+        return originsPool;
+    }
+
+    public void setOriginsPool(LinkedHashSet<String> originsPool) throws PubnubException {
+        setOriginsPool(originsPool, false);
+    }
+
+    public void setOriginsPool(LinkedHashSet<String> originsPool, boolean explicitlyEnableOriginManager)
+            throws PubnubException {
+        if (originsPool.size() < 2) {
+            throw new PubnubException("It should be at least 2 origins in Origins Pool");
+        }
+
+        this.originsPool = Collections.synchronizedSet(originsPool);
+
+        if (explicitlyEnableOriginManager) {
+            this.originManagerExplicitlyEnabled = true;
+            triggerOriginManager();
+        }
+    }
+
+    /**
+     * Start origin manager
+     */
+    protected void startOriginManager() {
+        getOriginManager().start();
+    }
+
+    /**
+     * Stops Current Origin and Failback Origin managers
+     */
+    protected void stopOriginManager() {
+        getOriginManager().stop();
+    }
+
+    /**
+     * Method to invoke on any OM-dependent operation. Starts/stops OM depending on current and new states.
+     */
+    public synchronized void triggerOriginManager() {
+        boolean isCurrentlySubscribed = isCurrentlySubscribed();
+        boolean isOriginManagerRunning = isOriginManagerRunning();
+
+        if (originManagerExplicitlyEnabled && !isOriginManagerRunning && isCurrentlySubscribed) {
+            startOriginManager();
+        } else if ((!originManagerExplicitlyEnabled && isOriginManagerRunning)
+                || (isOriginManagerRunning && !isCurrentlySubscribed)) {
+            stopOriginManager();
+        }
+    }
+
+    public boolean isOriginManagerRunning() {
+        return getOriginManager().isCurrentOriginManagerRunning();
+    }
+
+    /**
+     * Explicitly enables Origin Manager.
+     *
+     * @throws PubnubException if origins pool is not assigned yet
+     */
+    public void enableOriginManager() throws PubnubException {
+        if (originsPool == null || originsPool.size() < 2) {
+            throw new PubnubException("Origins Pool set should be assigned before #enableOriginManager() method invocation");
+        }
+
+        this.originManagerExplicitlyEnabled = true;
+        triggerOriginManager();
+    }
+
+    public void disableOriginManager() {
+        this.originManagerExplicitlyEnabled = false;
+        triggerOriginManager();
+    }
+
+    protected OriginManager getOriginManager() {
+        if (this.originManager == null) {
+            this.originManager = new OriginManager(this);
+        }
+
+        return this.originManager;
+    }
+
+    public int getOriginHeartbeatInterval() {
+        return originHeartbeatInterval;
+    }
+
+    public void setOriginHeartbeatInterval(int originHeartbeatInterval) {
+        this.originHeartbeatInterval = originHeartbeatInterval;
+    }
+
+    public int getOriginHeartbeatIntervalAfterFailure() {
+        return originHeartbeatIntervalAfterFailure;
+    }
+
+    public void setOriginHeartbeatIntervalAfterFailure(int originHeartbeatIntervalAfterFailure) {
+        this.originHeartbeatIntervalAfterFailure = originHeartbeatIntervalAfterFailure;
+    }
+
+    public int getOriginHeartbeatMaxRetries() {
+        return originHeartbeatMaxRetries;
+    }
+
+    public void setOriginHeartbeatMaxRetries(int originHeartbeatMaxRetries) {
+        this.originHeartbeatMaxRetries = originHeartbeatMaxRetries;
+    }
+
+    public TimedTaskManager getTimedTaskManager() {
+        return timedTaskManager;
+    }
+
+    @Override
+    protected void resetSubscribeHttpManager() {
+        super.resetSubscribeHttpManager();
+        triggerOriginManager();
     }
 
     private String pamSign(String key, String data) throws PubnubException {

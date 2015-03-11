@@ -6,9 +6,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -195,7 +193,7 @@ abstract class PubnubCore {
      *            Presence Expiry timeout in seconds
      */
     public void setPnExpires(int pnexpires, Callback callback) {
-        setHeartbeat(pnexpires,callback);
+        setHeartbeat(pnexpires, callback);
     }
 
     /**
@@ -290,20 +288,24 @@ abstract class PubnubCore {
     }
 
     protected String getPubnubUrl() {
-
         if (ORIGIN_STR == null) {
-            // SSL On?
-            if (this.SSL) {
-                ORIGIN_STR = "https://";
-            } else {
-                ORIGIN_STR = "http://";
-            }
-            ORIGIN_STR  += HOSTNAME;
+            ORIGIN_STR   = http();
+            ORIGIN_STR  += getOrigin();
             ORIGIN_STR  += ((!this.CACHE_BUSTING)?"":"-" + String.valueOf(HOSTNAME_SUFFIX));
             ORIGIN_STR  += "." + DOMAIN;
         }
+
         return ORIGIN_STR;
     }
+
+    protected String http() {
+        if (this.SSL) {
+            return "https://";
+        } else {
+            return "http://";
+        }
+    }
+
     private Callback voidCallback = new Callback()
     {public void successCallback(String channel, Object message) {}};
 
@@ -539,7 +541,7 @@ abstract class PubnubCore {
      * @param cipher_key
      * @param ssl_on
      */
-    private void init(String publish_key, String subscribe_key,
+    protected void init(String publish_key, String subscribe_key,
             String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
         this.PUBLISH_KEY = publish_key;
         this.SUBSCRIBE_KEY = subscribe_key;
@@ -705,7 +707,7 @@ abstract class PubnubCore {
         args.put("channel", channel);
         args.put("message", message);
         args.put("callback", callback);
-        args.put("storeInHistory", (storeInHistory)?"":"0");
+        args.put("storeInHistory", (storeInHistory) ? "" : "0");
         publish(args);
     }
 
@@ -2363,13 +2365,12 @@ abstract class PubnubCore {
         String[] groupsArray = channelGroupSubscriptions.getItemNames();
 
         if (channelsArray.length <= 0 && groupsArray.length <= 0) {
-            subscribeManager.resetHttpManager();
+            resetSubscribeHttpManager();
             return;
         }
 
         if (channelString == null) {
-            callErrorCallbacks(channelsArray,
-                    PubnubError.PNERROBJ_PARSING_ERROR);
+            callErrorCallbacks(channelsArray, PubnubError.PNERROBJ_PARSING_ERROR);
             return;
         }
 
@@ -2601,9 +2602,12 @@ abstract class PubnubCore {
      */
     private void _request(final HttpRequest hreq, RequestManager connManager,
             boolean abortExisting) {
-        if (abortExisting) {
+        if (abortExisting && connManager == subscribeManager) {
+            resetSubscribeHttpManager();
+        } else if (abortExisting) {
             connManager.resetHttpManager();
         }
+
         connManager.queue(hreq);
     }
 
@@ -2625,14 +2629,12 @@ abstract class PubnubCore {
         this.HOSTNAME_SUFFIX = getRandom();
     }
 
+    protected void resetSubscribeHttpManager() {
+        subscribeManager.resetHttpManager();
+    }
+
     private void resubscribe() {
-        changeOrigin();
-        if (!_timetoken.equals("0"))
-            _saved_timetoken = _timetoken;
-        _timetoken = "0";
-        log.verbose("Before Resubscribe Timetoken : " + _timetoken);
-        log.verbose("Before Resubscribe Saved Timetoken : " + _saved_timetoken);
-        _subscribe_base(true, true);
+        resubscribe(_timetoken);
     }
 
     private void resubscribe(String timetoken) {
@@ -2692,6 +2694,15 @@ abstract class PubnubCore {
      */
     public String[] getSubscribedChannelsArray() {
         return channelSubscriptions.getItemNames();
+    }
+
+    /**
+     * Check is any of channel or channel group subscription currently running
+     *
+     * @return subscriptions state
+     */
+    public boolean isCurrentlySubscribed() {
+        return channelSubscriptions.size() > 0 || channelGroupSubscriptions.size() > 0;
     }
 
     /**

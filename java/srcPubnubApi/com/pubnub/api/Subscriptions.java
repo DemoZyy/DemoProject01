@@ -20,6 +20,10 @@ class Subscriptions {
         state    = new JSONObject();
     }
 
+    public int size() {
+        return items.size();
+    }
+
     public void addItem(SubscriptionItem item) {
         items.put(item.name, item);
     }

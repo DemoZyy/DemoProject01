@@ -6,17 +6,29 @@ import java.util.Vector;
 
 abstract class TimedTask {
     protected int interval;
+    protected TimedTaskWorker worker;
+
     public abstract void run();
+
     TimedTask(int interval) {
         this.setInterval(interval);
     }
+
     public int getInterval() {
         return interval;
     }
+
     public void setInterval(int interval) {
         this.interval = interval;
     }
 
+    public void setWorker(TimedTaskWorker worker) {
+        this.worker = worker;
+    }
+
+    public void interruptWorker() {
+        this.worker.interruptWorker();
+    }
 }
 
 class TimedTaskWorker implements Runnable{
@@ -61,6 +73,7 @@ class TimedTaskWorker implements Runnable{
     TimedTaskWorker(String name, TimedTask task) {
         this.task = task;
         this.name = name;
+        this.task.setWorker(this);
     }
 
     void die() {

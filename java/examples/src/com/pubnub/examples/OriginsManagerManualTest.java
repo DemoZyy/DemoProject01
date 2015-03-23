@@ -13,7 +13,7 @@ public class OriginsManagerManualTest {
         pubnub.setOriginManagerInterval(1);
         pubnub.setOriginManagerIntervalAfterFailure(3);
 
-        LinkedHashSet<String> originsPool = new LinkedHashSet<>();
+        LinkedHashSet<String> originsPool = new LinkedHashSet<String>();
 
         originsPool.add("ps1");
         originsPool.add("ps2");

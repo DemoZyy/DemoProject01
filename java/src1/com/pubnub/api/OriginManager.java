@@ -14,17 +14,22 @@ public class OriginManager {
     private String http;
 
     public OriginManager(PubnubCoreShared app) {
-        System.out.println("Origin Manager created");
         this.app = app;
         this.http = app.http();
-        this.interval = app.getOriginHeartbeatInterval();
-        this.maxRetries = app.getOriginHeartbeatMaxRetries();
-        this.maxRetriesAfterFailure = app.getOriginHeartbeatIntervalAfterFailure();
+
+        this.interval = app.getOriginManagerInterval();
+        this.maxRetries = app.getOriginManagerMaxRetries();
+        this.maxRetriesAfterFailure = app.getOriginManagerIntervalAfterFailure();
     }
 
     public void start() {
-        startCurrentOriginManager();
-        startFailbackOriginManager();
+        try {
+            startCurrentOriginManager();
+            startFailbackOriginManager();
+        } catch (PubnubException e) {
+            stop();
+            restartSubscription();
+        }
     }
 
     public void stop() {
@@ -32,17 +37,23 @@ public class OriginManager {
         stopFailbackOriginManager();
     }
 
-    private void startCurrentOriginManager() {
-        System.out.println("Origin Manager started");
-        currentOriginManager = 
-                app.getTimedTaskManager().addTask("Current Origin Manager", new CurrentOriginManager(interval));
+    private void startCurrentOriginManager() throws PubnubException {
+        OriginsPool originsPool = app.getOriginsPool();
+
+        if (originsPool != null && app.getOriginsPool().size() > 2) {
+            currentOriginManager =
+                    app.getTimedTaskManager().addTask("Current Origin Manager", new CurrentOriginManager(interval));
+            log.verbose("Current Origin Manager started");
+        } else {
+            throw new PubnubException("Origins Pool set should be assigned before #enableOriginManager() method invocation");
+        }
     }
 
     private void startFailbackOriginManager() {
         if (deadOrigins.size() != 0) {
             failbackOriginManager =
                     app.getTimedTaskManager().addTask("Failback Manager", new FailbackOriginManager(interval));
-            System.out.println("Failback Manager STARTED");
+            log.verbose("Failback Origin Manager started");
         }
     }
 
@@ -50,7 +61,7 @@ public class OriginManager {
         if (currentOriginManager != 0) {
             app.getTimedTaskManager().removeTask(currentOriginManager);
             currentOriginManager = 0;
-            System.out.println("Current Origin Manager STOP");
+            log.verbose("Current Origin Manager stopped");
         }
     }
 
@@ -58,14 +69,11 @@ public class OriginManager {
         if (failbackOriginManager != 0) {
             app.getTimedTaskManager().removeTask(failbackOriginManager);
             failbackOriginManager = 0;
-            System.out.println("Failback Manager stopped");
-        } else {
-            System.out.println("Failback Manager is NULL");
+            log.verbose("Failback Origin Manager stopped");
         }
     }
 
     public boolean isCurrentOriginManagerRunning() {
-        System.out.println("OM state requested: " + (currentOriginManager != 0));
         return currentOriginManager != 0;
     }
 
@@ -84,19 +92,19 @@ public class OriginManager {
 
         public void run() {
             lastAlivePingStart = new Date();
-            Set<String> originsPool = app.getOriginsPool();
+            OriginsPool originsPool = app.getOriginsPool();
             Iterator originsIterator = originsPool.iterator();
 
             if (!originsIterator.hasNext()) {
-                log.verbose("Origins Pool is empty");
+                stop();
+                restartSubscription();
                 return;
             }
 
             try {
                 currentOrigin = (String) originsIterator.next();
 
-                // TODO: remove
-                System.out.println("Pinging origin " + currentOrigin + "." + app.getDomain() + "/time/0");
+                log.verbose("Pinging origin " + currentOrigin + "." + app.getDomain() + "/time/0");
 
                 isOriginOnline(currentOrigin, new Callback() {
                     public void successCallback(String channel, Object message) {
@@ -119,9 +127,13 @@ public class OriginManager {
             if (failures > maxRetries) {
                 failures = 0;
                 setOriginOffline(currentOrigin);
-                restartSubscription();
-                if (!isFailbackManagerRunning()) {
+
+                if (app.getOriginsPool().size() == 0) {
+                    stop();
+                    restartSubscription();
+                } else if (!isFailbackManagerRunning()) {
                     startFailbackOriginManager();
+                    restartSubscription();
                 }
             }
         }
@@ -137,7 +149,6 @@ public class OriginManager {
         }
 
         public void run() {
-            // last_failback_ping_start
             synchronized (deadOrigins) {
                 Iterator deadOriginsIterator = deadOrigins.iterator();
 
@@ -149,15 +160,13 @@ public class OriginManager {
 
                         isOriginOnline(deadOriginToTest, new Callback() {
                             public void successCallback(String channel, Object message) {
-                                // TODO: remove
-                                System.out.println("Dead origin " + deadOriginToTest + " is online now");
+                                log.verbose("Dead origin " + deadOriginToTest + " is online now");
                                 setSuccesses(deadOriginToTest);
                                 checkSuccesses(deadOriginToTest);
                             }
 
                             public void errorCallback(String channel, PubnubError error) {
-                                // TODO: remove
-                                System.out.println("Dead origin " + deadOriginToTest + " is still offline");
+                                log.verbose("Dead origin " + deadOriginToTest + " is still offline");
                                 setFailure(deadOriginToTest);
                                 checkSuccesses(deadOriginToTest);
                             }
@@ -176,6 +185,8 @@ public class OriginManager {
             if (counter == null) {
                 counter = 0;
             }
+
+            counter++;
 
             deadOriginsSuccessCounter.put(deadOrigin, counter);
         }
@@ -237,7 +248,6 @@ public class OriginManager {
     }
 
     public void restartSubscription() {
-        // TODO: possible incorrect method invocation
         app.disconnectAndResubscribe();
     }
 }

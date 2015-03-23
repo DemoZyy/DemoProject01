@@ -1,6 +1,7 @@
 package com.pubnub.api;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.LinkedHashSet;
@@ -16,10 +17,10 @@ public class OriginManagerTest {
     @Before
     public void setUp() {
         pubnub = new Pubnub("demo", "demo");
-        pubnub.setOriginHeartbeatInterval(originHeartbeatInterval);
+        pubnub.setOriginManagerInterval(originHeartbeatInterval);
         pubnub.setNonSubscribeTimeout(921);
-        pubnub.setOriginHeartbeatIntervalAfterFailure(299);
-        pubnub.setOriginHeartbeatMaxRetries(originHeartbeatMaxRetries);
+        pubnub.setOriginManagerIntervalAfterFailure(299);
+        pubnub.setOriginManagerMaxRetries(originHeartbeatMaxRetries);
     }
 
     @Test
@@ -59,7 +60,7 @@ public class OriginManagerTest {
 
         assertTrue(pubnub.isOriginManagerRunning());
         assertEquals(4, pubnub.getOriginsPool().size());
-        
+
         pubnub.disableOriginManager();
 
         assertFalse(pubnub.isOriginManagerRunning());

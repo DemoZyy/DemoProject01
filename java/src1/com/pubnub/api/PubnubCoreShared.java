@@ -20,11 +20,11 @@ import static com.pubnub.api.PubnubError.getErrorObject;
 
 abstract class PubnubCoreShared extends PubnubCore {
 
-    private boolean originManagerExplicitlyEnabled;
-    private int originHeartbeatInterval;
-    private int originHeartbeatIntervalAfterFailure;
-    private int originHeartbeatMaxRetries;
-    private Set<String> originsPool;
+    private boolean originManagerExplicitlyEnabled = false;
+    private int originManagerInterval = 5;
+    private int originManagerIntervalAfterFailure = 5;
+    private int originManagerMaxRetries = 5;
+    private OriginsPool originsPool;
     private OriginManager originManager;
 
     /**
@@ -95,6 +95,11 @@ abstract class PubnubCoreShared extends PubnubCore {
         super(publish_key, subscribe_key, secret_key, "", false);
     }
 
+    @Override
+    protected void init(String publish_key, String subscribe_key, String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
+        super.init(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
+        this.originsPool = new OriginsPool();
+    }
 
     /**
     *
@@ -117,14 +122,6 @@ abstract class PubnubCoreShared extends PubnubCore {
     public PubnubCoreShared(String publish_key, String subscribe_key,
                   String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
         super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
-    }
-
-    @Override
-    protected void init(String publish_key, String subscribe_key,
-                        String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
-        super.init(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
-
-        originManagerExplicitlyEnabled = false;
     }
 
     /**
@@ -204,13 +201,13 @@ abstract class PubnubCoreShared extends PubnubCore {
     @Override
     public String getOrigin() {
         if (isOriginManagerRunning()) {
-            return (String) originsPool.toArray()[0];
+            return originsPool.first();
         } else {
             return getPrimaryOrigin();
         }
     }
 
-    public Set<String> getOriginsPool() {
+    public OriginsPool getOriginsPool() {
         return originsPool;
     }
 
@@ -220,11 +217,10 @@ abstract class PubnubCoreShared extends PubnubCore {
 
     public void setOriginsPool(LinkedHashSet<String> originsPool, boolean explicitlyEnableOriginManager)
             throws PubnubException {
-        if (originsPool.size() < 2) {
-            throw new PubnubException("It should be at least 2 origins in Origins Pool");
-        }
 
-        this.originsPool = Collections.synchronizedSet(originsPool);
+        this.originsPool.set(originsPool);
+        stopOriginManager();
+        startOriginManager();
 
         if (explicitlyEnableOriginManager) {
             this.originManagerExplicitlyEnabled = true;
@@ -237,6 +233,7 @@ abstract class PubnubCoreShared extends PubnubCore {
      */
     protected void startOriginManager() {
         getOriginManager().start();
+        disconnectAndResubscribe();
     }
 
     /**
@@ -244,6 +241,7 @@ abstract class PubnubCoreShared extends PubnubCore {
      */
     protected void stopOriginManager() {
         getOriginManager().stop();
+        disconnectAndResubscribe();
     }
 
     /**
@@ -271,10 +269,6 @@ abstract class PubnubCoreShared extends PubnubCore {
      * @throws PubnubException if origins pool is not assigned yet
      */
     public void enableOriginManager() throws PubnubException {
-        if (originsPool == null || originsPool.size() < 2) {
-            throw new PubnubException("Origins Pool set should be assigned before #enableOriginManager() method invocation");
-        }
-
         this.originManagerExplicitlyEnabled = true;
         triggerOriginManager();
     }
@@ -292,28 +286,28 @@ abstract class PubnubCoreShared extends PubnubCore {
         return this.originManager;
     }
 
-    public int getOriginHeartbeatInterval() {
-        return originHeartbeatInterval;
+    public int getOriginManagerInterval() {
+        return originManagerInterval;
     }
 
-    public void setOriginHeartbeatInterval(int originHeartbeatInterval) {
-        this.originHeartbeatInterval = originHeartbeatInterval;
+    public void setOriginManagerInterval(int originManagerInterval) {
+        this.originManagerInterval = originManagerInterval;
     }
 
-    public int getOriginHeartbeatIntervalAfterFailure() {
-        return originHeartbeatIntervalAfterFailure;
+    public int getOriginManagerIntervalAfterFailure() {
+        return originManagerIntervalAfterFailure;
     }
 
-    public void setOriginHeartbeatIntervalAfterFailure(int originHeartbeatIntervalAfterFailure) {
-        this.originHeartbeatIntervalAfterFailure = originHeartbeatIntervalAfterFailure;
+    public void setOriginManagerIntervalAfterFailure(int originManagerIntervalAfterFailure) {
+        this.originManagerIntervalAfterFailure = originManagerIntervalAfterFailure;
     }
 
-    public int getOriginHeartbeatMaxRetries() {
-        return originHeartbeatMaxRetries;
+    public int getOriginManagerMaxRetries() {
+        return originManagerMaxRetries;
     }
 
-    public void setOriginHeartbeatMaxRetries(int originHeartbeatMaxRetries) {
-        this.originHeartbeatMaxRetries = originHeartbeatMaxRetries;
+    public void setOriginManagerMaxRetries(int originManagerMaxRetries) {
+        this.originManagerMaxRetries = originManagerMaxRetries;
     }
 
     public TimedTaskManager getTimedTaskManager() {
@@ -324,6 +318,10 @@ abstract class PubnubCoreShared extends PubnubCore {
     protected void resetSubscribeHttpManager() {
         super.resetSubscribeHttpManager();
         triggerOriginManager();
+    }
+
+    public void setLogging(boolean state) {
+        Logger.setLOGGING(state);
     }
 
     private String pamSign(String key, String data) throws PubnubException {

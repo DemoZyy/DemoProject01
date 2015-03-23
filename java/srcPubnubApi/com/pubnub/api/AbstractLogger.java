@@ -42,4 +42,7 @@ abstract class AbstractLogger {
             nativeError(prepareString(s));
     }
 
+    protected static void setLOGGING(boolean LOGGING) {
+        AbstractLogger.LOGGING = LOGGING;
+    }
 }

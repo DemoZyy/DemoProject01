@@ -2633,11 +2633,11 @@ abstract class PubnubCore {
         subscribeManager.resetHttpManager();
     }
 
-    private void resubscribe() {
+    protected void resubscribe() {
         resubscribe(_timetoken);
     }
 
-    private void resubscribe(String timetoken) {
+    protected void resubscribe(String timetoken) {
         changeOrigin();
         if (!timetoken.equals("0"))
             _saved_timetoken = timetoken;

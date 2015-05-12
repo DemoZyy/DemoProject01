@@ -27,6 +27,8 @@ abstract class PubnubCoreShared extends PubnubCore {
     private OriginsPool originsPool;
     private OriginManager originManager;
 
+    private static Logger log = new Logger(PubnubCoreShared.class);
+
     /**
      * Pubnub Constructor
      *
@@ -211,6 +213,14 @@ abstract class PubnubCoreShared extends PubnubCore {
         return originsPool;
     }
 
+    public void setOriginsPool(String[] originsPoolArray) throws PubnubException {
+        setOriginsPool(new LinkedHashSet<String>(Arrays.asList(originsPoolArray)));
+    }
+
+    public void setOriginsPool(String[] originsPoolArray, boolean explicitlyEnableOriginManager) throws PubnubException {
+        setOriginsPool(new LinkedHashSet<String>(Arrays.asList(originsPoolArray)), explicitlyEnableOriginManager);
+    }
+
     public void setOriginsPool(LinkedHashSet<String> originsPool) throws PubnubException {
         setOriginsPool(originsPool, false);
     }
@@ -219,8 +229,6 @@ abstract class PubnubCoreShared extends PubnubCore {
             throws PubnubException {
 
         this.originsPool.set(originsPool);
-        stopOriginManager();
-        startOriginManager();
 
         if (explicitlyEnableOriginManager) {
             this.originManagerExplicitlyEnabled = true;
@@ -233,7 +241,6 @@ abstract class PubnubCoreShared extends PubnubCore {
      */
     protected void startOriginManager() {
         getOriginManager().start();
-        disconnectAndResubscribe();
     }
 
     /**
@@ -253,9 +260,11 @@ abstract class PubnubCoreShared extends PubnubCore {
 
         if (originManagerExplicitlyEnabled && !isOriginManagerRunning && isCurrentlySubscribed) {
             startOriginManager();
+            this.ORIGIN_STR = null;
         } else if ((!originManagerExplicitlyEnabled && isOriginManagerRunning)
                 || (isOriginManagerRunning && !isCurrentlySubscribed)) {
             stopOriginManager();
+            this.ORIGIN_STR = null;
         }
     }
 
@@ -263,12 +272,21 @@ abstract class PubnubCoreShared extends PubnubCore {
         return getOriginManager().isCurrentOriginManagerRunning();
     }
 
+    public void enableOriginManager() throws PubnubException {
+        enableOriginManager(new Callback() {
+            @Override
+            public void errorCallback(String channel, PubnubError error) {
+                log.verbose(error.getErrorString());
+            }
+        });
+    }
+
     /**
      * Explicitly enables Origin Manager.
      *
-     * @throws PubnubException if origins pool is not assigned yet
      */
-    public void enableOriginManager() throws PubnubException {
+    public void enableOriginManager(Callback callback) {
+        getOriginManager().setCallback(callback);
         this.originManagerExplicitlyEnabled = true;
         triggerOriginManager();
     }
@@ -318,6 +336,16 @@ abstract class PubnubCoreShared extends PubnubCore {
     protected void resetSubscribeHttpManager() {
         super.resetSubscribeHttpManager();
         triggerOriginManager();
+    }
+
+    /**
+     * Force disabled state if Origin Manager is running.
+     *
+     * @return cache busting state
+     */
+    @Override
+    public boolean getCacheBusting() {
+        return super.getCacheBusting() && !isOriginManagerRunning();
     }
 
     public void setLogging(boolean state) {

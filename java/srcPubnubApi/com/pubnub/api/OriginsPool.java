@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 public class OriginsPool {
-    private LinkedHashSet<String> originsList;
+    private LinkedHashSet<String> originsList = new LinkedHashSet<String>();
 
     public synchronized void set(Set<String> originsList) throws PubnubException {
         if (originsList.size() < 2) {

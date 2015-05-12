@@ -217,6 +217,11 @@ public class PubnubError {
      * Crypto Error
      */
     public static final int         PNERR_CRYPTO_ERROR            =       135;
+
+    /**
+     * OriginsPool should contain at least 2 origins
+     */
+    public static final int         PNERR_OM_NOT_ENOUGH_ORIGINS            =       137;
     // Error Objects
 
     static final PubnubError        PNERROBJ_TIMEOUT                           =
@@ -454,6 +459,12 @@ public class PubnubError {
             "Error while encrypting/decrypting message." +
             "Please contact support with error details."
         );
+
+    static final PubnubError        PNERROBJ_OM_NOT_ENOUGH_ORIGINS         =
+            new PubnubError     (
+                    PNERR_OM_NOT_ENOUGH_ORIGINS,
+                    "Origins Pool should contain at least 2 origins"
+            );
 
     public  final int errorCode;
     public  final int errorCodeExtended;

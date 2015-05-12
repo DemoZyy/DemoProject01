@@ -22,7 +22,7 @@ abstract class PubnubCore {
     private String HOSTNAME = "pubsub";
     private int HOSTNAME_SUFFIX = 1;
     private String DOMAIN = "pubnub.com";
-    private String ORIGIN_STR = null;
+    protected String ORIGIN_STR = null;
     protected String PUBLISH_KEY = "";
     protected String SUBSCRIBE_KEY = "";
     protected String SECRET_KEY = "";
@@ -291,7 +291,7 @@ abstract class PubnubCore {
         if (ORIGIN_STR == null) {
             ORIGIN_STR   = http();
             ORIGIN_STR  += getOrigin();
-            ORIGIN_STR  += ((!this.CACHE_BUSTING)?"":"-" + String.valueOf(HOSTNAME_SUFFIX));
+            ORIGIN_STR  += this.getCacheBusting() ? ("-" + String.valueOf(HOSTNAME_SUFFIX)) : "";
             ORIGIN_STR  += "." + DOMAIN;
         }
 

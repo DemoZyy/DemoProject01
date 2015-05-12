@@ -12,6 +12,7 @@ public class OriginManager {
     private int failbackOriginManager;
     private PubnubCoreShared app;
     private String http;
+    private Callback callback;
 
     public OriginManager(PubnubCoreShared app) {
         this.app = app;
@@ -22,30 +23,25 @@ public class OriginManager {
         this.maxRetriesAfterFailure = app.getOriginManagerIntervalAfterFailure();
     }
 
-    public void start() {
-        try {
-            startCurrentOriginManager();
-            startFailbackOriginManager();
-        } catch (PubnubException e) {
-            stop();
-            restartSubscription();
-        }
+    public synchronized void start() {
+        startCurrentOriginManager();
+        startFailbackOriginManager();
     }
 
-    public void stop() {
+    public synchronized void stop() {
         stopCurrentOriginManager();
         stopFailbackOriginManager();
     }
 
-    private void startCurrentOriginManager() throws PubnubException {
+    private void startCurrentOriginManager() {
         OriginsPool originsPool = app.getOriginsPool();
 
-        if (originsPool != null && app.getOriginsPool().size() > 2) {
+        if (originsPool != null && app.getOriginsPool().size() >= 2) {
             currentOriginManager =
                     app.getTimedTaskManager().addTask("Current Origin Manager", new CurrentOriginManager(interval));
             log.verbose("Current Origin Manager started");
         } else {
-            throw new PubnubException("Origins Pool set should be assigned before #enableOriginManager() method invocation");
+            invokeErrorCallback(PubnubError.PNERROBJ_OM_NOT_ENOUGH_ORIGINS);
         }
     }
 
@@ -53,6 +49,7 @@ public class OriginManager {
         if (deadOrigins.size() != 0) {
             failbackOriginManager =
                     app.getTimedTaskManager().addTask("Failback Manager", new FailbackOriginManager(interval));
+            restartSubscription();
             log.verbose("Failback Origin Manager started");
         }
     }
@@ -245,6 +242,16 @@ public class OriginManager {
                 });
 
         app._request(hreq, app.nonSubscribeManager);
+    }
+
+    public synchronized void setCallback(Callback callback) {
+        this.callback = callback;
+    }
+
+    private synchronized void invokeErrorCallback(PubnubError error) {
+        if (this.callback != null) {
+            this.callback.errorCallback("", error);
+        }
     }
 
     public void restartSubscription() {

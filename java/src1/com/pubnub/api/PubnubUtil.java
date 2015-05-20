@@ -6,9 +6,6 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * PubnubUtil class provides utility methods like urlEncode etc
@@ -41,12 +38,12 @@ public class PubnubUtil extends PubnubUtilCore {
      */
     static Object stringToJSON(String str) {
         try {
-            return new JSONArray(str);
-        } catch (JSONException e) {
+            return new PnJsonArray(str);
+        } catch (PnJsonException e) {
         }
         try {
-            return new JSONObject(str);
-        } catch (JSONException ex) {
+            return new PnJsonObject(str);
+        } catch (PnJsonException ex) {
         }
         try {
             return Integer.parseInt(str);

@@ -2,12 +2,16 @@ package com.pubnub.api;
 
 import org.json.*;
 
-public class PnJsonObject {
+class PnJsonObject {
 	
 	JSONObject jso;
 	
 	public PnJsonObject() {
 		jso = new JSONObject();
+	}
+	
+	public PnJsonObject(Object o) {
+		jso = (JSONObject) o;
 	}
 	
 	public PnJsonObject(String response) throws PnJsonException {

@@ -1,6 +1,6 @@
 package com.pubnub.api;
 
-public class PnJsonException extends Exception {
+class PnJsonException extends Exception {
 
 	org.json.JSONException jse;
 	

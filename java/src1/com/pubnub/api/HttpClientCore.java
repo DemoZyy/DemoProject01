@@ -12,10 +12,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.pubnub.api.PubnubException;
 import static com.pubnub.api.PubnubError.*;
 
@@ -86,7 +82,7 @@ class HttpClientCore extends HttpClient {
     public synchronized HttpResponse fetch(String url, Hashtable headers)
     throws PubnubException, SocketTimeoutException {
         URL urlobj = null;
-        log.verbose("FETCHING URL : " + url);
+        System.out.println("FETCHING URL : " + url);
         try {
             urlobj = new URL(url);
         } catch (MalformedURLException e3) {
@@ -175,57 +171,57 @@ class HttpClientCore extends HttpClient {
             }
         }
 
-        log.verbose("URL = " + url + ", Status Code : "  + rc + ", : RESPONSE = " + page);
+        System.out.println("URL = " + url + ", Status Code : "  + rc + ", : RESPONSE = " + page);
         switch (rc) {
         case HttpURLConnection.HTTP_FORBIDDEN:
             {
-                JSONObject payload = null;
+                PnJsonObject payload = null;
                 String message = null;
                 try {
-                    JSONObject pageJso = new JSONObject(page);
+                    PnJsonObject pageJso = new PnJsonObject(page);
                     message            = pageJso.getString("message");
                     payload            = pageJso.getJSONObject("payload");
                     throw new PubnubException(getErrorObject(PNERROBJ_FORBIDDEN, message, payload));
-                } catch (JSONException e2) {}
+                } catch (PnJsonException e2) {}
 
                 throw new PubnubException(getErrorObject(PNERROBJ_FORBIDDEN, page));
             }
         case HttpURLConnection.HTTP_UNAUTHORIZED:
             {
-                JSONObject payload = null;
+                PnJsonObject payload = null;
                 String message = null;
                 try {
-                    JSONObject pageJso = new JSONObject(page);
+                    PnJsonObject pageJso = new PnJsonObject(page);
                     message            = pageJso.getString("message");
                     payload            = pageJso.getJSONObject("payload");
                     throw new PubnubException(getErrorObject(PNERROBJ_FORBIDDEN, message, payload));
-                } catch (JSONException e2) {}
+                } catch (PnJsonException e2) {}
 
                 throw new PubnubException(getErrorObject(PNERROBJ_UNAUTHORIZED, page));
             }
         case HttpURLConnection.HTTP_BAD_REQUEST:
             {
-                JSONObject payload = null;
+                PnJsonObject payload = null;
                 String message = null;
                 try {
-                    JSONObject pageJso = new JSONObject(page);
+                    PnJsonObject pageJso = new PnJsonObject(page);
                     message            = pageJso.getString("message");
                     payload            = pageJso.getJSONObject("payload");
                     throw new PubnubException(getErrorObject(PNERROBJ_BAD_REQUEST, message, payload));
-                } catch (JSONException e2) {}
+                } catch (PnJsonException e2) {}
 
                 throw new PubnubException(getErrorObject(PNERROBJ_BAD_REQUEST, page));
             }
         case HttpURLConnection.HTTP_NOT_FOUND:
             {
-                JSONObject payload = null;
+                PnJsonObject payload = null;
                 String message = null;
                 try {
-                    JSONObject pageJso = new JSONObject(page);
+                    PnJsonObject pageJso = new PnJsonObject(page);
                     message            = pageJso.getString("message");
                     payload            = pageJso.getJSONObject("payload");
                     throw new PubnubException(getErrorObject(PNERROBJ_BAD_REQUEST, message, payload));
-                } catch (JSONException e2) {}
+                } catch (PnJsonException e2) {}
 
                 throw new PubnubException(getErrorObject(PNERROBJ_NOT_FOUND_ERROR, page));
             }

@@ -1,14 +1,12 @@
 package com.pubnub.api;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Message object for GCM
  * @author Pubnub
  *
  */
-public class PnGcmMessage extends JSONObject {
+public class PnGcmMessage extends PnJsonObject {
 
     /**
      * Constructor for PnGcmMessage
@@ -22,7 +20,7 @@ public class PnGcmMessage extends JSONObject {
      * @param json
      *         json object to be set as data for GCM message
      */
-    public PnGcmMessage(JSONObject json) {
+    public PnGcmMessage(PnJsonObject json) {
         super();
         setData(json);
     }
@@ -32,10 +30,10 @@ public class PnGcmMessage extends JSONObject {
      * @param json
      *         json object to be set as data for GCM message
      */
-    public void setData(JSONObject json) {
+    public void setData(PnJsonObject json) {
         try {
             this.put("data", json);
-        } catch (JSONException e) {
+        } catch (PnJsonException e) {
 
         }
     }

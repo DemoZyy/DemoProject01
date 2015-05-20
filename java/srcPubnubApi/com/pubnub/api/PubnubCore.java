@@ -1,9 +1,5 @@
 package com.pubnub.api;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -158,11 +154,11 @@ abstract class PubnubCore {
             HttpRequest hreq = new HttpRequest(urlComponents, parameters,
                     new ResponseHandler() {
                         public void handleResponse(HttpRequest hreq, String response) {
-                            JSONObject jso;
+                            PnJsonObject jso;
                             try {
-                                jso = new JSONObject(response);
+                                jso = new PnJsonObject(response);
                                 response = jso.getString("message");
-                            } catch (JSONException e) {
+                            } catch (PnJsonException e) {
                                 handleError(
                                         hreq,
                                         PubnubError.getErrorObject(
@@ -620,11 +616,11 @@ abstract class PubnubCore {
      * @param channel
      *            Channel name
      * @param message
-     *            JSONObject to be published
+     *            PnJsonObject to be published
      * @param callback
      *            object of sub class of Callback class
      */
-    public void publish(String channel, JSONObject message, boolean storeInHistory, Callback callback) {
+    void publish(String channel, PnJsonObject message, boolean storeInHistory, Callback callback) {
         Hashtable args = new Hashtable();
         args.put("channel", channel);
         args.put("message", message);
@@ -643,7 +639,7 @@ abstract class PubnubCore {
      * @param callback
      *            object of sub class of Callback class
      */
-    public void publish(String channel, JSONArray message, boolean storeInHistory, Callback callback) {
+    void publish(String channel, PnJsonArray message, boolean storeInHistory, Callback callback) {
         Hashtable args = new Hashtable();
         args.put("channel", channel);
         args.put("message", message);
@@ -716,11 +712,11 @@ abstract class PubnubCore {
      * @param channel
      *            Channel name
      * @param message
-     *            JSONObject to be published
+     *            PnJsonObject to be published
      * @param callback
      *            object of sub class of Callback class
      */
-    public void publish(String channel, JSONObject message, Callback callback) {
+     void publish(String channel, PnJsonObject message, Callback callback) {
         Hashtable args = new Hashtable();
         args.put("channel", channel);
         args.put("message", message);
@@ -738,7 +734,7 @@ abstract class PubnubCore {
      * @param callback
      *            object of sub class of Callback class
      */
-    public void publish(String channel, JSONArray message, Callback callback) {
+    void publish(String channel, PnJsonArray message, Callback callback) {
         Hashtable args = new Hashtable();
         args.put("channel", channel);
         args.put("message", message);
@@ -878,10 +874,10 @@ abstract class PubnubCore {
 
         class PublishResponseHandler extends ResponseHandler {
             public void handleResponse(HttpRequest hreq, String response) {
-                JSONArray jsarr;
+                PnJsonArray jsarr;
                 try {
-                    jsarr = new JSONArray(response);
-                } catch (JSONException e) {
+                    jsarr = new PnJsonArray(response);
+                } catch (PnJsonException e) {
                     handleError(hreq,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
                     return;
@@ -954,15 +950,15 @@ abstract class PubnubCore {
         whereNow(this.UUID, callback);
     }
 
-    public void setState(String channel, String uuid, JSONObject state, Callback callback) {
+    void setState(String channel, String uuid, PnJsonObject state, Callback callback) {
         _setState(channelSubscriptions, PubnubUtil.urlEncode(channel), null, uuid, state, callback);
     }
 
-    public void channelGroupSetState(String group, String uuid, JSONObject state, Callback callback) {
+    void channelGroupSetState(String group, String uuid, PnJsonObject state, Callback callback) {
         _setState(channelSubscriptions, ".", group, uuid, state, callback);
     }
 
-    protected void _setState(Subscriptions sub, String channel, String group, String uuid, JSONObject state, Callback callback) {
+    void _setState(Subscriptions sub, String channel, String group, String uuid, PnJsonObject state, Callback callback) {
         SubscriptionItem item = sub.getItem(channel);
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
@@ -978,7 +974,7 @@ abstract class PubnubCore {
         if (item != null) {
             try {
                 sub.state.put(channel, state);
-            } catch (JSONException e) {
+            } catch (PnJsonException e) {
 
             }
         }
@@ -1027,21 +1023,21 @@ abstract class PubnubCore {
 
     protected void invokeCallback(String channel, String response, String key,
             Callback callback, int extendedErrorCode, boolean key_strict) {
-        JSONObject responseJso = null;
+        PnJsonObject responseJso = null;
         try {
-            responseJso = new JSONObject(response);
-        } catch (JSONException e) {
+            responseJso = new PnJsonObject(response);
+        } catch (PnJsonException e) {
             callback.errorCallback(channel,
                     PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response));
             return;
         }
 
-        JSONObject payloadJso = null;
+        PnJsonObject payloadJso = null;
 
         if (key != null && key.length() > 0) {
             try {
-                payloadJso = (JSONObject) responseJso.get(key);
-            } catch (JSONException e) {
+                payloadJso = (PnJsonObject) responseJso.get(key);
+            } catch (PnJsonException e) {
                 if (!key_strict) {
                     callback.successCallback(channel, responseJso);
                 } else {
@@ -1060,9 +1056,9 @@ abstract class PubnubCore {
         String responseJSON;
 
         try {
-            responseJSON = (new JSONObject(response)).getString(key);
+            responseJSON = (new PnJsonObject(response)).getString(key);
             callback.successCallback(null, responseJSON);
-        } catch (JSONException e) {
+        } catch (PnJsonException e) {
             callback.errorCallback(
                     null,
                     PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, 0, response)
@@ -1467,12 +1463,12 @@ abstract class PubnubCore {
         class HistoryResponseHandler extends ResponseHandler {
 
             public void handleResponse(HttpRequest hreq, String response) {
-                JSONArray respArr;
+                PnJsonArray respArr;
                 try {
-                    respArr = new JSONArray(response);
-                    decryptJSONArray((JSONArray) respArr.get(0));
+                    respArr = new PnJsonArray(response);
+                    decryptPnJsonArray((PnJsonArray) respArr.get(0));
                     cb.successCallback(channel, respArr);
-                } catch (JSONException e) {
+                } catch (PnJsonException e) {
                     cb.errorCallback(channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, 3));
                 } catch (IOException e) {
@@ -2270,7 +2266,7 @@ abstract class PubnubCore {
         }
     }
 
-    private void decryptJSONArray(JSONArray messages) throws JSONException, IllegalStateException, IOException, PubnubException {
+    private void decryptPnJsonArray(PnJsonArray messages) throws PnJsonException, IllegalStateException, IOException, PubnubException {
 
         if (CIPHER_KEY.length() > 0) {
             for (int i = 0; i < messages.length(); i++) {
@@ -2411,12 +2407,16 @@ abstract class PubnubCore {
                  * message.
                  */
 
-                JSONArray jsa;
+                PnJsonArray jsa;
                 try {
-                    jsa = new JSONArray(response);
-
+                    jsa = new PnJsonArray(response);
                     _timetoken = (!_saved_timetoken.equals("0") && isResumeOnReconnect()) ? _saved_timetoken
                             : jsa.get(1).toString();
+                    
+                    if (_timetoken.charAt(0) == '"') {
+                    	_timetoken = _timetoken.substring(1, _timetoken.length() - 1);
+                    }
+                    
                     log.verbose("Resume On Reconnect is "
                             + isResumeOnReconnect());
                     log.verbose("Saved Timetoken : " + _saved_timetoken);
@@ -2434,7 +2434,7 @@ abstract class PubnubCore {
                         channelGroupSubscriptions.invokeReconnectCallbackOnItems(_timetoken);
                     }
 
-                    JSONArray messages = new JSONArray(jsa.get(0).toString());
+                    PnJsonArray messages = new PnJsonArray(jsa.get(0).toString());
 
                     if (jsa.length() == 4) {
                         /*
@@ -2502,7 +2502,7 @@ abstract class PubnubCore {
                         _subscribe_base(false, hreq.isDar(), hreq.getWorker());
                     } else
                         _subscribe_base(false);
-                } catch (JSONException e) {
+                } catch (PnJsonException e) {
                     if (hreq.isSubzero()) {
                         log.verbose("Response of subscribe 0 request. Need to do dAr process again");
                         _subscribe_base(false, hreq.isDar(), hreq.getWorker());
@@ -2554,7 +2554,7 @@ abstract class PubnubCore {
     }
 
     private void invokeSubscribeCallback(String channel, Callback callback, Object message, String timetoken,
-                                         HttpRequest hreq) throws JSONException {
+                                         HttpRequest hreq) throws PnJsonException {
         if (CIPHER_KEY.length() > 0
                 && !channel
                 .endsWith(PRESENCE_SUFFIX)) {

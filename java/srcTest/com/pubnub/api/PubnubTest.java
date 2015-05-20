@@ -312,7 +312,7 @@ public class PubnubTest {
         SubscribeCallback sbCb = new SubscribeCallback(latch) {
             @Override
             public void connectCallback(String channel, Object message) {
-                pubnub_enc.publish(channel, sendMessage, pbCb);
+                //pubnub_enc.publish(channel, sendMessage, pbCb);
             }
         };
 

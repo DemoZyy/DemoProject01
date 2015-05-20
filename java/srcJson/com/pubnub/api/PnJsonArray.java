@@ -3,12 +3,16 @@ package com.pubnub.api;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-public class PnJsonArray {
+class PnJsonArray {
 	
 	JSONArray jsa;
 
 	public PnJsonArray() {
 		jsa = new JSONArray();
+	}
+	
+	public PnJsonArray(Object o) {
+		jsa = (JSONArray) o;
 	}
 	
 	public PnJsonArray(String text) throws PnJsonException {

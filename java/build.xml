@@ -3,6 +3,8 @@
     <loadfile property="VERSION" srcFile="../VERSION"><filterchain><striplinebreaks/></filterchain></loadfile>
     <property environment="env"/>
     <property name="pubnub_jar_file_name" value="Pubnub-StandardEdition-${VERSION}.jar"/>
+    <property name="pubnub_jar_gson_file_name" value="Pubnub-StandardEdition-Gson-${VERSION}.jar"/>
+    <property name="pubnub_debug_jar_gson_file_name" value="Pubnub-StandardEdition-Gson-Debug-${VERSION}.jar"/>
     <property name="pubnub_debug_jar_file_name" value="Pubnub-StandardEdition-Debug-${VERSION}.jar"/>
     <property name="pubnub_unittests_jar_file_name" value="Pubnub-UnitTests-${VERSION}.jar"/>
     <property name="srcPubnubApi.link" value="srcPubnubApi"/>
@@ -11,6 +13,8 @@
     <property name="sources_pubnub_java1" value="src1/com/pubnub/api"/>
     <property name="sources_pubnub_java" value="src/com/pubnub/api"/>
     <property name="sources_pubnub_crypto" value="srcCrypto/com/pubnub/api"/>
+    <property name="sources_pubnub_json" value="srcJson/com/pubnub/api"/>
+    <property name="sources_pubnub_gson" value="srcGson/com/pubnub/api"/>
     <property name="target" value="1.5"/>
     <property name="source" value="1.5"/>
     <property name="debug" value="false"/>
@@ -18,6 +22,7 @@
         <pathelement location="bin"/>
         <pathelement location="libs/bcprov-jdk15on-1.47.jar"/>
         <pathelement location="libs/json-20090211.jar"/>
+        <pathelement location="libs/gson-2.3.1.jar"/>
         <pathelement location="libs/json-simple-1.1.1.jar"/>
         <pathelement location="libs/slf4j-api-1.7.5.jar"/>
         <pathelement location="libs/junit-4.11.jar"/>
@@ -69,14 +74,19 @@
             <fileset dir="jars" includes="**/*.jar"/>
         </delete>
     </target>
-    <target name="build" depends="clean">
+
+    <target name="build" depends="build-json, clean, build-gson" />
+    <target name="debug-build" depends="debug-build-json, clean, debug-build-gson" />
+
+    <target name="build-json" depends="clean">
         <delete file="${pubnub_jar_file_name}"/>
         <antcall target="build-jar">
             <param name="jar_name" value="${pubnub_jar_file_name}" />
             <param name="debug" value="false" />
         </antcall>
     </target>
-    <target name="debug-build" depends="clean">
+
+    <target name="debug-build-json" depends="clean">
         <delete file="${pubnub_debug_jar_file_name}"/>
         <antcall target="setDebugTrue" />
         <antcall target="build-jar">
@@ -86,7 +96,39 @@
         <antcall target="unsetDebugTrue" />
     </target>
 
-    <target depends="create-jar, create-test-jar, create-examples-jar, create-demo-console-jar, create-push-test-jar, create-presence-test-jar, clean_bin, doc" name="build-jar"/>
+
+    <target name="build-gson" depends="clean">
+        <delete file="${pubnub_jar_gson_file_name}"/>
+        <antcall target="build-jar-gson">
+            <param name="jar_name" value="${pubnub_jar_gson_file_name}" />
+            <param name="debug" value="false" />
+        </antcall>
+    </target>
+
+    <target name="debug-build-gson" depends="clean">
+        <delete file="${pubnub_debug_jar_file_name}"/>
+        <antcall target="setDebugTrue" />
+        <antcall target="build-jar-gson">
+            <param name="jar_name" value="${pubnub_gson_debug_jar_file_name}" />
+            <param name="debug" value="true" />
+        </antcall>
+        <antcall target="unsetDebugTrue" />
+    </target>
+
+
+    <target depends="create-jar-gson, doc-gson" name="build-jar-gson"/>
+
+    <target depends="build-project-gson" name="create-jar-gson">
+        <jar destfile="${jar_name}"
+            basedir="bin"
+            includes="**/**"
+            excludes="**/*Test*.class"
+        />
+    </target>
+
+    <target depends="create-jar, create-test-jar, create-examples-jar, create-demo-console-jar,  create-presence-test-jar, clean_bin, doc" name="build-jar"/>
+
+
     <target depends="build-project" name="create-jar">
         <jar destfile="${jar_name}"
             basedir="bin"
@@ -102,7 +144,10 @@
         />
     </target>
 
-    <target depends="init" name="build-project">
+    <target depends="build-project-json, build-project-gson" name="build-project"/>
+
+
+    <target depends="init" name="build-project-gson">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <replace dir="${srcPubnubApi.link}" token='static String VERSION = ""' value='static String VERSION = "${VERSION}"' >
             <include name="**/*.java"/>
@@ -114,6 +159,27 @@
             <src path="srcLogging"/>
             <src path="srcTest"/>
             <src path="srcCrypto"/>
+            <src path="srcGson"/>
+            <classpath refid="PubnubApi.classpath"/>
+        </javac>
+        <replace dir="${srcPubnubApi.link}" token='static String VERSION = "${VERSION}"' value='static String VERSION = ""'>
+            <include name="**/*.java"/>
+        </replace>
+    </target>
+
+    <target depends="init" name="build-project-json">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <replace dir="${srcPubnubApi.link}" token='static String VERSION = ""' value='static String VERSION = "${VERSION}"' >
+            <include name="**/*.java"/>
+        </replace>
+        <javac destdir="bin" debug="${debug}" source="${source}" target="${target}">
+            <src path="${srcPubnubApi.link}"/>
+            <src path="src"/>
+            <src path="src1"/>
+            <src path="srcLogging"/>
+            <src path="srcTest"/>
+            <src path="srcCrypto"/>
+            <src path="srcJson"/>
             <src path="examples/src"/>
             <classpath refid="PubnubApi.classpath"/>
         </javac>
@@ -153,7 +219,7 @@
                 <attribute name="Company" value="Pubnub" />
                 <attribute name="Project" value="pubnub-api" />
                 <attribute name="Java-Version" value="${java.version}" />
-                <attribute name="Rsrc-Class-Path" value="./ bcprov-jdk15on-1.47.jar commons-cli-1.2.jar json-simple-1.1.1.jar json-20090211.jar slf4j-api-1.7.5.jar slf4j-simple-1.7.5.jar" />
+                <attribute name="Rsrc-Class-Path" value="./ bcprov-jdk15on-1.47.jar commons-cli-1.2.jar gson-2.3.1.jar json-simple-1.1.1.jar json-20090211.jar slf4j-api-1.7.5.jar slf4j-simple-1.7.5.jar" />
                 <attribute name="Class-Path" value="." />
                 <attribute name="Rsrc-Main-Class" value="@{jar.classname}" />
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
@@ -209,9 +275,12 @@
         <create-jar jar.type="examples" jar.classname="com.pubnub.examples.PubnubPresenceTest" jar.filename="PubnubPresenceTest.jar" />
     </target>
     <target name="doc" depends="init" description="generate documentation">
-        <javadoc access="public" sourcepath="srcPubnubApi:src:srcLogging:src1:srcCrypto" destdir="doc" classpathref="PubnubApi.classpath"/>
+        <javadoc access="public" sourcepath="srcPubnubApi:src:srcLogging:src1:srcCrypto:srcJson" destdir="doc" classpathref="PubnubApi.classpath"/>
       </target>
 
+    <target name="doc-gson" depends="init" description="generate documentation">
+        <javadoc access="public" sourcepath="srcPubnubApi:src:srcLogging:src1:srcCrypto:srcGson" destdir="doc-gson" classpathref="PubnubApi.classpath"/>
+      </target>
       <property name="src" location="src" />
       <property name="maven" location="maven" />
     <property name="build" location="build" />
@@ -306,6 +375,7 @@
             <fileset dir="${sources_pubnub_logging}" />
             <fileset dir="${sources_pubnub_api}" />
             <fileset dir="${sources_pubnub_crypto}" />
+            <fileset dir="${sources_pubnub_json}" />
         </copy>
         <mkdir dir="${dist}/lib" />
         <antcall target="stage"/>
@@ -321,6 +391,7 @@
             <fileset dir="${sources_pubnub_logging}" />
             <fileset dir="${sources_pubnub_api}" />
             <fileset dir="${sources_pubnub_crypto}" />
+            <fileset dir="${sources_pubnub_json}" />
         </copy>
         <replace dir="${maven}/src" token="boolean LOGGING = false" value="boolean LOGGING = true">
             <include name="**/*.java"/>
@@ -337,5 +408,55 @@
             <include name="**/pom.xml"/>
         </replace>
     </target>
+
+    <target name="push_gson_to_maven_central" >
+        <mkdir dir="${build}" />
+        <mkdir dir="${maven}/src/com/pubnub/api" />
+        <copy todir="${maven}/src/com/pubnub/api" >
+            <fileset dir="${sources_pubnub_java}" />
+            <fileset dir="${sources_pubnub_java1}" />
+            <fileset dir="${sources_pubnub_logging}" />
+            <fileset dir="${sources_pubnub_api}" />
+            <fileset dir="${sources_pubnub_crypto}" />
+            <fileset dir="${sources_pubnub_gson}" />
+        </copy>
+        <replace dir="." token="artifactId>pubnub" value="artifactId>pubnub-gson">
+            <include name="**/pom.xml"/>
+        </replace>
+        <mkdir dir="${dist}/lib" />
+        <antcall target="stage"/>
+        <antcall target="maven_clean"/>
+        <replace dir="." token="artifactId>pubnub-gson" value="artifactId>pubnub">
+            <include name="**/pom.xml"/>
+        </replace>
+    </target>
+
+    <target name="push_gson_debug_to_maven_central" >
+        <mkdir dir="${build}" />
+        <mkdir dir="${maven}/src/com/pubnub/api" />
+        <copy todir="${maven}/src/com/pubnub/api" >
+            <fileset dir="${sources_pubnub_java}" />
+            <fileset dir="${sources_pubnub_java1}" />
+            <fileset dir="${sources_pubnub_logging}" />
+            <fileset dir="${sources_pubnub_api}" />
+            <fileset dir="${sources_pubnub_crypto}" />
+            <fileset dir="${sources_pubnub_gson}" />
+        </copy>
+        <replace dir="${maven}/src" token="boolean LOGGING = false" value="boolean LOGGING = true">
+            <include name="**/*.java"/>
+        </replace>
+        <replace dir="." token="artifactId>pubnub" value="artifactId>pubnub-gson-debug">
+            <include name="**/pom.xml"/>
+        </replace>
+        <mkdir dir="${dist}/lib" />
+        <antcall target="stage">
+            <param name="debug" value="true" />
+        </antcall>
+        <antcall target="maven_clean"/>
+        <replace dir="." token="artifactId>pubnub-gson-debug" value="artifactId>pubnub">
+            <include name="**/pom.xml"/>
+        </replace>
+    </target>
+
 
 </project>

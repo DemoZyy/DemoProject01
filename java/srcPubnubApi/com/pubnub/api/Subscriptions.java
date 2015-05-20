@@ -1,7 +1,5 @@
 package com.pubnub.api;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -13,11 +11,11 @@ import java.util.Hashtable;
 class Subscriptions {
     private Hashtable items;
 
-    JSONObject state;
+    PnJsonObject state;
 
     public Subscriptions() {
         items    = new Hashtable();
-        state    = new JSONObject();
+        state    = new PnJsonObject();
     }
 
     public void addItem(SubscriptionItem item) {
@@ -90,11 +88,11 @@ class Subscriptions {
                         _item.connected = true;
                         if (_item.subscribed == false) {
                             _item.callback.connectCallback(_item.name,
-                                    new JSONArray().put(1).put("Subscribe connected").put(message));
+                                    new PnJsonArray().put(1).put("Subscribe connected").put(message).getBaseObject());
                         } else {
                             _item.subscribed = true;
                             _item.callback.reconnectCallback(_item.name,
-                                    new JSONArray().put(1).put("Subscribe reconnected").put(message));
+                                    new PnJsonArray().put(1).put("Subscribe reconnected").put(message).getBaseObject());
                         }
                     }
                 }
@@ -114,7 +112,7 @@ class Subscriptions {
                     _item.connected = true;
                     if ( _item.error ) {
                         _item.callback.reconnectCallback(_item.name,
-                                new JSONArray().put(1).put("Subscribe reconnected").put(message));
+                                new PnJsonArray().put(1).put("Subscribe reconnected").put(message));
                         _item.error = false;
                     }
                 }
@@ -130,7 +128,7 @@ class Subscriptions {
                     if (_item.connected == true) {
                         _item.connected = false;
                         _item.callback.disconnectCallback(_item.name,
-                                new JSONArray().put(0).put("Subscribe unable to connect").put(message));
+                                new PnJsonArray().put(0).put("Subscribe unable to connect").put(message));
                     }
                 }
             }

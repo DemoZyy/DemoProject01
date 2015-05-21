@@ -7,17 +7,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
- * Pubnub object facilitates querying channels for messages and listening on
+ * PubnubPlatform object facilitates querying channels for messages and listening on
  * channels for presence/message events
  *
  * @author Pubnub
  *
  */
 
-public class Pubnub extends PubnubCoreShared {
+class PubnubPlatform extends PubnubCoreShared {
 
     /**
-     * Pubnub Constructor
+     * PubnubPlatform Constructor
      *
      * @param publish_key
      *            Publish Key
@@ -30,13 +30,13 @@ public class Pubnub extends PubnubCoreShared {
      * @param ssl_on
      *            SSL on ?
      */
-    public Pubnub(String publish_key, String subscribe_key, String secret_key,
+    public PubnubPlatform(String publish_key, String subscribe_key, String secret_key,
                   String cipher_key, boolean ssl_on) {
         super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on);
     }
 
     /**
-     * Pubnub Constructor
+     * PubnubPlatform Constructor
      *
      * @param publish_key
      *            Publish key
@@ -47,20 +47,20 @@ public class Pubnub extends PubnubCoreShared {
      * @param ssl_on
      *            SSL on ?
      */
-    public Pubnub(String publish_key, String subscribe_key, String secret_key,
+    public PubnubPlatform(String publish_key, String subscribe_key, String secret_key,
                   boolean ssl_on) {
         super(publish_key, subscribe_key, secret_key, "", ssl_on);
     }
 
     /**
-     * Pubnub Constructor
+     * PubnubPlatform Constructor
      *
      * @param publish_key
      *            Publish Key
      * @param subscribe_key
      *            Subscribe Key
      */
-    public Pubnub(String publish_key, String subscribe_key) {
+    public PubnubPlatform(String publish_key, String subscribe_key) {
         super(publish_key, subscribe_key, "", "", false);
     }
 
@@ -71,7 +71,7 @@ public class Pubnub extends PubnubCoreShared {
      *            Subscribe Key
      * @param ssl
      */
-    public Pubnub(String publish_key, String subscribe_key, boolean ssl) {
+    public PubnubPlatform(String publish_key, String subscribe_key, boolean ssl) {
         super(publish_key, subscribe_key, "", "", ssl);
     }
 
@@ -80,7 +80,7 @@ public class Pubnub extends PubnubCoreShared {
      * @param subscribe_key
      * @param secret_key
      */
-    public Pubnub(String publish_key, String subscribe_key, String secret_key) {
+    public PubnubPlatform(String publish_key, String subscribe_key, String secret_key) {
         super(publish_key, subscribe_key, secret_key, "", false);
     }
 
@@ -90,13 +90,13 @@ public class Pubnub extends PubnubCoreShared {
      * @param secret_key
      * @param cipher_key
      */
-    public Pubnub(String publish_key, String subscribe_key, String secret_key, String cipher_key) {
+    public PubnubPlatform(String publish_key, String subscribe_key, String secret_key, String cipher_key) {
         super(publish_key, subscribe_key, secret_key, cipher_key, false);
     }
 
     /**
     *
-    * Constructor for Pubnub Class
+    * Constructor for PubnubPlatform Class
     *
     * @param publish_key
     *            Publish Key
@@ -112,7 +112,7 @@ public class Pubnub extends PubnubCoreShared {
     *            Initialization vector
     */
 
-    public Pubnub(String publish_key, String subscribe_key,
+    public PubnubPlatform(String publish_key, String subscribe_key,
                   String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
         super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
     }

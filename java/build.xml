@@ -14,6 +14,7 @@
     <property name="sources_pubnub_java" value="src/com/pubnub/api"/>
     <property name="sources_pubnub_crypto" value="srcCrypto/com/pubnub/api"/>
     <property name="sources_pubnub_json" value="srcJson/com/pubnub/api"/>
+    <property name="sources_pubnub_json2" value="srcJson2/com/pubnub/api"/>
     <property name="sources_pubnub_gson" value="srcGson/com/pubnub/api"/>
     <property name="target" value="1.5"/>
     <property name="source" value="1.5"/>
@@ -30,7 +31,8 @@
         <pathelement location="libs/commons-cli-1.2.jar"/>
         <pathelement location="jars/Pubnub-UnitTests-${VERSION}.jar"/>
     </path>
-    <target name="build-all" depends="build, debug-build, build-gson, debug-build-gson" />
+    <!--<target name="build-all" depends="build, debug-build, build-gson, debug-build-gson" />-->
+    <target name="build-all" depends="build, debug-build" />
     <target name="deploy-all" depends="clean, push_to_maven_central, clean, push_debug_to_maven_central" />
     <path id="PubnubTests.classpath">
         <pathelement location="${pubnub_jar_file_name}"/>
@@ -169,6 +171,7 @@
             <src path="srcTest"/>
             <src path="srcCrypto"/>
             <src path="srcJson"/>
+            <src path="srcJson2"/>
             <src path="examples/src"/>
             <classpath refid="PubnubApi.classpath"/>
         </javac>
@@ -365,6 +368,7 @@
             <fileset dir="${sources_pubnub_api}" />
             <fileset dir="${sources_pubnub_crypto}" />
             <fileset dir="${sources_pubnub_json}" />
+            <fileset dir="${sources_pubnub_json2}" />
         </copy>
         <mkdir dir="${dist}/lib" />
         <antcall target="stage"/>
@@ -381,6 +385,7 @@
             <fileset dir="${sources_pubnub_api}" />
             <fileset dir="${sources_pubnub_crypto}" />
             <fileset dir="${sources_pubnub_json}" />
+            <fileset dir="${sources_pubnub_json2}" />
         </copy>
         <replace dir="${maven}/src" token="boolean LOGGING = false" value="boolean LOGGING = true">
             <include name="**/*.java"/>

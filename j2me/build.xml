@@ -20,12 +20,12 @@
     <target name="build-all" depends="clean, debug-build, clean, build" />
     <target name="deploy-all" />
     <target name="setJsonMeJar" >
-        <replace dir="${srcPubnubApi.link}" token="org.json" value="org.json.me">
+        <replace dir="../java/srcJson" token="org.json" value="org.json.me">
             <include name="**/*.java"/>
         </replace>
     </target>
     <target name="unsetJsonMeJar" >
-        <replace dir="${srcPubnubApi.link}" token="org.json.me" value="org.json">
+        <replace dir="../java/srcJson" token="org.json.me" value="org.json">
             <include name="**/*.java"/>
         </replace>
     </target>
@@ -43,12 +43,12 @@
     </target>
     <target depends="clean" name="cleanall"/>
     <target name="setDebugTrue" >
-        <replace dir="${srcPubnubApi.link}" token="boolean LOGGING = false" value="boolean LOGGING = true">
+        <replace dir="../java/srcJson" token="boolean LOGGING = false" value="boolean LOGGING = true">
             <include name="**/*.java"/>
         </replace>
     </target>
     <target name="unsetDebugTrue" >
-        <replace dir="${srcPubnubApi.link}" token="boolean LOGGING = true" value="boolean LOGGING = false">
+        <replace dir="../java/srcJson" token="boolean LOGGING = true" value="boolean LOGGING = false">
             <include name="**/*.java"/>
         </replace>
     </target>
@@ -87,6 +87,7 @@
             <src path="src1"/>
             <src path="srcLogging"/>
             <src path="../java/srcCrypto"/>
+            <src path="../java/srcJson"/>
             <classpath refid="PubnubApi.classpath"/>
         </javac>
         <replace dir="${srcPubnubApi.link}" token='static String VERSION = "${VERSION}"' value='static String VERSION = ""'>

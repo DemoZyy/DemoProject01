@@ -21,12 +21,12 @@
     <target name="build-all" depends="clean, debug-build, clean, build" />
     <target name="deploy-all" />
     <target name="setJsonMeJar" >
-        <replace dir="${srcPubnubApi.link}" token="org.json" value="org.json.me">
+        <replace dir="../java/srcJson" token="org.json" value="org.json.me">
             <include name="**/*.java"/>
         </replace>
     </target>
     <target name="unsetJsonMeJar" >
-        <replace dir="${srcPubnubApi.link}" token="org.json.me" value="org.json">
+        <replace dir="../java/srcJson" token="org.json.me" value="org.json">
             <include name="**/*.java"/>
         </replace>
     </target>
@@ -93,6 +93,7 @@
             <src path="${j2me.link}/src1"/>
             <src path="${j2me.link}/srcLogging"/>
             <src path="../java/srcCrypto"/>
+            <src path="../java/srcJson"/>
             <classpath refid="PubnubApi.classpath"/>
         </javac>
         <replace dir="${srcPubnubApi.link}" token='static String VERSION = "${VERSION}"' value='static String VERSION = ""'>

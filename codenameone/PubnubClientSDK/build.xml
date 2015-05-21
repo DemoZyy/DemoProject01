@@ -15,6 +15,9 @@
     <target name="create-src">
         <mkdir dir="src"/>
         <copy includeemptydirs="true" todir="src">
+            <fileset dir="../../java/srcJson"/>
+        </copy>
+        <copy includeemptydirs="true" todir="src">
             <fileset dir="../../java/srcCrypto"/>
         </copy>
         <copy includeemptydirs="true" todir="src">

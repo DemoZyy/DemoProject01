@@ -4,6 +4,8 @@
     <loadfile property="VERSION" srcFile="../VERSION"><filterchain><striplinebreaks/></filterchain></loadfile>
     <property name="pubnub_lib_jar" value="Pubnub-Android-${VERSION}.jar"/>
     <property name="pubnub_debug_lib_jar" value="Pubnub-Android-Debug-${VERSION}.jar"/>
+    <property name="pubnub_gson_lib_jar" value="Pubnub-Android-Gson-${VERSION}.jar"/>
+    <property name="pubnub_gson_debug_lib_jar" value="Pubnub-Android-Gson-Debug-${VERSION}.jar"/>
     <property name="java_core_path" value="../java"/>
     <property name="src_pubnub_api_path" value="${java_core_path}/srcPubnubApi"/>
     <property name="src_java_path" value="${java_core_path}/src1"/>
@@ -18,10 +20,12 @@
     <property name="sources_pubnub_java1" value="../java/src1/com/pubnub/api"/>
     <property name="sources_pubnub_java" value="src/com/pubnub/api"/>
     <property name="sources_pubnub_crypto" value="srcCrypto/com/pubnub/api"/>
+    <property name="sources_pubnub_json" value="../java/srcJson/com/pubnub/api"/>
+    <property name="sources_pubnub_json2" value="../java/srcJson2/com/pubnub/api"/>
+    <property name="sources_pubnub_gson" value="../java/srcGson/com/pubnub/api"/>
 
     <path id="PubnubApi.classpath">
-        <pathelement location="bin"/>
-        <pathelement location="../java/libs/bcprov-jdk15on-1.47.jar"/>
+        <pathelement location="../java/libs/gson-2.3.1.jar"/>
         <pathelement location="libs/android-8.jar"/>
     </path>
 
@@ -32,6 +36,7 @@
     <path id="classpath">
         <pathelement location="bin"/>
         <pathelement location="${java_core_path}/libs/bcprov-jdk15on-1.47.jar"/>
+        <pathelement location="${java_core_path}/libs/gson-2.3.1.jar"/>
         <pathelement location="libs/android-8.jar"/>
     </path>
     <target name="test" />
@@ -66,6 +71,23 @@
         <copy file="${pubnub_lib_jar}" todir="./examples/SubscribeAtBoot/libs/"/>
     </target>
 
+    <target name="build-gson" depends="clean">
+        <delete file="${pubnub_gson_lib_jar}"/>
+        <antcall target="create-jar-gson">
+            <param name="jar_name" value="${pubnub_gson_lib_jar}" />
+            <param name="debug" value="false" />
+        </antcall>
+    </target>
+
+    <target name="debug-build-gson" depends="clean">
+        <delete file="${pubnub_gson_debug_lib_jar}"/>
+        <antcall target="setDebugTrue" />
+        <antcall target="create-jar-gson">
+            <param name="jar_name" value="${pubnub_gson_debug_lib_jar}" />
+            <param name="debug" value="true" />
+        </antcall>
+        <antcall target="unsetDebugTrue" />
+    </target>
 
     <target name="build" depends="clean">
         <delete file="${pubnub_lib_jar}"/>
@@ -91,6 +113,13 @@
         />
     </target>
 
+    <target depends="build-project-gson" name="create-jar-gson">
+        <jar destfile="${jar_name}"
+            basedir="bin"
+            includes="**/**"
+        />
+    </target>
+
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <replace dir="${src_pubnub_api_path}" token='static String VERSION = ""' value='static String VERSION = "${VERSION}"' >
@@ -102,6 +131,8 @@
             <src path="${src_logging_path}"/>
             <src path="${src_android_path}"/>
             <src path="${src_crypto_path}"/>
+            <src path="${sources_pubnub_json}" />
+            <src path="${sources_pubnub_json2}" />
             <classpath refid="classpath"/>
         </javac>
         <replace dir="${src_pubnub_api_path}" token='static String VERSION = "${VERSION}"' value='static String VERSION = ""'>
@@ -109,6 +140,24 @@
         </replace>
     </target>
 
+    <target depends="init" name="build-project-gson">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <replace dir="${src_pubnub_api_path}" token='static String VERSION = ""' value='static String VERSION = "${VERSION}"' >
+            <include name="**/*.java"/>
+        </replace>
+        <javac debug="${debug}" destdir="bin" source="${source}" target="${target}">
+            <src path="${src_pubnub_api_path}"/>
+            <src path="${src_java_path}"/>
+            <src path="${src_logging_path}"/>
+            <src path="${src_android_path}"/>
+            <src path="${src_crypto_path}"/>
+            <src path="${sources_pubnub_gson}" />
+            <classpath refid="classpath"/>
+        </javac>
+        <replace dir="${src_pubnub_api_path}" token='static String VERSION = "${VERSION}"' value='static String VERSION = ""'>
+            <include name="**/*.java"/>
+        </replace>
+    </target>
 
 
     <property name="src" location="src" />
@@ -207,6 +256,8 @@
             <fileset dir="${sources_pubnub_logging}" />
             <fileset dir="${sources_pubnub_api}" />
             <fileset dir="${sources_pubnub_crypto}" />
+            <fileset dir="${sources_pubnub_json}" />
+            <fileset dir="${sources_pubnub_json2}" />
         </copy>
         <mkdir dir="${dist}/lib" />
         <antcall target="stage"/>
@@ -222,6 +273,7 @@
             <fileset dir="${sources_pubnub_java1}" />
             <fileset dir="${sources_pubnub_logging}" />
             <fileset dir="${sources_pubnub_api}" />
+            <fileset dir="${sources_pubnub_json}" />
         </copy>
         <replace dir="${maven}/src" token="boolean LOGGING = false" value="boolean LOGGING = true">
             <include name="**/*.java"/>

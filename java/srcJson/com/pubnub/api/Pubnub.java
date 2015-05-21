@@ -165,9 +165,6 @@ public class Pubnub extends PubnubPlatform {
     	channelGroupSetState(group, uuid, new PnJsonObject(state), callback);
     }
     
-    public void publish(String channel, PnMessage message, Callback callback) {
-    	publish(channel, message, callback);
-    }
-    
+
  
 }

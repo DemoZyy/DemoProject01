@@ -3,16 +3,12 @@ package com.pubnub.api;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-class PnJsonArray {
+class PnJsonArray extends PnJsonElement {
 	
 	JSONArray jsa;
 
 	public PnJsonArray() {
 		jsa = new JSONArray();
-	}
-	
-	public PnJsonArray(Object o) {
-		jsa = (JSONArray) o;
 	}
 	
 	public PnJsonArray(String text) throws PnJsonException {
@@ -22,6 +18,12 @@ class PnJsonArray {
 			throw new PnJsonException(e);
 		}
 	}
+
+	
+	public PnJsonArray(Object o) {
+		jsa = (JSONArray) o;
+	}
+	
 
 	public Object get(int i) throws PnJsonException {
 		try {
@@ -74,4 +76,5 @@ class PnJsonArray {
         }
         return s;
 	}
+	
 }

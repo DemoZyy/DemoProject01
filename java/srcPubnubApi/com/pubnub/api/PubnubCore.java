@@ -2416,11 +2416,6 @@ abstract class PubnubCore {
                             : jsa.get(1).toString();
                     
                     _timetoken =  PnJsonObject.removeExtraQuotes(_timetoken);
-                    /*
-                    if (_timetoken.charAt(0) == '"' && _timetoken.charAt(_timetoken.length() - 1) == '"') {
-                    	_timetoken = _timetoken.substring(1, _timetoken.length() - 1);
-                    }
-                    */
                     
                     log.verbose("Resume On Reconnect is "
                             + isResumeOnReconnect());
@@ -2452,6 +2447,7 @@ abstract class PubnubCore {
                             String _groupName = _groups[i];
                             String _channelName = _channels[i];
                             Object message = messages.get(i);
+                           
 
                             SubscriptionItem _group = channelGroupSubscriptions.getItem(_groups[i]);
                             SubscriptionItem _channel = channelSubscriptions.getItem(_groups[i]);
@@ -2483,6 +2479,7 @@ abstract class PubnubCore {
 
                             if (_channel != null) {
                             	Object message = messages.get(i);
+
                                 invokeSubscribeCallback(_channel.name, _channel.callback,
                                         message, _timetoken, hreq);
                             }
@@ -2568,19 +2565,30 @@ abstract class PubnubCore {
                     CIPHER_KEY, IV);
             try {
                 message = pc.decrypt(PnJsonObject.removeExtraQuotes(message.toString()));
+
+                //Object d = PubnubUtil.parseJSON(PubnubUtil.stringToJSON(message.toString()));
+               
                 
-                Object d = PubnubUtil.stringToJSON(message.toString());
-                
+                Object d;
                 try {
-                	PnJsonElement pje = (PnJsonElement) d;
-                	d = pje.getBaseObject();
+                	d = PubnubUtil.stringToJSON(message.toString());
+                	try {
+                		PnJsonElement pje = (PnJsonElement) d;
+                		d = pje.getBaseObject();
+                	} catch (ClassCastException ce) {
+
+                	}
+
                 } catch (Exception e) {
-                	
+                	e.printStackTrace();
+                	d = message;
                 }
+                
+                
                 if (!isWorkerDead(hreq)) callback
                         .successWrapperCallback(
                                 channel,
-                                PubnubUtil.parseJSON(d), timetoken);
+                                d, timetoken);
             } catch (IllegalStateException e) {
                 if (!isWorkerDead(hreq)) callback
                         .errorCallback(
@@ -2603,17 +2611,26 @@ abstract class PubnubCore {
                                         message.toString() + " : " + e.toString()));
             }
         } else {
-            Object d = PubnubUtil.stringToJSON(message.toString());
-            
+        	/*
+            Object d;
             try {
+            	if (message instanceof String) {
+            		d = PubnubUtil.stringToJSON((String)message);
+            	} else {
+            		d = PubnubUtil.stringToJSON(message.toString());
+            	}
+            	
             	PnJsonElement pje = (PnJsonElement) d;
             	d = pje.getBaseObject();
             } catch (Exception e) {
-            	
+            	d = message;
             }
+            
+            */
+
             if (!isWorkerDead(hreq)) callback.successWrapperCallback(
                     channel,
-                    d, timetoken);
+                    PubnubUtil.parseJSON(message), timetoken);
         }
     }
 

@@ -82,7 +82,7 @@ class HttpClientCore extends HttpClient {
     public synchronized HttpResponse fetch(String url, Hashtable headers)
     throws PubnubException, SocketTimeoutException {
         URL urlobj = null;
-        System.out.println("FETCHING URL : " + url);
+        log.verbose("FETCHING URL : " + url);
         try {
             urlobj = new URL(url);
         } catch (MalformedURLException e3) {
@@ -171,7 +171,7 @@ class HttpClientCore extends HttpClient {
             }
         }
 
-        System.out.println("URL = " + url + ", Status Code : "  + rc + ", : RESPONSE = " + page);
+        log.verbose("URL = " + url + ", Status Code : "  + rc + ", : RESPONSE = " + page);
         switch (rc) {
         case HttpURLConnection.HTTP_FORBIDDEN:
             {

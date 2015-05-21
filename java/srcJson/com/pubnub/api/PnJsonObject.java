@@ -2,7 +2,7 @@ package com.pubnub.api;
 
 import org.json.*;
 
-class PnJsonObject {
+class PnJsonObject extends PnJsonElement {
 	
 	JSONObject jso;
 	
@@ -61,5 +61,9 @@ class PnJsonObject {
         }
         */
         return s;	
+	}
+	
+	public Object getBaseObject() {
+		return jso;
 	}
 }

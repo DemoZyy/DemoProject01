@@ -1,12 +1,15 @@
 package com.pubnub.api;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 /**
  * Message object for APNS
  * @author Pubnub
  *
  */
-public class PnApnsMessage extends PnJsonObject {
+public class PnApnsMessage extends JSONObject {
 
     /**
      * Constructor for APNS message object
@@ -15,19 +18,19 @@ public class PnApnsMessage extends PnJsonObject {
         super();
     }
 
-    private PnJsonObject getAps() {
-        PnJsonObject aps = null;
+    private JSONObject getAps() {
+        JSONObject aps = null;
         try {
-            aps = (PnJsonObject) this.get("aps");
-        } catch (PnJsonException e) {
+            aps = (JSONObject) this.get("aps");
+        } catch (JSONException e) {
 
         }
 
         if (aps == null) {
-            aps = new PnJsonObject();
+            aps = new JSONObject();
             try {
                 this.put("aps", aps);
-            } catch (PnJsonException e) {
+            } catch (JSONException e) {
 
             }
         }
@@ -41,9 +44,9 @@ public class PnApnsMessage extends PnJsonObject {
      public void setApsAlert(String alert) {
 
         try {
-            PnJsonObject aps = (PnJsonObject) getAps();
+            JSONObject aps = (JSONObject) getAps();
             aps.put("alert", alert);
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
 
@@ -55,9 +58,9 @@ public class PnApnsMessage extends PnJsonObject {
      */
     public void setApsBadge(int badge) {
         try {
-            PnJsonObject aps = (PnJsonObject) (PnJsonObject) getAps();
+            JSONObject aps = (JSONObject) (JSONObject) getAps();
             aps.put("badge", badge);
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
 
@@ -71,9 +74,9 @@ public class PnApnsMessage extends PnJsonObject {
     public void setApsSound(String sound) {
 
        try {
-           PnJsonObject aps = (PnJsonObject) getAps();
+           JSONObject aps = (JSONObject) getAps();
            aps.put("sound", sound);
-       } catch (PnJsonException e) {
+       } catch (JSONException e) {
 
        }
 

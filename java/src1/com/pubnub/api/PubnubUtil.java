@@ -37,6 +37,7 @@ public class PubnubUtil extends PubnubUtilCore {
      * @return JSONArray or JSONObject or String
      */
     static Object stringToJSON(String str) {
+    	System.out.println(str);
         try {
             return new PnJsonArray(str);
         } catch (PnJsonException e) {

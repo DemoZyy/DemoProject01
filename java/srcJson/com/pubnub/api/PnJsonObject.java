@@ -54,4 +54,12 @@ class PnJsonObject {
 			throw new PnJsonException(e);
 		}
 	}
+	public static String removeExtraQuotes(String s) {
+		/*
+        if (s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"') {
+        	s = s.substring(1, s.length() - 1);
+        }
+        */
+        return s;	
+	}
 }

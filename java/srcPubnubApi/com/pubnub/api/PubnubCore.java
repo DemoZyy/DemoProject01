@@ -629,6 +629,8 @@ abstract class PubnubCore {
         publish(args);
     }
 
+    
+
     /**
      * Send a message to a channel.
      *
@@ -882,7 +884,7 @@ abstract class PubnubCore {
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
                     return;
                 }
-                callback.successCallback(channel, jsarr);
+                callback.successCallback(channel, jsarr.getBaseObject());
             }
 
             public void handleError(HttpRequest hreq, PubnubError error) {
@@ -1466,12 +1468,12 @@ abstract class PubnubCore {
                 PnJsonArray respArr;
                 try {
                     respArr = new PnJsonArray(response);
-                    decryptPnJsonArray((PnJsonArray) respArr.get(0));
-                    cb.successCallback(channel, respArr);
+                    decryptPnJsonArray(new PnJsonArray(respArr.get(0)));
+                    cb.successCallback(channel, respArr.getBaseObject());
                 } catch (PnJsonException e) {
                     cb.errorCallback(channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, 3));
-                } catch (IOException e) {
+                }  catch (IOException e) {
                     cb.errorCallback(channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 9, response));
                 } catch (PubnubException e) {
@@ -1479,7 +1481,7 @@ abstract class PubnubCore {
                 } catch (Exception e) {
                     cb.errorCallback(channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 11, response + " : " + e.toString()));
-                }
+                } 
 
             }
 
@@ -2271,9 +2273,8 @@ abstract class PubnubCore {
         if (CIPHER_KEY.length() > 0) {
             for (int i = 0; i < messages.length(); i++) {
                 PubnubCrypto pc = new PubnubCrypto(CIPHER_KEY, IV);
-
                 String message;
-                message = pc.decrypt(messages.get(i).toString());
+                message = pc.decrypt(PnJsonObject.removeExtraQuotes(messages.get(i).toString()));
                 messages.put(i, PubnubUtil.stringToJSON(message));
             }
         }
@@ -2406,16 +2407,20 @@ abstract class PubnubCore {
                  * he channels passing the corresponding response
                  * message.
                  */
-
+            	
                 PnJsonArray jsa;
                 try {
                     jsa = new PnJsonArray(response);
+                    
                     _timetoken = (!_saved_timetoken.equals("0") && isResumeOnReconnect()) ? _saved_timetoken
                             : jsa.get(1).toString();
                     
-                    if (_timetoken.charAt(0) == '"') {
+                    _timetoken =  PnJsonObject.removeExtraQuotes(_timetoken);
+                    /*
+                    if (_timetoken.charAt(0) == '"' && _timetoken.charAt(_timetoken.length() - 1) == '"') {
                     	_timetoken = _timetoken.substring(1, _timetoken.length() - 1);
                     }
+                    */
                     
                     log.verbose("Resume On Reconnect is "
                             + isResumeOnReconnect());
@@ -2435,7 +2440,7 @@ abstract class PubnubCore {
                     }
 
                     PnJsonArray messages = new PnJsonArray(jsa.get(0).toString());
-
+                    
                     if (jsa.length() == 4) {
                         /*
                          * Response has multiple channels or/and groups
@@ -2471,12 +2476,13 @@ abstract class PubnubCore {
                          */
 
                         String[] _channels = PubnubUtil.splitString(jsa.getString(2), ",");
-
+                        
+                        
                         for (int i = 0; i < _channels.length; i++) {
                             SubscriptionItem _channel = channelSubscriptions.getItem(_channels[i]);
-                            Object message = messages.get(i);
 
                             if (_channel != null) {
+                            	Object message = messages.get(i);
                                 invokeSubscribeCallback(_channel.name, _channel.callback,
                                         message, _timetoken, hreq);
                             }
@@ -2561,11 +2567,20 @@ abstract class PubnubCore {
             PubnubCrypto pc = new PubnubCrypto(
                     CIPHER_KEY, IV);
             try {
-                message = pc.decrypt(message.toString());
+                message = pc.decrypt(PnJsonObject.removeExtraQuotes(message.toString()));
+                
+                Object d = PubnubUtil.stringToJSON(message.toString());
+                
+                try {
+                	PnJsonElement pje = (PnJsonElement) d;
+                	d = pje.getBaseObject();
+                } catch (Exception e) {
+                	
+                }
                 if (!isWorkerDead(hreq)) callback
                         .successWrapperCallback(
                                 channel,
-                                PubnubUtil.parseJSON(PubnubUtil.stringToJSON(message.toString())), timetoken);
+                                PubnubUtil.parseJSON(d), timetoken);
             } catch (IllegalStateException e) {
                 if (!isWorkerDead(hreq)) callback
                         .errorCallback(
@@ -2588,9 +2603,17 @@ abstract class PubnubCore {
                                         message.toString() + " : " + e.toString()));
             }
         } else {
+            Object d = PubnubUtil.stringToJSON(message.toString());
+            
+            try {
+            	PnJsonElement pje = (PnJsonElement) d;
+            	d = pje.getBaseObject();
+            } catch (Exception e) {
+            	
+            }
             if (!isWorkerDead(hreq)) callback.successWrapperCallback(
                     channel,
-                    PubnubUtil.parseJSON(message), timetoken);
+                    d, timetoken);
         }
     }
 

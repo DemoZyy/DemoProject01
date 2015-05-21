@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import org.json.*;
 
+
 public class Pubnub extends PubnubPlatform {
 
     /**
@@ -163,4 +164,10 @@ public class Pubnub extends PubnubPlatform {
     public void channelGroupSetState(String group, String uuid, JSONObject state, Callback callback) {
     	channelGroupSetState(group, uuid, new PnJsonObject(state), callback);
     }
+    
+    public void publish(String channel, PnMessage message, Callback callback) {
+    	publish(channel, message, callback);
+    }
+    
+ 
 }

@@ -8,7 +8,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 
-class PnJsonObject {
+class PnJsonObject extends PnJsonElement {
 	
 	JsonObject jso;
 	
@@ -26,16 +26,17 @@ class PnJsonObject {
 			JsonReader jsr = new JsonReader(new StringReader(text));
 			jsr.setLenient(true);
 			this.jso = (JsonObject) jsonParser.parse(jsr);
-		} catch (JsonParseException e) {
+		}		catch (Exception e) {
 			throw new PnJsonException(e);
 		}
 	}
 
-	public String toString() {
-		return jso.toString();
-    }
 	public void put(String key, Object value) throws PnJsonException {
 		
+	}
+	
+	public Object getBaseObject() {
+		return jso;
 	}
 
 	public String getString(String key) throws PnJsonException {
@@ -65,5 +66,20 @@ class PnJsonObject {
 		} catch (JsonParseException e) {
 			throw new PnJsonException(e);
 		}
+	}
+	
+	public String toString() {
+		String s = jso.toString();
+        if (s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"') {
+        	s = s.substring(1, s.length() - 1);
+        }
+        return s;
+	}
+	
+	public static String removeExtraQuotes(String s) {
+        if (s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"') {
+        	s = s.substring(1, s.length() - 1);
+        }
+        return s;	
 	}
 }

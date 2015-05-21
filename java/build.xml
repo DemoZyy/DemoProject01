@@ -30,7 +30,7 @@
         <pathelement location="libs/commons-cli-1.2.jar"/>
         <pathelement location="jars/Pubnub-UnitTests-${VERSION}.jar"/>
     </path>
-    <target name="build-all" depends="clean, debug-build, clean, build" />
+    <target name="build-all" depends="build, debug-build, build-gson, debug-build-gson" />
     <target name="deploy-all" depends="clean, push_to_maven_central, clean, push_debug_to_maven_central" />
     <path id="PubnubTests.classpath">
         <pathelement location="${pubnub_jar_file_name}"/>
@@ -75,10 +75,8 @@
         </delete>
     </target>
 
-    <target name="build" depends="build-json, clean, build-gson" />
-    <target name="debug-build" depends="debug-build-json, clean, debug-build-gson" />
 
-    <target name="build-json" depends="clean">
+    <target name="build" depends="clean_bin">
         <delete file="${pubnub_jar_file_name}"/>
         <antcall target="build-jar">
             <param name="jar_name" value="${pubnub_jar_file_name}" />
@@ -86,7 +84,7 @@
         </antcall>
     </target>
 
-    <target name="debug-build-json" depends="clean">
+    <target name="debug-build" depends="clean_bin">
         <delete file="${pubnub_debug_jar_file_name}"/>
         <antcall target="setDebugTrue" />
         <antcall target="build-jar">
@@ -97,7 +95,7 @@
     </target>
 
 
-    <target name="build-gson" depends="clean">
+    <target name="build-gson" depends="clean_bin">
         <delete file="${pubnub_jar_gson_file_name}"/>
         <antcall target="build-jar-gson">
             <param name="jar_name" value="${pubnub_jar_gson_file_name}" />
@@ -105,31 +103,23 @@
         </antcall>
     </target>
 
-    <target name="debug-build-gson" depends="clean">
-        <delete file="${pubnub_debug_jar_file_name}"/>
+    <target name="debug-build-gson" depends="clean_bin">
+        <delete file="${pubnub_debug_jar_gson_file_name}"/>
         <antcall target="setDebugTrue" />
         <antcall target="build-jar-gson">
-            <param name="jar_name" value="${pubnub_gson_debug_jar_file_name}" />
+            <param name="jar_name" value="${pubnub_debug_jar_gson_file_name}" />
             <param name="debug" value="true" />
         </antcall>
         <antcall target="unsetDebugTrue" />
     </target>
 
 
-    <target depends="create-jar-gson, doc-gson" name="build-jar-gson"/>
+    <target depends="build-project-gson, create-jar, doc-gson" name="build-jar-gson"/>
 
-    <target depends="build-project-gson" name="create-jar-gson">
-        <jar destfile="${jar_name}"
-            basedir="bin"
-            includes="**/**"
-            excludes="**/*Test*.class"
-        />
-    </target>
-
-    <target depends="create-jar, create-test-jar, create-examples-jar, create-demo-console-jar,  create-presence-test-jar, clean_bin, doc" name="build-jar"/>
+    <target depends="build-project, create-jar, create-test-jar, create-examples-jar, create-demo-console-jar, create-push-test-jar, create-presence-test-jar, clean_bin, doc" name="build-jar"/>
 
 
-    <target depends="build-project" name="create-jar">
+    <target name="create-jar">
         <jar destfile="${jar_name}"
             basedir="bin"
             includes="**/**"
@@ -144,7 +134,7 @@
         />
     </target>
 
-    <target depends="build-project-json, build-project-gson" name="build-project"/>
+    <target depends="build-project-json" name="build-project"/>
 
 
     <target depends="init" name="build-project-gson">
@@ -157,7 +147,6 @@
             <src path="src"/>
             <src path="src1"/>
             <src path="srcLogging"/>
-            <src path="srcTest"/>
             <src path="srcCrypto"/>
             <src path="srcGson"/>
             <classpath refid="PubnubApi.classpath"/>

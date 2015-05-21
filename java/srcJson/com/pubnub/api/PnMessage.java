@@ -1,5 +1,8 @@
 package com.pubnub.api;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 
 
@@ -9,7 +12,7 @@ package com.pubnub.api;
  * @author Pubnub
  *
  */
-public class PnMessage extends PnJsonObject {
+public class PnMessage extends JSONObject {
     private String channel;
     private Callback callback;
     private Pubnub pubnub;
@@ -54,7 +57,7 @@ public class PnMessage extends PnJsonObject {
             if (gcmMsg != null) {
                 this.put("pn_gcm", gcmMsg);
             }
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
     }
@@ -82,7 +85,7 @@ public class PnMessage extends PnJsonObject {
             if (gcmMsg != null) {
                 this.put("pn_gcm", gcmMsg);
             }
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
     }
@@ -150,7 +153,7 @@ public class PnMessage extends PnJsonObject {
             if (gcmMsg != null) {
                 this.put("pn_gcm", gcmMsg);
             }
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
     }
@@ -175,7 +178,7 @@ public class PnMessage extends PnJsonObject {
             if (gcmMsg != null) {
                 this.put("pn_gcm", gcmMsg);
             }
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
     }
@@ -191,7 +194,7 @@ public class PnMessage extends PnJsonObject {
             if (apnsMsg != null) {
                 this.put("pn_apns", apnsMsg);
             }
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
     }
@@ -216,7 +219,7 @@ public class PnMessage extends PnJsonObject {
             if (apnsMsg != null) {
                 this.put("pn_apns", apnsMsg);
             }
-        } catch (PnJsonException e) {
+        } catch (JSONException e) {
 
         }
     }

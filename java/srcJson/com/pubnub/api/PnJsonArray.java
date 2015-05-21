@@ -66,4 +66,12 @@ class PnJsonArray {
 	public Object getBaseObject() {
 		return jsa;
 	}
+	
+	public String toString() {
+		String s = jsa.toString();
+        if (s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"') {
+        	s = s.substring(1, s.length() - 1);
+        }
+        return s;
+	}
 }

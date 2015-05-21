@@ -10,7 +10,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 
-class PnJsonArray {
+class PnJsonArray extends PnJsonElement {
 	
 	JsonArray jsa;
 	
@@ -30,7 +30,8 @@ class PnJsonArray {
 			JsonReader jsr = new JsonReader(new StringReader(text));
 			jsr.setLenient(true);
 			jsa = (JsonArray) jsonParser.parse(jsr);
-		} catch (JsonParseException e) {
+		}
+		catch (Exception e) {
 			throw new PnJsonException(e);
 		}
 	}
@@ -82,4 +83,5 @@ class PnJsonArray {
 	public Object getBaseObject() {
 		return jsa;
 	}
+
 }

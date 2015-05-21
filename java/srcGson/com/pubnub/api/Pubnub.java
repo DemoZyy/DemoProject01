@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import com.google.gson.*;
 
+
 public class Pubnub extends PubnubPlatform {
 
     /**
@@ -163,4 +164,6 @@ public class Pubnub extends PubnubPlatform {
     public void channelGroupSetState(String group, String uuid, JsonObject state, Callback callback) {
     	channelGroupSetState(group, uuid, new PnJsonObject(state), callback);
     }
+    
+
 }

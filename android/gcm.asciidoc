@@ -170,3 +170,35 @@ Returns
 
 mycallback(["channel_1","channel_2"])
 
+
+
+== SDK GCM Methods
+
+The PubNub JavaScript and Java SDK provides the following APIs to perform GCM message delivery to a device:
+
+==== Javascript
+PNmessage - PubNub message object simplifies publishing messages to Mobile Push Gateway properly constructing the push notification objects for APNS and GCM.
+gcm - Sets the GCM message object.
+Send Push Notification to GCM
+```
+var pubnub = PUBNUB({
+  publish_key   : "demo",
+  subscribe_key : "demo"
+});
+ 
+var message = PNmessage()
+ 
+message.pubnub = pubnub;
+message.callback = console.log
+message.error = console.log
+message.channel = 'my_channel'
+ 
+message.gcm = {
+  "summary": "Game update 49ers touchdown",
+  "teams" : ["49ers", "raiders"],
+  "score" : [7, 0],
+  "lastplay" : "5yd run up the middle"
+}
+ 
+message.publish()
+```

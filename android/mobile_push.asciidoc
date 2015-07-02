@@ -18,12 +18,12 @@ Despite the advantages of the native PubNub approach, there are cases where a de
 
 Before you can push GCM messages natively through Google, or through PubNub, you must first setup your GCM configuration.
 
-Download the Google Play services SDK - http://developer.android.com/tools/help/sdk-manager.html
-Set Up Google Play Services SDK - http://developer.android.com/google/play-services/setup.html
-Create a Google API project - http://developer.android.com/google/gcm/gs.html#create-proj
-Enable the GCM Service - http://developer.android.com/google/gcm/gs.html#gcm-service
-Obtain an Google API Key - http://developer.android.com/google/gcm/gs.html#access-key
-Once you've obtained the API Key, login to the PubNub Admin Console, and scroll down to Push Notifications → Google Cloud Messaging and click on "Add" to add your API Key. http://developer.android.com/google/gcm/gs.html provides additional information about this process.
+* Download the Google Play services SDK - http://developer.android.com/tools/help/sdk-manager.html
+* Set Up Google Play Services SDK - http://developer.android.com/google/play-services/setup.html
+* Create a Google API project - http://developer.android.com/google/gcm/gs.html#create-proj
+* Enable the GCM Service - http://developer.android.com/google/gcm/gs.html#gcm-service
+* Obtain an Google API Key - http://developer.android.com/google/gcm/gs.html#access-key
+* Once you've obtained the API Key, login to the PubNub Admin Console, and scroll down to Push Notifications → Google Cloud Messaging and click on "Add" to add your API Key. http://developer.android.com/google/gcm/gs.html provides additional information about this process.
 
 ===== ROUTING TO GCM-ENABLED DEVICES
 

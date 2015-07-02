@@ -1,2 +1,139 @@
 
 
+
+=== Register a device to a channel
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?add=&lt;channel&gt;&amp;type=&lt;type&gt;
+
+Registers a mobile device to receive either APNS or GCM on a the named channel.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789?add=demo,demo1,demo2&amp;type=gcm
+
+Returns
+
+[1, "Modified Channels"]
+
+==== Java
+```
+pubnub.enablePushNotificationsOnChannel(
+  "your channel name",
+  "device gcm registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+    }
+    public void errorCallback(String channel, PubnubError error) {
+    }
+  }
+)
+```
+
+==== Javascript
+```
+```
+
+=== Remove a device from a channel
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?remove=&lt;channel&gt;&amp;type=&lt;type&gt;
+
+Removes a mobile device from Mobile Push Gateway on a channel for either APNS or GCM.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789?remove=demo,demo1,demo2&amp;type=gcm
+
+Returns
+
+[1, "Modified Channels"]
+
+==== Java
+```
+pubnub.disablePushNotificationsOnChannel(
+  "your channel name",
+  "device gcm registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+    }
+    public void errorCallback(String channel, PubnubError error) {
+    }
+  }
+)
+```
+
+==== Javascript
+```
+```
+
+=== Get registered channels for a device
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?type=&lt;type&gt;
+
+Gets a list of channels a mobile device is registered to for either APNS or GCM.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789?type=gcm
+
+Returns
+
+["demo", "demo1", "demo2"]
+
+==== Java
+```
+pubnub.requestPushNotificationEnabledChannelsForDeviceRegistrationId(
+  "device gcm registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+    }
+    public void errorCallback(String channel, PubnubError error) {
+    }
+  }
+)
+```
+
+==== Javascript
+```
+```
+
+=== Remove a device from all channels
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;/remove?type=&lt;type&gt;
+
+Gets a list of channels a mobile device is registered to for either APNS or GCM.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789/remove?type=gcm
+
+Returns
+
+[1, "Removed Device"]
+
+==== Java
+```
+pubnub.removeAllPushNotificationsForDeviceRegistrationId(
+  "device gcm registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+    }
+    public void errorCallback(String channel, PubnubError error) {
+    }
+  }
+)
+
+```
+
+==== Javascript
+```
+```
+
+=== Using a callback
+
+Specify the name of a callback to return the resulting JSONP output to.
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?type=&lt;type&gt;&amp;callback=mycallback
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo/devices/123456789?type=gcm&amp;callback=mycallback
+
+Returns
+
+mycallback(["channel_1","channel_2"])
+

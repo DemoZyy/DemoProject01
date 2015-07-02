@@ -17,8 +17,8 @@ Returns
 ==== Java
 ```
 pubnub.enablePushNotificationsOnChannel(
-  "your channel name",
-  "device gcm registration_id",
+  "your_channel_name",
+  "device_gcm_registration_id",
   new Callback(){
     public void successCallback(String channel, Object response) {
     }
@@ -48,8 +48,8 @@ Returns
 ==== Java
 ```
 pubnub.disablePushNotificationsOnChannel(
-  "your channel name",
-  "device gcm registration_id",
+  "your_channel_name",
+  "device_gcm_registration_id",
   new Callback(){
     public void successCallback(String channel, Object response) {
     }
@@ -79,7 +79,7 @@ Returns
 ==== Java
 ```
 pubnub.requestPushNotificationEnabledChannelsForDeviceRegistrationId(
-  "device gcm registration_id",
+  "device_gcm_registration_id",
   new Callback(){
     public void successCallback(String channel, Object response) {
     }
@@ -109,7 +109,7 @@ Returns
 ==== Java
 ```
 pubnub.removeAllPushNotificationsForDeviceRegistrationId(
-  "device gcm registration_id",
+  "device_gcm_registration_id",
   new Callback(){
     public void successCallback(String channel, Object response) {
     }

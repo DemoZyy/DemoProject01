@@ -30,10 +30,10 @@ pubnub.enablePushNotificationsOnChannel(
 
 ==== Javascript
 ```
-PUBNUB.mobile_gw_provision ({
+PUBNUB.mobile_gw_provision({
   device_id: 'device_gcm_registration_id',
-  op       : 'add' | 'remove',
-  gw_type  : 'apns' | 'gcm',
+  op       : 'add',
+  gw_type  : 'gcm',
   channel  : 'your_channel_name',
   callback : function(response){
   	console.log(JSON.stringify(response));
@@ -73,10 +73,10 @@ pubnub.disablePushNotificationsOnChannel(
 
 ==== Javascript
 ```
-PUBNUB.mobile_gw_provision ({
+PUBNUB.mobile_gw_provision({
   device_id: 'device_gcm_registration_id',
-  op       : 'add' | 'remove',
-  gw_type  : 'apns' | 'gcm',
+  op       : 'remove',
+  gw_type  : 'gcm',
   channel  : 'your_channel_name',
   callback : function(response){
   	console.log(JSON.stringify(response));
@@ -115,18 +115,6 @@ pubnub.requestPushNotificationEnabledChannelsForDeviceRegistrationId(
 
 ==== Javascript
 ```
-PUBNUB.mobile_gw_provision ({
-  device_id: 'device_gcm_registration_id',
-  op       : 'add' | 'remove',
-  gw_type  : 'apns' | 'gcm',
-  channel  : 'your_channel_name',
-  callback : function(response){
-  	console.log(JSON.stringify(response));
-  },
-  error    : function(response){
-  	console.log(JSON.stringify(response));
-  }
-});
 ```
 
 === Remove a device from all channels
@@ -158,18 +146,7 @@ pubnub.removeAllPushNotificationsForDeviceRegistrationId(
 
 ==== Javascript
 ```
-PUBNUB.mobile_gw_provision ({
-  device_id: 'device_gcm_registration_id',
-  op       : 'add' | 'remove',
-  gw_type  : 'apns' | 'gcm',
-  channel  : 'your_channel_name',
-  callback : function(response){
-  	console.log(JSON.stringify(response));
-  },
-  error    : function(response){
-  	console.log(JSON.stringify(response));
-  }
-});
+
 ```
 
 === Using a callback

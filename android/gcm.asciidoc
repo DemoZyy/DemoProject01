@@ -1,2 +1,204 @@
 
 
+
+=== Register a device to a channel
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?add=&lt;channel&gt;&amp;type=&lt;type&gt;
+
+Registers a mobile device to receive either APNS or GCM on a the named channel.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789?add=demo,demo1,demo2&amp;type=gcm
+
+Returns
+
+[1, "Modified Channels"]
+
+==== Java
+```
+pubnub.enablePushNotificationsOnChannel(
+  "your_channel_name",
+  "device_gcm_registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+      System.out.println(response);
+    }
+    public void errorCallback(String channel, PubnubError error) {
+      System.out.println(error);       
+    }
+  }
+)
+```
+
+==== Javascript
+```
+PUBNUB.mobile_gw_provision({
+  device_id: 'device_gcm_registration_id',
+  op       : 'add',
+  gw_type  : 'gcm',
+  channel  : 'your_channel_name',
+  callback : function(response){
+  	console.log(JSON.stringify(response));
+  },
+  error    : function(response){
+  	console.log(JSON.stringify(response));
+  }
+});
+```
+
+=== Remove a device from a channel
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?remove=&lt;channel&gt;&amp;type=&lt;type&gt;
+
+Removes a mobile device from Mobile Push Gateway on a channel for either APNS or GCM.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789?remove=demo,demo1,demo2&amp;type=gcm
+
+Returns
+
+[1, "Modified Channels"]
+
+==== Java
+```
+pubnub.disablePushNotificationsOnChannel(
+  "your_channel_name",
+  "device_gcm_registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+      System.out.println(response);    
+    }
+    public void errorCallback(String channel, PubnubError error) {
+      System.out.println(error);       
+    }
+  }
+)
+```
+
+==== Javascript
+```
+PUBNUB.mobile_gw_provision({
+  device_id: 'device_gcm_registration_id',
+  op       : 'remove',
+  gw_type  : 'gcm',
+  channel  : 'your_channel_name',
+  callback : function(response){
+  	console.log(JSON.stringify(response));
+  },
+  error    : function(response){
+  	console.log(JSON.stringify(response));
+  }
+});
+```
+
+=== Get registered channels for a device
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?type=&lt;type&gt;
+
+Gets a list of channels a mobile device is registered to for either APNS or GCM.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789?type=gcm
+
+Returns
+
+["demo", "demo1", "demo2"]
+
+==== Java
+```
+pubnub.requestPushNotificationEnabledChannelsForDeviceRegistrationId(
+  "device_gcm_registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+      System.out.println(response);    
+    }
+    public void errorCallback(String channel, PubnubError error) {
+      System.out.println(error);       
+    }
+  }
+)
+```
+
+==== Javascript
+```
+```
+
+=== Remove a device from all channels
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;/remove?type=&lt;type&gt;
+
+Gets a list of channels a mobile device is registered to for either APNS or GCM.
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo-36/devices/123456789/remove?type=gcm
+
+Returns
+
+[1, "Removed Device"]
+
+==== Java
+```
+pubnub.removeAllPushNotificationsForDeviceRegistrationId(
+  "device_gcm_registration_id",
+  new Callback(){
+    public void successCallback(String channel, Object response) {
+      System.out.println(response);    
+    }
+    public void errorCallback(String channel, PubnubError error) {
+      System.out.println(error);    
+    }
+  }
+)
+
+```
+
+==== Javascript
+```
+
+```
+
+=== Using a callback
+
+Specify the name of a callback to return the resulting JSONP output to.
+
+/v1/push/sub-key/&lt;subscribe_key&gt;/devices/&lt;token_id&gt;?type=&lt;type&gt;&amp;callback=mycallback
+Example
+
+http://pubsub.pubnub.com/v1/push/sub-key/demo/devices/123456789?type=gcm&amp;callback=mycallback
+
+Returns
+
+mycallback(["channel_1","channel_2"])
+
+
+
+== SDK GCM Methods
+
+The PubNub JavaScript and Java SDK provides the following APIs to perform GCM message delivery to a device:
+
+==== Javascript
+PNmessage - PubNub message object simplifies publishing messages to Mobile Push Gateway properly constructing the push notification objects for APNS and GCM.
+gcm - Sets the GCM message object.
+Send Push Notification to GCM
+```
+var pubnub = PUBNUB({
+  publish_key   : "demo",
+  subscribe_key : "demo"
+});
+ 
+var message = PNmessage()
+ 
+message.pubnub = pubnub;
+message.callback = console.log
+message.error = console.log
+message.channel = 'my_channel'
+ 
+message.gcm = {
+  "summary": "Game update 49ers touchdown",
+  "teams" : ["49ers", "raiders"],
+  "score" : [7, 0],
+  "lastplay" : "5yd run up the middle"
+}
+ 
+message.publish()
+```

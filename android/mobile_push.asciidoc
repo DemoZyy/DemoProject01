@@ -13,6 +13,102 @@ For mission critical messaging, PubNub recommends implementing PubNub native mes
 Despite the advantages of the native PubNub approach, there are cases where a developer may choose to utilize a 3rd-party notification system, for example, when migrating existing applications already utilizing 3rd-party notification systems to PubNub native messaging. On iOS applications where running in the background is not an option, the Mobile Push Gateway provides a method to send messages quickly and reliably via PubNub whether or not the application is in the foreground or background.
 
 === GCM 
+
+===== GCM PREREQUISITES
+
+Before you can push GCM messages natively through Google, or through PubNub, you must first setup your GCM configuration.
+
+Download the Google Play services SDK - http://developer.android.com/tools/help/sdk-manager.html
+Set Up Google Play Services SDK - http://developer.android.com/google/play-services/setup.html
+Create a Google API project - http://developer.android.com/google/gcm/gs.html#create-proj
+Enable the GCM Service - http://developer.android.com/google/gcm/gs.html#gcm-service
+Obtain an Google API Key - http://developer.android.com/google/gcm/gs.html#access-key
+Once you've obtained the API Key, login to the PubNub Admin Console, and scroll down to Push Notifications → Google Cloud Messaging and click on "Add" to add your API Key. http://developer.android.com/google/gcm/gs.html provides additional information about this process.
+
+===== ROUTING TO GCM-ENABLED DEVICES
+
+When publishing a message associated with an GCM deviceID, the message is sent to all PubNub native subscribers listening on that channel. For example, if you have native PubNub Python, Ruby, and JavaScript subscribers listening on channel foo, and you've previoulsy associated channel foo with GCM RegistrationIDs abc, and xyz, when you publish hello world to channel foo, it will be received by the PubNub native Python, Ruby, and JavaScript subscribers.
+
+In addition, the portion of the message encapsulated within a pn_gcm attribute, containing a valid GCM object messaging format (see below), will also be forwarded to Googles's GCM gateway, where it will be sent via GCM to Android devices with GCM RegistrationIDs abc and xyz.
+
+Behind the scenes, the PubNub Mobile Push Gateway establishes an authenticated connection to the Google GCM service based on the application's configured GCM API Key (which the developer has uploaded to the PubNub Admin Console). Assuming this API key, and application are configured correctly for Push Notifications, and the RegistrationID has been associated with the PubNub channel the message was published on, Google will accept the GCM message for delivery.
+
+===== GOOGLE API KEY.
+
+This key is used by Google to authenticate your application for accounting purposes. This key is uploaded to the PubNub Administrator Console upon configuring your PubNub account to enable Mobile Push Gateway.
+
+===== GCM REGISTRATION ID
+
+The first time an Android application needs to use the GCM service, it must call the GoogleCloudMessaging method register() which should return a Registration ID. This Registration ID is then associated with one or more channels. The Android application should store this ID for later use (for instance, to check in onCreate() if it is already registered.
+
+===== GCM SENDER ID
+
+The Sender ID is created during the GCM registration process ( Sender ID is your GCM Project Number ) and is used to permit PubNub Mobile Push Gateway push notification messages to be sent to the Android device via GCM.
+
+===== Sending a GCM Test Message via PubNub
+
+When sending the following object to a channel associated with a GCM Registration ID, if everything is in place, the device should receive the object {"summary":"hello world"} when the application is in the background or foreground.
+```
+{
+    "pn_gcm": {
+        "data" : {
+            "summary": "hello world"
+        }
+    }
+}
+```
+This dictionary must contain another dictionary identified by the key pn_gcm. When sending a message to GCM you must use the data parameter to include a message payload.
+
+===== ROUTING TO NATIVE AND MULTIPLE 3RD-PARTY MESSAGING ENDPOINTS IN A SINGLE PUBLISH
+
+It is possible to structure a single message to contain different message payloads for native PubNub and multiple 3rd-Party endpoints. To do this, just specify root-level pn_apns, pn_gcm and pn_mpns keys with appropriate platform-specific data. Its important to remember that Native PubNub devices will receive the ENTIRE payload, but 3rd-Party endpoints will only receive the data encapsulated in their associated pn_* key.
+
+In the below example, associated iOS devices will receive only the data within the pn_apns key, and associated GCM devices will receive only the data within the pn_gcm key. Native PubNub subscribers will receive the entire literal object, including pn_apns, pn_gcm and full_game keys.
+
+```
+{
+    "pn_apns": {
+        "aps" : {
+            "alert": "Game update 49ers touchdown",
+            "badge": 2
+        },
+        "teams" : ["49ers", "raiders"],
+        "score" : [7, 0]
+    },
+    "pn_gcm": {
+        "data" : {
+            "summary": "Game update 49ers touchdown",
+            "teams" : ["49ers", "raiders"],
+            "score" : [7, 0],
+            "lastplay" : "5yd run up the middle"
+        }
+    },
+    "full_game" : {
+        "date" : "2014.05.20",
+        "foobar" : "Data that is not pertinent to devices"
+    }
+}
+```
+For any given published message, you may include any combination of pn_* and non-pn_* keys and data.
+
+===== PUBNUB MOBILE PUSH GATEWAY JAVASCRIPT CODE SAMPLES
+
+To modify associations between a channel and an APNS or GCM Device ID, use the .mobile_gw_provision() method:
+
+```
+pubnub.mobile_gw_provision ({
+     device_id: 'A655FBA9931AB',
+     op       : 'add', // or 'remove'
+     gw_type  : 'apns', // or 'gcm'
+     channel  : 'my_chat',
+     callback : mySuccessCallback,
+     error    : myErrorCallback,
+});
+```
+After successfully associating device IDs with channels, publishing messages in the correct formats to those channels will result in all associated devices receiving the 3rd-party notifications.
+
+=== APNS
+
 ===== ROUTING TO APNS-ENABLED DEVICES
 
 When publishing a message associated with an APNS deviceID, the message is sent to all PubNub native subscribers listening on that channel. For example, if you have native PubNub Python, Ruby, and JavaScript subscribers listening on channel "foo", and you've previoulsy associated channel "foo" with APNS deviceIDs abc, and xyz, when you publish "hello world" to channel "foo", it will be received by the PubNub native Python, Ruby, and JavaScript subscribers.
@@ -90,8 +186,6 @@ When sending the above string to a channel associated with an iOS DeviceID, if e
     }
 }
 Its critical that the above structure be followed. Apple will drop any messages destined for APNS that do not follow the forementioned object structure.
-
-=== APNS
 
 === MPNS
 

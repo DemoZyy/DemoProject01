@@ -202,3 +202,22 @@ message.gcm = {
  
 message.publish()
 ```
+
+==== Java
+
+com.pubnub.api.PnGcmMessage - Message object for GCM
+
+```
+JSONObject jso = new JSONObject();
+try {
+  jso.put("summary", "Game update 49ers touchdown");
+  
+  JSONArray jsa1 = new JSONArray();
+  jsa1.put("49ers");
+  jsa1.put("raiders);
+  jso.put("teams", jsa1);
+} catch (JSONExeption jse) {
+  System.out.println("Exception occurred "+ jse);
+}
+PnGcmMessage
+```

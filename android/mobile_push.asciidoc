@@ -6,7 +6,7 @@ PubNub's Mobile Push Gateway feature enables developers to bridge native PubNub 
 
 By using the Mobile Push Gateway, developers can eliminate the need for developing, configuring, and maintaining additional server-side components for 3rd-party push notification providers.
 
-When to use Native PubNub Messaging vs PubNub Mobile Push Gateway to 3rd-Party Messaging Services
+===== When to use Native PubNub Messaging vs PubNub Mobile Push Gateway to 3rd-Party Messaging Services ?
 
 For mission critical messaging, PubNub recommends implementing PubNub native messaging functionality. PubNub native messaging touts a low-latency, bi-directional notification solution that can be delivered to any mobile device, secure, access restricted, and encrypted message payloads of 32KB, and the ability to recover missed messages with Storage & Playback (history) APIs.
 
@@ -14,7 +14,9 @@ Despite the advantages of the native PubNub approach, there are cases where a de
 
 === GCM 
 
-===== GCM PREREQUISITES
+==== Details
+
+====== GCM PREREQUISITES
 
 Before you can push GCM messages natively through Google, or through PubNub, you must first setup your GCM configuration.
 
@@ -25,7 +27,7 @@ Before you can push GCM messages natively through Google, or through PubNub, you
 * Obtain an Google API Key - http://developer.android.com/google/gcm/gs.html#access-key
 * Once you've obtained the API Key, login to the PubNub Admin Console, and scroll down to Push Notifications → Google Cloud Messaging and click on "Add" to add your API Key. http://developer.android.com/google/gcm/gs.html provides additional information about this process.
 
-===== ROUTING TO GCM-ENABLED DEVICES
+====== ROUTING TO GCM-ENABLED DEVICES
 
 When publishing a message associated with an GCM deviceID, the message is sent to all PubNub native subscribers listening on that channel. For example, if you have native PubNub Python, Ruby, and JavaScript subscribers listening on channel foo, and you've previoulsy associated channel foo with GCM RegistrationIDs abc, and xyz, when you publish hello world to channel foo, it will be received by the PubNub native Python, Ruby, and JavaScript subscribers.
 
@@ -33,17 +35,25 @@ In addition, the portion of the message encapsulated within a pn_gcm attribute, 
 
 Behind the scenes, the PubNub Mobile Push Gateway establishes an authenticated connection to the Google GCM service based on the application's configured GCM API Key (which the developer has uploaded to the PubNub Admin Console). Assuming this API key, and application are configured correctly for Push Notifications, and the RegistrationID has been associated with the PubNub channel the message was published on, Google will accept the GCM message for delivery.
 
-===== GOOGLE API KEY.
+====== GOOGLE API KEY.
 
 This key is used by Google to authenticate your application for accounting purposes. This key is uploaded to the PubNub Administrator Console upon configuring your PubNub account to enable Mobile Push Gateway.
 
-===== GCM REGISTRATION ID
+====== GCM REGISTRATION ID
 
 The first time an Android application needs to use the GCM service, it must call the GoogleCloudMessaging method register() which should return a Registration ID. This Registration ID is then associated with one or more channels. The Android application should store this ID for later use (for instance, to check in onCreate() if it is already registered.
 
-===== GCM SENDER ID
+====== GCM SENDER ID
 
 The Sender ID is created during the GCM registration process ( Sender ID is your GCM Project Number ) and is used to permit PubNub Mobile Push Gateway push notification messages to be sent to the Android device via GCM.
+
+==== Getting device/registration id and receiving messages
+
+Once you have completed prerequisites for GCM as described above you can get the registraion id using Google APIs.
+
+
+
+==== Sending message to device via GCM
 
 ===== Sending a GCM Test Message via PubNub
 
@@ -91,6 +101,8 @@ In the below example, associated iOS devices will receive only the data within t
 ```
 For any given published message, you may include any combination of pn_* and non-pn_* keys and data.
 
+==== Associating channels to device id
+
 ===== PUBNUB MOBILE PUSH GATEWAY JAVASCRIPT CODE SAMPLES
 
 To modify associations between a channel and an APNS or GCM Device ID, use the .mobile_gw_provision() method:
@@ -106,86 +118,4 @@ pubnub.mobile_gw_provision ({
 });
 ```
 After successfully associating device IDs with channels, publishing messages in the correct formats to those channels will result in all associated devices receiving the 3rd-party notifications.
-
-=== APNS
-
-===== ROUTING TO APNS-ENABLED DEVICES
-
-When publishing a message associated with an APNS deviceID, the message is sent to all PubNub native subscribers listening on that channel. For example, if you have native PubNub Python, Ruby, and JavaScript subscribers listening on channel "foo", and you've previoulsy associated channel "foo" with APNS deviceIDs abc, and xyz, when you publish "hello world" to channel "foo", it will be received by the PubNub native Python, Ruby, and JavaScript subscribers.
-
-In addition, the portion of the message encapsulated within a "pn_apns" attribute, containing a valid APNS object messaging format (see below), will also be forwarded to Apple's APNS gateway, where it will be sent via APNS to Apple devices with APNS deviceIDs abc and xyz.
-
-Behind the scenes, the PubNub Mobile Push Gateway establishes an authenticated connection to the Apple APNS service based on the application's configured Apple Push Certificate (which the developer has uploaded to the PubNub Admin Console). Assuming this certificate, and application are configured correctly for Push Notifications, and the deviceID has been associated with the PubNub channel the message was published on, Apple will accept the APNS message for delivery.
-
-===== APNS PUSH CERTIFICATE
-
-The Apple Push Notification service requires that a Push Certificate be generated that uniquely identifies your PubNub enabled application to the APN service. This Push Certificate is uploaded to PubNub in the PubNub Admin Portal and is used to form a secure connection to the APN service.
-
-Additional information on creating and verifying your certificate can be found at https://github.com/pubnub/objective-c/blob/master/iOS/create_and_verify_apns.md.
-
-===== APNS DEVICE TOKEN
-
-Similarly, a Device Token is created for each client iOS device that registers with Apple to receive push notifications. The Device Token is analogous to a phone number; it contains information that enables APNs to locate the device on which the client application is installed.
-
-===== APNS PREREQUISITES
-
-Before you can push APNS messages natively through Apple, or through PubNub, you must first define an App ID and create a PEM Certificate file. http://code.google.com/p/apns-php/wiki/CertificateCreation#Generate_a_Push_Certificate depicts a quick summary of the steps.
-
-Verify your development cert was created correctly by running this command (replace with your key/cert name):
-
-1
-openssl s_client -connect gateway.sandbox.push.apple.com:2195 -cert server_certificates_bundle_sandbox.pem -key server_certificates_bundle_sandbox.pem
-To verify production certs, replace gateway.sandbox.push.apple.com with gateway.push.apple.com (remove the sandbox portion of the name). Once they are verified, upload them to the PubNub Admin Console's Mobile Push Gateway configuration.
-
-In addition to the above steps, We also provide a step-by-step video tutorial of the process:
-
-Creating the App ID and PEM Cert File - https://vimeo.com/67419903
-Create the Provisioning Profile - https://vimeo.com/67420404
-Create and Configure PubNub Account for APNS - https://vimeo.com/67420596
-Create empty PubNub App Template - https://vimeo.com/67420599
-Configure for PNDelegate Protocol and create didReceiveMessage delegate method - https://vimeo.com/67420597
-Set keys, channel, connect, and subscribe and Test Run - https://vimeo.com/67420598
-Enable and Test for correct APNS configuration (Apple Config) - https://vimeo.com/67423576
-Provision PubNub APNS - https://vimeo.com/67423577
-Two files referenced from the video, generateAPNSPemKey.sh and verifyCertWithApple.sh are also available in our Github repo. The Final product is available here: HOWTO/APNSVideo
-
-ROUTING BETWEEN PUBNUB CHANNELS AND APNS DEVICE TOKENS
-
-Normally, messages published to PubNub Reatime Network are only accessible by native PubNub subscribers, routed by subscribe key and channel name. When messages are published to a PubNub channel associated with the APNS Device Token, the Device Token is used to identify which devices should receive the message as a push notification. The Device token is combined with the published message and this Notification Package is sent from PubNub Mobile Push Gateway to the APN service.
-
-Apple enforces that both APNS Push Certificates and Device Tokens must be created and used separately for Development and Production environments.
-
-===== APNS PUSH NOTIFICATION PAYLOAD
-
-A notification is a short message consisting of two major pieces of data: the Device Token and the Payload. The Apple Notification Payload contains information about how the system should alert the user as well as any custom data you provide.
-
- 	
-As noted on Apple's Developer site here
-Each remote notification includes a payload. The payload contains information about how the system should alert the user as well as any custom data you provide. In iOS 8 and later, the maximum size allowed for a notification payload is 2 kilobytes; Apple Push Notification service refuses any notification that exceeds this limit. (Prior to iOS 8 and in OS X, the maximum payload size is 256 bytes.)
-
-The forementioned site also continues to explain that: Each notification payload is composed of a JSON dictionary object (as defined by link: RFC 4627). This dictionary must contain another dictionary identified by the key aps. The aps dictionary contains one or more properties that specify the following actions:
-
-An alert message to display to the user
-A number to badge the application icon with
-A sound to play
-Sending an APNS Test Message via PubNub
-
-The following JSON messages detail the structure the PubNub Mobile Push Gateway expects to properly route a message to a channel associated with an APNS deviceID.
-
-For the most simple test, you can send a simple String, such as hello world from any PubNub publishing entity, including the PubNub Developer Console available at http://www.pubnub.com/console:
-
-When sending the above string to a channel associated with an iOS DeviceID, if everything is in place, the device should display "hello world" when the application is in the background. You should only send strings to test connectivity; once you've verified connectivity, send notifications in object format which can contain alert, badge count, and sound data:
-
-{
-    "pn_apns": {
-        "aps": {
-            "alert": "This is a push notification",
-            "badge": 9,
-            "sound": "bingbong.aiff"
-        }
-    }
-}
-Its critical that the above structure be followed. Apple will drop any messages destined for APNS that do not follow the forementioned object structure.
-
-=== MPNS
 

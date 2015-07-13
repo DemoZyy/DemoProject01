@@ -39,17 +39,75 @@ Behind the scenes, the PubNub Mobile Push Gateway establishes an authenticated c
 
 This key is used by Google to authenticate your application for accounting purposes. This key is uploaded to the PubNub Administrator Console upon configuring your PubNub account to enable Mobile Push Gateway.
 
-====== GCM REGISTRATION ID
+====== GCM REGISTRATION ID (NOTE: This is deprecated. InstanceId and registration token APIs should be used now on )
 
 The first time an Android application needs to use the GCM service, it must call the GoogleCloudMessaging method register() which should return a Registration ID. This Registration ID is then associated with one or more channels. The Android application should store this ID for later use (for instance, to check in onCreate() if it is already registered.
 
+====== GCM REGISTRATION TOKEN
+
+PubNub Mobile Push Gateway uses registration token provided to relay messages to devices via GCM. These tokens are obtained using Instance ID API and can be associated to a channel using utility methods available in Pubnub Java and JS SDKs.
+
 ====== GCM SENDER ID
 
-The Sender ID is created during the GCM registration process ( Sender ID is your GCM Project Number ) and is used to permit PubNub Mobile Push Gateway push notification messages to be sent to the Android device via GCM.
+The Sender ID is created during the GCM registration process ( Sender ID is your GCM Project Number ) and is used to obtain registration token which permits PubNub Mobile Push Gateway push notification messages to be sent to the Android device via GCM.
 
-==== Getting device/registration id and receiving messages
+==== Getting registraion token and receiving messages
 
-Once you have completed prerequisites for GCM as described above you can get the registraion id using Google APIs.
+Once you have completed prerequisites for GCM as described above you can get the registraion id using Google Instance Id APIs.
+
+```
+// Get registration token
+InstanceID instanceID = InstanceID.getInstance(this);
+String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
+        GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+```
+To receive message you can use GcmListenerService class which extends WakefulBroadcastReceiver. You need to override
+onMessageReceived method.
+
+```
+@Override
+public void onMessageReceived(String from, Bundle data) {
+    String message = data.getString("message");
+    Log.d(TAG, "From: " + from);
+    Log.d(TAG, "Message: " + message);
+}
+```
+
+Refer to https://developers.google.com/cloud-messaging/android/start for details.
+
+==== Associating channels to device id
+
+===== Javascript
+
+To modify associations between a channel and an APNS or GCM Device ID, use the .mobile_gw_provision() method:
+
+```
+pubnub.mobile_gw_provision ({
+     device_id: 'A655FBA9931AB',
+     op       : 'add', // or 'remove'
+     gw_type  : 'apns', // or 'gcm'
+     channel  : 'my_chat',
+     callback : mySuccessCallback,
+     error    : myErrorCallback,
+});
+```
+After successfully associating device IDs with channels, publishing messages in the correct formats to those channels will result in all associated devices receiving the 3rd-party notifications.
+
+===== Java
+
+Pubnub JAVA SDK provides enablePushNotificationsOnChannel and its variant methods to associate a channel to a registration token. 
+```
+
+pubnub.enablePushNotificationsOnChannel(channel, registrationToken, new Callback(){
+    @Override
+    public void successCallback(String channel, Object response) {
+    }
+    @Override
+    public void errorCallback(String channel, PubnubError error) {
+        
+    }
+});
+```
 
 
 
@@ -101,21 +159,4 @@ In the below example, associated iOS devices will receive only the data within t
 ```
 For any given published message, you may include any combination of pn_* and non-pn_* keys and data.
 
-==== Associating channels to device id
-
-===== PUBNUB MOBILE PUSH GATEWAY JAVASCRIPT CODE SAMPLES
-
-To modify associations between a channel and an APNS or GCM Device ID, use the .mobile_gw_provision() method:
-
-```
-pubnub.mobile_gw_provision ({
-     device_id: 'A655FBA9931AB',
-     op       : 'add', // or 'remove'
-     gw_type  : 'apns', // or 'gcm'
-     channel  : 'my_chat',
-     callback : mySuccessCallback,
-     error    : myErrorCallback,
-});
-```
-After successfully associating device IDs with channels, publishing messages in the correct formats to those channels will result in all associated devices receiving the 3rd-party notifications.
 

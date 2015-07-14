@@ -153,7 +153,9 @@ http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>/remove?t
 ==== Obj-c
 
 ====== Registering device to channel
+
 ```
+
 PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"demo"
                                                                   subscribeKey:@"demo"];
  self.client = [PubNub clientWithConfiguration:configuration];
@@ -175,8 +177,11 @@ PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"
         // Request can be resent using: [status retry];
      }
  }];
+ 
 ```
+
 ====== Removing device from channel
+
 ```
 PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"demo"
                                                                   subscribeKey:@"demo"];
@@ -199,9 +204,11 @@ PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"
         // Request can be resent using: [status retry];
      }
  }];
+ 
 ```
 
 ===== Get channels for device token
+
 ```
 PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"demo"
                                                                   subscribeKey:@"demo"];
@@ -224,7 +231,8 @@ PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"
         // Request can be resent using: [status retry];
      }
  }];
- ```
+ 
+```
  
 
 ==== Javascript

@@ -151,8 +151,81 @@ http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>/remove?t
         TO BE ADDED
 
 ==== Obj-c
-        TO BE ADDED
 
+====== Registering device to channel
+```
+PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"demo"
+                                                                  subscribeKey:@"demo"];
+ self.client = [PubNub clientWithConfiguration:configuration];
+ [self.client addPushNotificationsOnChannels:@[@"wwdc",@"google.io"] 
+                         withDevicePushToken:self.devicePushToken
+                               andCompletion:^(PNAcknowledgmentStatus *status) {
+  
+     // Check whether request successfully completed or not.
+     if (!status.isError) {
+         
+        // Handle successful push notification enabling on passed channels.
+     }
+     // Request processing failed.
+     else {
+      
+        // Handle modification error. Check 'category' property to find out possible issue because
+        // of which request did fail.
+        //
+        // Request can be resent using: [status retry];
+     }
+ }];
+```
+====== Removing device from channel
+```
+PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"demo"
+                                                                  subscribeKey:@"demo"];
+ self.client = [PubNub clientWithConfiguration:configuration];
+ [self.client removePushNotificationsFromChannels:@[@"wwdc",@"google.io"]
+                              withDevicePushToken:self.devicePushToken
+                                    andCompletion:^(PNAcknowledgmentStatus *status) {
+  
+     // Check whether request successfully completed or not.
+     if (!status.isError) {
+         
+        // Handle successful push notification enabling on passed channels.
+     }
+     // Request processing failed.
+     else {
+      
+        // Handle modification error. Check 'category' property to find out possible issue because
+        // of which request did fail.
+        //
+        // Request can be resent using: [status retry];
+     }
+ }];
+```
+
+===== Get channels for device token
+```
+PNConfiguration *configuration = [PNConfiguration configurationWithPublishKey:@"demo"
+                                                                  subscribeKey:@"demo"];
+ self.client = [PubNub clientWithConfiguration:configuration];
+ [self.client pushNotificationEnabledChannelsForDeviceWithPushToken:self.devicePushToken
+                              andCompletion:^(PNAPNSEnabledChannelsResult *result,
+                                              PNErrorStatus *status) {
+  
+     // Check whether request successfully completed or not.
+     if (!status.isError) {
+  
+        // Handle downloaded list of chanels using: result.data.channels
+     }
+     // Request processing failed.
+     else {
+      
+        // Handle audition error. Check 'category' property to find out possible issue because of 
+        // which request did fail.
+        //
+        // Request can be resent using: [status retry];
+     }
+ }];
+ ```
+ 
 
 ==== Javascript
 

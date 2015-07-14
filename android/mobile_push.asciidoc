@@ -307,7 +307,7 @@ pubnub.requestPushNotificationEnabledChannelsForDeviceRegistrationId(registratio
 === Sending messages to devices
 
 
-===== ROUTING TO NATIVE AND SINGLE/MULTIPLE 3RD-PARTY MESSAGING ENDPOINTS IN A SINGLE PUBLISH
+==== ROUTING TO NATIVE AND SINGLE/MULTIPLE 3RD-PARTY MESSAGING ENDPOINTS IN A SINGLE PUBLISH
 
 It is possible to structure a single message to contain different message payloads for native PubNub and multiple 3rd-Party endpoints. To do this, just specify root-level pn_apns, pn_gcm and pn_mpns keys with appropriate platform-specific data. Its important to remember that Native PubNub devices will receive the ENTIRE payload, but 3rd-Party endpoints will only receive the data encapsulated in their associated pn_* key. All or any one of these pn_* keys can be ommitted as required.
 
@@ -339,15 +339,15 @@ In the below example, associated iOS devices will receive only the data within t
 ```
 For any given published message, you may include any combination of pn_* and non-pn_* keys and data.
 
-----
 
-== Payload
+
+==== Payload
 
 The push service piggy backs off a normal pubnub publish.  Therefore the entire payload (including platform push data) will be received by subscribers of that channel.
 
-=== APNS/GCM Format
+====== APNS/GCM Format
 
-==== Old Format
+======= Old Format
 
 * String (automatically converted into APNS payload)
 
@@ -358,7 +358,7 @@ The push service piggy backs off a normal pubnub publish.  Therefore the entire 
 .. pn_*
 ... Top level keys prefixed with "pn_" will not be included in push payload
 
-==== New Format
+====== New Format
 
 * JSON
 ... pn_apns - object containing https://developer.apple.com/library/mac/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html#//apple_ref/doc/uid/TP40008194-CH100-SW1[aps fields] and user defined data
@@ -368,19 +368,19 @@ The push service piggy backs off a normal pubnub publish.  Therefore the entire 
 
 If both 'aps' and 'pn_apns' are specified, consider it a new style payload and only consider 'pn_apns"
 
-=== Params
+====== Params
 
 pn_ttl:: Number of seconds until message expires (don't attempt delivery)
 
-=== MPNS Format
+====== MPNS Format
 
 Only toast and tile notifications are supported at this time.  Each type requires a properly formatted payload.
 
-==== Toast
+======= Toast
 
 http://msdn.microsoft.com/en-us/library/windows/apps/jj662938(v=vs.105).aspx[Official docs]
 
-===== Payload Parameters
+======= Payload Parameters
 [options="header", cols="1,1,1,5", width="100%"]
 |====
 
@@ -428,11 +428,11 @@ a|+param+
 }
 ----
 
-==== Tile
+======= Tile
 
 There are three types of tiles: flip, cycle, iconic.
 
-===== Clearing Values
+======= Clearing Values
 
 All tile parameters except type and delay can be cleared by specifying JSON null value.  Normally, the Microsoft Push server will persist the value of a field until the field is set to another value.
 

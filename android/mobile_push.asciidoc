@@ -12,6 +12,14 @@ For mission critical messaging, PubNub recommends implementing PubNub native mes
 
 Despite the advantages of the native PubNub approach, there are cases where a developer may choose to utilize a 3rd-party notification system, for example, when migrating existing applications already utilizing 3rd-party notification systems to PubNub native messaging. On iOS applications where running in the background is not an option, the Mobile Push Gateway provides a method to send messages quickly and reliably via PubNub whether or not the application is in the foreground or background.
 
+=== APNS
+        TO BE ADDED
+
+
+
+=== MPNS
+        TO BE ADDED
+
 === GCM 
 
 ==== Details
@@ -51,17 +59,18 @@ PubNub Mobile Push Gateway uses registration token provided to relay messages to
 
 The Sender ID is created during the GCM registration process ( Sender ID is your GCM Project Number ) and is used to obtain registration token which permits PubNub Mobile Push Gateway push notification messages to be sent to the Android device via GCM.
 
-==== Getting registraion token and receiving messages
+==== Getting registration token and receiving messages
 
-Once you have completed prerequisites for GCM as described above you can get the registraion id using Google Instance Id APIs.
+Once you have completed prerequisites for GCM as described above you can get the registration token using Google Instance Id APIs.
 
 ```
+String senderId = "" ; /*  GCM Sender ID */
 // Get registration token
 InstanceID instanceID = InstanceID.getInstance(this);
-String token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
+String token = instanceID.getToken(getString(senderId),
         GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
 ```
-To receive message you can use GcmListenerService class which extends WakefulBroadcastReceiver. You need to override
+To receive message  GcmListenerService class which extends WakefulBroadcastReceiver can be used by overriding
 onMessageReceived method.
 
 ```
@@ -75,9 +84,80 @@ public void onMessageReceived(String from, Bundle data) {
 
 Refer to https://developers.google.com/cloud-messaging/android/start for details.
 
-==== Associating channels to registration token
+=== Registering channel for device
 
-===== Javascript
+C#, Obj-C, Java and Javascript family SDKs provide APIs to enable push notifications by associating device/registration tokens to channel names. These APIs are wrappers over REST interface.
+
+==== REST
+<TYPE> can be:
+
+* gcm
+* apns
+* mpns
+* if no type specified, server will default to apns (for backwards compatibility)
+
+===== Register channel for device
+
+Note: If both 'add' and 'remove' are provided, the remove will be executed first
+
+.API
+----
+http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>?add=<CHANNEL>&type=<TYPE>
+----
+
+.Response
+----
+# Success
+[1, "Modified Channels"]
+
+# Error
+----
+
+.Registering an apple device for channel "m3"
+----
+http://dara24.devbuild.pubnub.com/v1/push/sub-key/sub-c-e0d8405a-b823-11e2-89ba-02ee2ddab7fe/devices/2ed202ac08ea9033665e853a3dc8bc4c5e78f7a6cf8d55910df230567037dcc4?type=apns&add=m3
+----
+
+.Registering a android device for channels "m1" and "m2"
+----
+http://dara24.devbuild.pubnub.com/v1/push/sub-key/sub-c-e0d8405a-b823-11e2-89ba-02ee2ddab7fe/devices/APA91bHThLx95RbKvOpIZyPStZMtqlOTvARPdWlvqNlcxxwkzgjSF88pKd_57vcy-ABUD1McjbyEmt603TJidwysvBMQh9Medh769nK2Kb8pe7QQILVxhsOnSOKqBu6yjFDCXasVif3XpVJOxaJasZcL7Kd6vuhLLuGt4gnnkNYy53SByBM7_cU?type=gcm&add=m1,m2
+----
+
+.Registering a windows phone device for channel "m1"
+----
+http://dara24.devbuild.pubnub.com/v1/push/sub-key/sub-c-e0d8405a-b823-11e2-89ba-02ee2ddab7fe/devices/http://dm2.notify.live.net/throttledthirdparty/01.00/AQECOVPaH3c6T4JWPQijts9xAgAAAAADAQAAAAQUZm52OkRFNzg2NTMxMzlFMEZFNkMFBlVTTkMwMQ?type=mpns&add=m1
+----
+
+===== Remove channel for device
+
+Note: If both 'add' and 'remove' are provided, the remove will be executed first
+
+----
+http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>?remove=<CHANNEL>&type=<TYPE>
+----
+
+===== Get channels for device
+
+----
+http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>?type=<TYPE>
+----
+
+=== Remove device and all associated channels
+
+----
+http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>/remove?type=<TYPE>
+----
+
+==== C#
+```
+```
+
+==== Obj-c
+```
+```
+==== Javascript
+
+
 
 To modify associations between a channel and an APNS or GCM Device ID, use the .mobile_gw_provision() method:
 
@@ -93,7 +173,7 @@ pubnub.mobile_gw_provision ({
 ```
 After successfully associating device IDs with channels, publishing messages in the correct formats to those channels will result in all associated devices receiving the 3rd-party notifications.
 
-===== Java
+==== Java
 
 Pubnub JAVA SDK provides enablePushNotificationsOnChannel and its variant methods to associate a channel to a registration token. 
 ```
@@ -111,25 +191,12 @@ pubnub.enablePushNotificationsOnChannel(channel, registrationToken, new Callback
 
 
 
-==== Sending message to device via GCM
+=== Sending messages to devices
 
-===== Sending a GCM Test Message via PubNub
 
-When sending the following object to a channel associated with a GCM Registration ID, if everything is in place, the device should receive the object {"summary":"hello world"} when the application is in the background or foreground.
-```
-{
-    "pn_gcm": {
-        "data" : {
-            "summary": "hello world"
-        }
-    }
-}
-```
-This dictionary must contain another dictionary identified by the key pn_gcm. When sending a message to GCM you must use the data parameter to include a message payload.
+===== ROUTING TO NATIVE AND SINGLE/MULTIPLE 3RD-PARTY MESSAGING ENDPOINTS IN A SINGLE PUBLISH
 
-===== ROUTING TO NATIVE AND MULTIPLE 3RD-PARTY MESSAGING ENDPOINTS IN A SINGLE PUBLISH
-
-It is possible to structure a single message to contain different message payloads for native PubNub and multiple 3rd-Party endpoints. To do this, just specify root-level pn_apns, pn_gcm and pn_mpns keys with appropriate platform-specific data. Its important to remember that Native PubNub devices will receive the ENTIRE payload, but 3rd-Party endpoints will only receive the data encapsulated in their associated pn_* key.
+It is possible to structure a single message to contain different message payloads for native PubNub and multiple 3rd-Party endpoints. To do this, just specify root-level pn_apns, pn_gcm and pn_mpns keys with appropriate platform-specific data. Its important to remember that Native PubNub devices will receive the ENTIRE payload, but 3rd-Party endpoints will only receive the data encapsulated in their associated pn_* key. All or any one of these pn_* keys can be ommitted as required.
 
 In the below example, associated iOS devices will receive only the data within the pn_apns key, and associated GCM devices will receive only the data within the pn_gcm key. Native PubNub subscribers will receive the entire literal object, including pn_apns, pn_gcm and full_game keys.
 

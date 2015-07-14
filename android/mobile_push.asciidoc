@@ -75,7 +75,7 @@ public void onMessageReceived(String from, Bundle data) {
 
 Refer to https://developers.google.com/cloud-messaging/android/start for details.
 
-==== Associating channels to device id
+==== Associating channels to registration token
 
 ===== Javascript
 
@@ -159,4 +159,49 @@ In the below example, associated iOS devices will receive only the data within t
 ```
 For any given published message, you may include any combination of pn_* and non-pn_* keys and data.
 
+===== Pubnub SDK Convenience methods for sending messages via GCM
 
+Pubnub SDK provides convenience methods for sending messages via GCM.
+
+====== Javascript
+```
+
+```
+
+====== Java
+```
+// Create GCM Message
+ 
+PnGcmMessage gcmMessage = new PnGcmMessage();
+ 
+// Create the payload and set data for GCM message
+ 
+JSONObject jso = new JSONObject();
+try {
+    jso.put("a", "1");
+} catch (JSONException e) {
+ 
+}
+gcmMessage.setData(jso);
+ 
+
+String channel = "demo";
+
+PnMessage message = new PnMessage(pubnub, channel, new Callback(){
+    @Override
+    public void successCallback(String channel, Object response) {
+        System.out.println(response);
+    }
+ 
+    @Override
+    public void errorCallback(String channel, PubnubError error) {
+        System.out.println(error);
+    }
+}, gcmMessage);
+ 
+try {
+    message.publish();
+} catch (PubnubException e) {
+
+}
+```

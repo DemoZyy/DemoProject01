@@ -12,10 +12,9 @@ For mission critical messaging, PubNub recommends implementing PubNub native mes
 
 Despite the advantages of the native PubNub approach, there are cases where a developer may choose to utilize a 3rd-party notification system, for example, when migrating existing applications already utilizing 3rd-party notification systems to PubNub native messaging. On iOS applications where running in the background is not an option, the Mobile Push Gateway provides a method to send messages quickly and reliably via PubNub whether or not the application is in the foreground or background.
 
+
 === APNS
         TO BE ADDED
-
-
 
 === MPNS
         TO BE ADDED
@@ -142,21 +141,20 @@ http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>?remove=<
 http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>?type=<TYPE>
 ----
 
-=== Remove device and all associated channels
+==== Remove device and all associated channels
 
 ----
 http://pubsub.pubnub.com/v1/push/sub-key/<SUB_KEY>/devices/<PUSH_TOKEN>/remove?type=<TYPE>
 ----
 
 ==== C#
-```
-```
+        TO BE ADDED
 
 ==== Obj-c
-```
-```
-==== Javascript
+        TO BE ADDED
 
+
+==== Javascript
 
 
 To modify associations between a channel and an APNS or GCM Device ID, use the .mobile_gw_provision() method:
@@ -165,7 +163,7 @@ To modify associations between a channel and an APNS or GCM Device ID, use the .
 pubnub.mobile_gw_provision ({
      device_id: 'A655FBA9931AB',
      op       : 'add', // or 'remove'
-     gw_type  : 'apns', // or 'gcm'
+     gw_type  : 'apns', // or 'gcm' or 'mpns'
      channel  : 'my_chat',
      callback : mySuccessCallback,
      error    : myErrorCallback,
@@ -175,7 +173,9 @@ After successfully associating device IDs with channels, publishing messages in 
 
 ==== Java
 
-Pubnub JAVA SDK provides enablePushNotificationsOnChannel and its variant methods to associate a channel to a registration token. 
+====== Registering device to channel
+
+enablePushNotificationsOnChannel and its variant methods associate a channel to a registration token. 
 ```
 
 pubnub.enablePushNotificationsOnChannel(channel, registrationToken, new Callback(){
@@ -189,6 +189,38 @@ pubnub.enablePushNotificationsOnChannel(channel, registrationToken, new Callback
 });
 ```
 
+====== Removing device from channel
+
+disablePushNotificationsOnChannel and its variant methods associate a channel to a registration token. 
+```
+
+pubnub.disablePushNotificationsOnChannel(channel, registrationToken, new Callback(){
+    @Override
+    public void successCallback(String channel, Object response) {
+    }
+    @Override
+    public void errorCallback(String channel, PubnubError error) {
+        
+    }
+});
+```
+
+===== Listing channels for device token
+
+requestPushNotificationEnabledChannelsForDeviceRegistrationId lists channels registered to device token
+
+```
+
+pubnub.requestPushNotificationEnabledChannelsForDeviceRegistrationId(registrationToken, new Callback(){
+    @Override
+    public void successCallback(String channel, Object response) {
+    }
+    @Override
+    public void errorCallback(String channel, PubnubError error) {
+        
+    }
+});
+```
 
 
 === Sending messages to devices

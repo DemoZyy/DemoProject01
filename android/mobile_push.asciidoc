@@ -36,11 +36,11 @@ Before you can push GCM messages natively through Google, or through PubNub, you
 
 ====== ROUTING TO GCM-ENABLED DEVICES
 
-When publishing a message associated with an GCM deviceID, the message is sent to all PubNub native subscribers listening on that channel. For example, if you have native PubNub Python, Ruby, and JavaScript subscribers listening on channel foo, and you've previoulsy associated channel foo with GCM RegistrationIDs abc, and xyz, when you publish hello world to channel foo, it will be received by the PubNub native Python, Ruby, and JavaScript subscribers.
+When publishing a message associated with an GCM registration token, the message is sent to all PubNub native subscribers listening on that channel. For example, if you have native PubNub Python, Ruby, and JavaScript subscribers listening on channel foo, and you've previoulsy associated channel foo with GCM registration tokens abc, and xyz, when you publish hello world to channel foo, it will be received by the PubNub native Python, Ruby, and JavaScript subscribers.
 
-In addition, the portion of the message encapsulated within a pn_gcm attribute, containing a valid GCM object messaging format (see below), will also be forwarded to Googles's GCM gateway, where it will be sent via GCM to Android devices with GCM RegistrationIDs abc and xyz.
+In addition, the portion of the message encapsulated within a pn_gcm attribute, containing a valid GCM object messaging format (see below), will also be forwarded to Googles's GCM gateway, where it will be sent via GCM to Android devices with GCM registration tokens abc and xyz.
 
-Behind the scenes, the PubNub Mobile Push Gateway establishes an authenticated connection to the Google GCM service based on the application's configured GCM API Key (which the developer has uploaded to the PubNub Admin Console). Assuming this API key, and application are configured correctly for Push Notifications, and the RegistrationID has been associated with the PubNub channel the message was published on, Google will accept the GCM message for delivery.
+Behind the scenes, the PubNub Mobile Push Gateway establishes an authenticated connection to the Google GCM service based on the application's configured GCM API Key (which the developer has uploaded to the PubNub Admin Console). Assuming this API key, and application are configured correctly for Push Notifications, and the registration token has been associated with the PubNub channel the message was published on, Google will accept the GCM message for delivery.
 
 ====== GOOGLE API KEY.
 
@@ -330,6 +330,13 @@ In the below example, associated iOS devices will receive only the data within t
             "score" : [7, 0],
             "lastplay" : "5yd run up the middle"
         }
+    },
+    "pn_mpns" : {
+        "type" : "flip",
+        "title" : "Front title",
+        "count" : 1,
+        "back_title" : "Back Tile",
+        "back_content" : "Back message"
     },
     "full_game" : {
         "date" : "2014.05.20",
@@ -1058,9 +1065,8 @@ Note: Currently the push server will send warnings even for gateways there were 
 curl "http://storageweb2.us-east-1.pubnub.com:9000/admin-push/sub-key/SUBKEY?channel=CHANNEL&type=TYPE"
 ----
 
-===== Pubnub SDK Convenience methods for sending messages via GCM
+===== Pubnub SDK Convenience methods for sending messages via push gateway
 
-Pubnub SDK provides convenience methods for sending messages via GCM.
 
 ====== Javascript
 ```
@@ -1068,6 +1074,8 @@ Pubnub SDK provides convenience methods for sending messages via GCM.
 ```
 
 ====== Java
+
+
 ```
 // Create GCM Message
  
@@ -1082,10 +1090,21 @@ try {
  
 }
 gcmMessage.setData(jso);
+
+// Create APNS message
+
+PnApnsMessage apnsMessage = new PnApnsMessage();
+
+apnsMessage.setApsAlert("hi");
+apnsMessage.setApnsBadge(2);
+apnsMessage.setSound("melody");
+
+apnsMessage.put("c", "3");
  
 
 String channel = "demo";
 
+// Create PnMessage
 PnMessage message = new PnMessage(pubnub, channel, new Callback(){
     @Override
     public void successCallback(String channel, Object response) {
@@ -1096,11 +1115,33 @@ PnMessage message = new PnMessage(pubnub, channel, new Callback(){
     public void errorCallback(String channel, PubnubError error) {
         System.out.println(error);
     }
-}, gcmMessage);
- 
+}, apnsMessage, gcmMessage);
+
+message.put("b", "2"); 
+
 try {
     message.publish();
 } catch (PubnubException e) {
 
+}
+```
+
+The JSON message published by code above looks like this:
+
+```
+    "pn_apns": {
+        "aps" : {
+            "alert": "hi",
+            "badge": 2,
+            "sound": "melody"
+        },
+        "c" : "3"
+    },
+    "pn_gcm": {
+        "data" : {
+	    "a" : "1"
+        }
+    },
+    "b" : "2"
 }
 ```

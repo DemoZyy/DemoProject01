@@ -1158,24 +1158,44 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
         if (HEARTBEAT > 5 && HEARTBEAT < 320) params.put("heartbeat", String.valueOf(HEARTBEAT));
         log.verbose("Subscribing with timetoken : " + _timetoken);
+        
+        
 
         HttpRequest hreq = new HttpRequest(urlComponents, params,
                 new ResponseHandler() {
 
                     public void handleResponse(HttpRequest hreq, String response) {
 
-                /*
-                 * Check if response has channel names. A JSON response
-                 * with more than 2 items means the response contains
-                 * the channel names as well. The channel names are in a
-                 * comma delimted string. Call success callback on all
-                 * he channels passing the corresponding response
-                 * message.
-                 */
+		                /*
+		                 * Check if response has channel names. A JSON response
+		                 * with more than 2 items means the response contains
+		                 * the channel names as well. The channel names are in a
+		                 * comma delimted string. Call success callback on all
+		                 * he channels passing the corresponding response
+		                 * message.
+		                 */
+                    	
+                    	JSONArray v1Response = null;
+                    	JSONObject v2Response = null;
+                    	
+                    	try {
+                    		v1Response = new JSONArray(response);
+                    	} catch (JSONException e) {
+                    		v2Response = new JSONObject(response);
+                    		
+                    	}
+                    	// handle timetoken
+                    	
+                    	// handle messages v1
+                    	
+                    	// handle messages v2
 
-                        JSONArray jsa;
                         try {
+                        	
+                            JSONArray jsa;
                             jsa = new JSONArray(response);
+                   
+                            // v1 Response
 
                             _timetoken = (!_saved_timetoken.equals("0") && isResumeOnReconnect()) ? _saved_timetoken
                                     : jsa.get(1).toString();
@@ -1199,9 +1219,9 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                             JSONArray messages = new JSONArray(jsa.get(0).toString());
 
                             if (jsa.length() == 4) {
-                        /*
-                         * Response has multiple channels or/and groups
-                         */
+	                        /*
+	                         * Response has multiple channels or/and groups
+	                         */
                                 String[] _groups = PubnubUtil.splitString(jsa.getString(2), ",");
                                 String[] _channels = PubnubUtil.splitString(jsa.getString(3), ",");
 
@@ -1210,9 +1230,9 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                                             _timetoken, hreq);
                                 }
                             } else if (jsa.length() == 3) {
-                        /*
-                         * Response has multiple channels
-                         */
+	                        /*
+	                         * Response has multiple channels
+	                         */
 
                                 String[] _channels = PubnubUtil.splitString(jsa.getString(2), ",");
 
@@ -1226,10 +1246,10 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                                     }
                                 }
                             } else if (jsa.length() < 3) {
-                        /*
-                         * Response for single channel Callback on
-                         * single channel
-                         */
+	                        /*
+	                         * Response for single channel Callback on
+	                         * single channel
+	                         */
                                 SubscriptionItem _channel = channelSubscriptions.getFirstItem();
 
                                 if (_channel != null) {
@@ -1247,11 +1267,18 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                             } else
                                 _subscribe_base(false);
                         } catch (JSONException e) {
-                            if (hreq.isSubzero()) {
-                                log.verbose("Response of subscribe 0 request. Need to do dAr process again");
-                                _subscribe_base(false, hreq.isDar(), hreq.getWorker());
-                            } else
-                                _subscribe_base(false, hreq.getWorker());
+                        	try {
+                        		JSONObject jso = new JSONObject(response);
+                        		JSONObject ttJso = jso.getJSONObject("t");
+                        		
+                        	} catch (JSONException jse) {
+                                if (hreq.isSubzero()) {
+                                    log.verbose("Response of subscribe 0 request. Need to do dAr process again");
+                                    _subscribe_base(false, hreq.isDar(), hreq.getWorker());
+                                } else
+                                    _subscribe_base(false, hreq.getWorker());                		
+                        	}
+
                         }
 
                     }

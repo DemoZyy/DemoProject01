@@ -455,4 +455,8 @@ abstract class PubnubCoreShared extends PubnubCoreAsync  implements  PubnubAsync
     public void removeAllPushNotificationsForDeviceRegistrationId(String gcmRegistrationId, final Callback callback) {
         _removeAllPushNotificationsForDeviceRegistrationId(gcmRegistrationId, callback, false);
     }
+
+    protected String replaceAll(String source, String a, String b) {
+        return source.replaceAll(a, b);
+    }
 }

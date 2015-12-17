@@ -3,6 +3,7 @@ package com.pubnub.api;
 
 import java.util.Hashtable;
 import java.util.Random;
+import com.codename1.util.StringUtil;
 
 /**
  * Pubnub object facilitates querying channels for messages and listening on
@@ -180,4 +181,7 @@ public class Pubnub extends PubnubCoreAsync {
         return "Java/" + VERSION;
     }
 
+    protected String replaceAll(String source, String a, String b) {
+        return StringUtil.replaceAll(source, a, b);
+    }
 }

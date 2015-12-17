@@ -87,5 +87,8 @@ public class Pubnub extends PubnubCoreAsync {
     protected String getUserAgent() {
         return "Blackberry/" + VERSION;
     }
+    protected String replaceAll(String source, String a, String b) {
+        return source.replaceAll(a, b);
+    }
 
 }

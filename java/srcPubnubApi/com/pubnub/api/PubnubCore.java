@@ -201,6 +201,9 @@ abstract class PubnubCore implements PubnubInterface {
         return this.UUID;
     }
 
+    protected String replaceAll(String source, String a, String b) {
+        return source;
+    }
 
     protected Object _publish(Hashtable args, boolean sync) {
 
@@ -232,7 +235,7 @@ abstract class PubnubCore implements PubnubInterface {
             }
         } else {
             if (message instanceof String) {
-            	msgStr = msgStr.replaceAll("\"", "\\\\\"");
+                msgStr = replaceAll(msgStr, "\"", "\\\\\"");
                 msgStr = "\"" + msgStr + "\"";
             }
         }
@@ -323,8 +326,7 @@ abstract class PubnubCore implements PubnubInterface {
                 e.printStackTrace();
                 return null;
             } catch (PubnubException e) {
-            	//System.out.println(e);
-            	return e.getErrorJsonObject();
+                return e.getErrorJsonObject();
             }
         }
         connManager.queue(hreq);

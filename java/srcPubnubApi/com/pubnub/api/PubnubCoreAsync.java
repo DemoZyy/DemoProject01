@@ -395,6 +395,10 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         _publish(args, false);
     }
 
+    public PubnubPublish publish() {
+        return new PubnubPublish((Pubnub)this);
+    }
+    
     public void presence(String channel, Callback callback) throws PubnubException {
         Hashtable args = new Hashtable(2);
 
@@ -945,7 +949,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         args.put("groups", groups);
         args.put("callback", callback);
         args.put("timetoken", timetoken);
-
+        
         subscribe(args);
     }
 
@@ -987,12 +991,18 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             cb.errorCallback(channel, error);
         }
     }
+    String filter = null;
 
     private void _subscribe(Hashtable args) {
 
         String[] channelList = (String[]) args.get("channels");
         String[] groupList = (String[]) args.get("groups");
-
+        String filter = (String) args.get("filter");
+        
+        if (filter != null && filter.length() > 0) {
+            channelSubscriptions.setFilter(filter);
+        }
+        
         if (channelList == null) {
             channelList = new String[0];
         }
@@ -1000,6 +1010,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         if (groupList == null) {
             groupList = new String[0];
         }
+        
+        
 
         Callback callback = (Callback) args.get("callback");
         String timetoken = (String) args.get("timetoken");
@@ -1120,6 +1132,11 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         // add connection id
 
         params.put("connectionid", this.connectionid);
+        
+        if (channelSubscriptions.getFilter() != null && 
+                channelSubscriptions.getFilter().length() > 0) {
+            params.put("filter", channelSubscriptions.getFilter());
+        }
 
         HttpRequest hreq = new HttpRequest(urlComponents, params, new ResponseHandler() {
 

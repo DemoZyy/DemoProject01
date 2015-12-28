@@ -1,13 +1,32 @@
 package com.pubnub.examples;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.pubnub.api.*;
 
 public class PubnubPublish {
 
 	public static void main(String[] args) {
-		final PubnubSync pubnub = new PubnubSync("demo", "demo");
+		final Pubnub pubnub = new Pubnub("demo", "demo");
 		
-		System.out.println(pubnub.publish("demo", 1));
+		Callback callback = new Callback(){
+		    public void successCallback(String channel, Object message) {
+		        
+		    }
+		    public void errorCallback(String channel, PubnubError error) {
+		        
+		    }
+		};
+		JSONObject meta = new JSONObject();
+		try {
+            
+            meta.put("foo", "bar");
+        } catch (JSONException e) {
+
+        }
+		pubnub.publish().callback(callback).channel("abcd")
+		        .message("hi").storeInHistory(false).metadata(meta).send();;
 
 	}
 

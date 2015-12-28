@@ -24,6 +24,15 @@ class Subscriptions {
 
 
     JSONObject state;
+    String filter;
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public void setFilter(String filter) {
+        this.filter = filter;
+    }
 
     public Subscriptions() {
         items    = new Hashtable();

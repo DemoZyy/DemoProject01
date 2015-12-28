@@ -28,11 +28,11 @@ public class PubnubSubscribe implements PubnubSubscribeInterface {
             channelGroups = new String[]{channelGroup};
         }
     
-        addToHash(args, "channels", channels);
-        addToHash(args, "groups", channelGroups);
-        addToHash(args, "callback", callback);
-        addToHash(args, "timetoken", timetoken);
-        addToHash(args, "filter", filter);
+        PubnubUtil.addToHash(args, "channels", channels);
+        PubnubUtil.addToHash(args, "groups", channelGroups);
+        PubnubUtil.addToHash(args, "callback", callback);
+        PubnubUtil.addToHash(args, "timetoken", timetoken);
+        PubnubUtil.addToHash(args, "filter", filter);
     
         if (pubnub != null)
             pubnub.subscribe(args);
@@ -40,11 +40,6 @@ public class PubnubSubscribe implements PubnubSubscribeInterface {
             throw new PubnubException("Pubnub is Null");
     }
     
-    void addToHash(Hashtable h, String name, Object object) {
-        if (object != null) {
-            h.put(name, object);
-        }
-    }
     
     PubnubSubscribe(Pubnub pubnub) {
         this.pubnub = pubnub;

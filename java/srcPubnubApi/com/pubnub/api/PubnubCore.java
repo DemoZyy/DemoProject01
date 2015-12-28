@@ -235,6 +235,10 @@ abstract class PubnubCore implements PubnubInterface {
         String storeInHistory = (String) args.get("storeInHistory");
         String msgStr = message.toString();
         Hashtable parameters = PubnubUtil.hashtableClone(params);
+        
+        
+        JSONObject meta = (JSONObject) args.get("meta");
+        if (meta != null && meta.length() > 0) parameters.put("meta", meta.toString());
 
         if (storeInHistory != null && storeInHistory.length() > 0) parameters.put("store", storeInHistory);
 

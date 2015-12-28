@@ -13,6 +13,16 @@ import java.util.Hashtable;
 class Subscriptions {
     private Hashtable items;
 
+    void runConnectOnNewThread(final Callback callback, final String name, final JSONArray jsa) {
+        Runnable r = new Runnable(){
+          public void run() {
+              callback.connectCallback(name, jsa);
+          }
+        };
+        new Thread(r).start();
+    }
+
+
     JSONObject state;
 
     public Subscriptions() {
@@ -101,7 +111,9 @@ class Subscriptions {
                     if (_item.connected == false) {
                         _item.connected = true;
                         if (_item.subscribed == false) {
-                            _item.callback.connectCallback(_item.name,
+                            //_item.callback.connectCallback(_item.name,
+                            //        new JSONArray().put(1).put("Subscribe connected").put(message));
+                            runConnectOnNewThread(_item.callback, _item.name,
                                     new JSONArray().put(1).put("Subscribe connected").put(message));
                         } else {
                             _item.subscribed = true;

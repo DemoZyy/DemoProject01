@@ -26,6 +26,8 @@ import static com.pubnub.api.PubnubError.getErrorObject;
 
 abstract class PubnubCoreShared extends PubnubCoreAsync  implements  PubnubAsyncInterfacePam, PubnubAsyncInterfacePush{
 
+    public PubnubCoreShared() {}
+
     /**
      * Pubnub Constructor
      *

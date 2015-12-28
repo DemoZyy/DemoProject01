@@ -12,6 +12,8 @@ import java.util.*;
 
 abstract class PubnubCore implements PubnubInterface {
 
+    PubnubCore(){}
+
     protected static String VERSION = "";
     protected volatile boolean CACHE_BUSTING = true;
 
@@ -32,6 +34,26 @@ abstract class PubnubCore implements PubnubInterface {
     private boolean SSL = true;
     protected String UUID = null;
 
+
+    void setPublishKey(String publishKey) {
+        this.PUBLISH_KEY = publishKey;
+    }
+
+    void setSubscribeKey(String subscribeKey) {
+        this.SUBSCRIBE_KEY = subscribeKey;
+    }
+
+    void setSecretKey(String secretKey) {
+        this.SECRET_KEY = secretKey;
+    }
+
+    void setCipherKey(String cipherKey) {
+        this.CIPHER_KEY = cipherKey;
+    }
+
+    void setSSL(boolean ssl) {
+        this.SSL = ssl;
+    }
 
     protected SubscribeManager subscribeManager;
     protected NonSubscribeManager nonSubscribeManager;
@@ -170,6 +192,10 @@ abstract class PubnubCore implements PubnubInterface {
     }
 
 
+    void init() {
+        init(this.PUBLISH_KEY, this.SUBSCRIBE_KEY, this.SECRET_KEY, this.CIPHER_KEY, this.SSL, this.IV);
+    }
+
     private void init(String publish_key, String subscribe_key,
                       String secret_key, String cipher_key, boolean ssl_on, String initialization_vector) {
         this.PUBLISH_KEY = publish_key;
@@ -186,8 +212,6 @@ abstract class PubnubCore implements PubnubInterface {
             params = new Hashtable();
 
         params.put("pnsdk", getUserAgent());
-
-
 
     }
 

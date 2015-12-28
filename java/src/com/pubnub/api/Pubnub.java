@@ -28,6 +28,10 @@ import static com.pubnub.api.PubnubUtil.*;
 
 public class Pubnub extends PubnubCoreShared  {
 
+    public Pubnub() {
+
+    }
+
     /**
      * Pubnub Constructor
      *
@@ -122,5 +126,46 @@ public class Pubnub extends PubnubCoreShared  {
 
     protected String getUserAgent() {
         return "Java/" + VERSION;
+    }
+
+    public static class Builder
+    {
+
+
+        private String domain;
+        private String origin;
+        private String publishKey = "";
+        private String subscribeKey = "";
+        private String secretKey = "";
+        private String cipherKey = "";
+        private String authKey;
+        private String uuid;
+        private boolean cacheBusting;
+        private boolean ssl;
+
+
+        public Builder setDomain(String domain) { this.domain = domain; return this; }
+        public Builder setOrigin(String origin) { this.origin = origin; return this; }
+        public Builder setPublishKey(String publishKey) { this.publishKey = publishKey; return this; }
+        public Builder setSubscribeKey(String subscribeKey) { this.subscribeKey = subscribeKey; return this; }
+        public Builder setSecretKey(String secretKey) { this.secretKey = secretKey; return this; }
+        public Builder setCipherKey(String cipherKey) { this.cipherKey = cipherKey; return this; }
+        public Builder setAuthKey(String authKey) { this.authKey = authKey; return this; }
+        public Builder setUuid(String uuid) { this.uuid = uuid; return this; }
+        public Builder setSsl(boolean ssl) { this.ssl = ssl; return this; }
+
+
+        public Pubnub build()
+        {
+            Pubnub pubnub = new Pubnub();
+            pubnub.setPublishKey(publishKey);
+            pubnub.setSubscribeKey(subscribeKey);
+            pubnub.setSecretKey(secretKey);
+            pubnub.setCipherKey(cipherKey);
+            pubnub.setSSL(ssl);
+            pubnub.init();
+            pubnub.initAsync();
+            return pubnub;
+        }
     }
 }

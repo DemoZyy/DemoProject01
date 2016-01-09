@@ -36,7 +36,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     private String connectionid;
 
-    private boolean V2 = false;
+    private boolean V2 = true;
 
     public void setV2(boolean v2) {
         this.V2 = v2;

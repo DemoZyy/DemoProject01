@@ -12,6 +12,15 @@ public class PubnubException extends Exception {
     private PubnubError pubnubError = PubnubError.PNERROBJ_PUBNUB_ERROR;
     private JSONObject jso;
     private String response;
+    private int statusCode;
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
 
     /**
      * Constructor for PubnubException Class with error message as argument
@@ -47,6 +56,18 @@ public class PubnubException extends Exception {
     /**
      * Constructor for PubnubException Class with error message as argument
      *
+     * @param s
+     *            Error message
+     */
+    public PubnubException(PubnubError pubnubError, String s, int statusCode) {
+        this.errormsg = s;
+        this.pubnubError = pubnubError;
+        this.statusCode = statusCode;
+    }
+
+    /**
+     * Constructor for PubnubException Class with error message as argument
+     *
      * @param pubnubError
      * @param s
      *            Error message
@@ -71,6 +92,21 @@ public class PubnubException extends Exception {
         this.pubnubError = pubnubError;
         this.jso = jso;
         this.response = response;
+    }
+
+    /**
+     * Constructor for PubnubException Class with error message as argument
+     *
+     * @param pubnubError
+     * @param response
+     * @param jso
+     * @param statusCode
+     */
+    public PubnubException(PubnubError pubnubError, String response, JSONObject jso, int statusCode) {
+        this.pubnubError = pubnubError;
+        this.jso = jso;
+        this.response = response;
+        this.statusCode = statusCode;
     }
 
     /**

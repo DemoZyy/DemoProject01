@@ -3,7 +3,7 @@ package com.pubnub.api.tests
 
 import org.json.{JSONArray, JSONObject}
 import org.scalatest.fixture
-
+import org.scalatest.{BeforeAndAfterAll, fixture, Tag}
 import com.jayway.awaitility.scala.AwaitilitySupport
 import org.junit._
 import Assert._

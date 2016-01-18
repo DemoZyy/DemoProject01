@@ -16,6 +16,7 @@ class SubscribeWorker extends AbstractSubscribeWorker {
 
     void process(HttpRequest hreq) {
         HttpResponse hresp = null;
+        Result result = null;
         int currentRetryAttempt = (hreq.isDar()) ? 1 : maxRetries;
         log.verbose("disconnectAndResubscribe is " + hreq.isDar());
         if (hreq.getWorker() != null) {
@@ -44,7 +45,12 @@ class SubscribeWorker extends AbstractSubscribeWorker {
             sleep = true;
             try {
                 log.debug(hreq.getUrl());
+
+                result = hreq.getResult();
+                result.clientRequest = hreq.getUrl();
                 hresp = httpclient.fetch(hreq.getUrl(), hreq.getHeaders());
+                result.serverResponse = hresp.getResponse();
+                result.code = hresp.getStatusCode();
                 if (hresp != null && HttpUtil.checkResponseSuccess(hresp.getStatusCode())) {
                     currentRetryAttempt = 1;
                     break;
@@ -59,11 +65,13 @@ class SubscribeWorker extends AbstractSubscribeWorker {
                     hreq.getResponseHandler().handleBackFromDar(hreq);
                     return;
                 }
-                hreq.getResponseHandler().handleError(hreq, getErrorObject(PNERROBJ_SUBSCRIBE_TIMEOUT, 1));
+                hreq.getResponseHandler().handleError(hreq, getErrorObject(PNERROBJ_SUBSCRIBE_TIMEOUT, 1), result);
                 return;
 
             } catch (PubnubException e) {
                 excp = e;
+                result.serverResponse = e.getErrorResponse();
+                result.code = e.getStatusCode();
                 switch (e.getPubnubError().errorCode) {
                 case PNERR_FORBIDDEN:
                 case PNERR_UNAUTHORIZED:
@@ -95,15 +103,15 @@ class SubscribeWorker extends AbstractSubscribeWorker {
                 } else {
                     if (excp != null && excp instanceof PubnubException
                             && ((PubnubException) excp).getPubnubError() != null) {
-                        hreq.getResponseHandler().handleError(hreq, ((PubnubException) excp).getPubnubError());
+                        hreq.getResponseHandler().handleError(hreq, ((PubnubException) excp).getPubnubError(), result);
                     } else {
-                        hreq.getResponseHandler().handleError(hreq, getErrorObject(PNERROBJ_HTTP_ERROR, 1));
+                        hreq.getResponseHandler().handleError(hreq, getErrorObject(PNERROBJ_HTTP_ERROR, 1), result);
                     }
                 }
                 return;
             }
             log.debug(hresp.getResponse());
-            hreq.getResponseHandler().handleResponse(hreq, hresp.getResponse());
+            hreq.getResponseHandler().handleResponse(hreq, hresp.getResponse(), result);
         }
 
     }

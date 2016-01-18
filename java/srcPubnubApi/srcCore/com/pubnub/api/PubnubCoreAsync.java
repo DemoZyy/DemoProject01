@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
 
 abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterface {
@@ -33,6 +34,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     private int HEARTBEAT = 320;
     private volatile int PRESENCE_HB_INTERVAL = 0;
 
+    private PubnubCoreAsync pn = this;
 
     public void shutdown() {
         nonSubscribeManager.stop();
@@ -855,6 +857,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
         Hashtable args = new Hashtable();
 
+        if (callback == null) callback = this.globalCallback;
+
         args.put("channels", channels);
         args.put("callback", callback);
         args.put("timetoken", timetoken);
@@ -926,12 +930,19 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             throws PubnubException {
         Hashtable args = new Hashtable();
 
+        if (callback == null) callback = this.globalCallback;
+
         args.put("channels", channels);
         args.put("groups", groups);
         args.put("callback", callback);
         args.put("timetoken", timetoken);
 
         subscribe(args);
+    }
+
+    public void subscribe(String channel)
+            throws PubnubException {
+        subscribe(channel, null, "0");
     }
 
     public void channelGroupSubscribe(String group, Callback callback) throws PubnubException {
@@ -1071,6 +1082,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         String[] channelsArray = channelSubscriptions.getItemNames(WILDCARD_PRESENCE_SUFFIX);
         String[] groupsArray = channelGroupSubscriptions.getItemNames();
 
+        final SubscribeResult result = new SubscribeResult();
+
         if (channelsArray.length <= 0 && groupsArray.length <= 0) {
             subscribeManager.resetHttpManager();
             return;
@@ -1087,7 +1100,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             channelString = PubnubUtil.urlEncode(channelString);
         }
 
-        String[] urlComponents = { getPubnubUrl(), "subscribe", this.SUBSCRIBE_KEY,
+        String[] urlComponents = { getPubnubUrl(result), "subscribe", this.SUBSCRIBE_KEY,
                 channelString, "0" + "/" + _timetoken};
 
         Hashtable params = PubnubUtil.hashtableClone(this.params);
@@ -1108,7 +1121,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
         HttpRequest hreq = new HttpRequest(urlComponents, params, new ResponseHandler() {
 
-            void v1Handler(JSONArray jsa, HttpRequest hreq) throws JSONException {
+            void v1Handler(JSONArray jsa, HttpRequest hreq, SubscribeResult result) throws JSONException {
 
                 JSONArray messages = new JSONArray(jsa.get(0).toString());
 
@@ -1120,7 +1133,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                     String[] _channels = PubnubUtil.splitString(jsa.getString(3), ",");
 
                     for (int i = 0; i < _channels.length; i++) {
-                        handleFourElementsSubscribeResponse(_groups[i], _channels[i], messages.get(i), _timetoken, hreq);
+                        handleFourElementsSubscribeResponse(_groups[i],
+                                _channels[i], messages.get(i), _timetoken, hreq, result);
                     }
                 } else if (jsa.length() == 3) {
                     /*
@@ -1134,7 +1148,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                         Object message = messages.get(i);
 
                         if (_channel != null) {
-                            invokeSubscribeCallback(_channel.name, _channel.callback, message, _timetoken, hreq);
+                            invokeSubscribeCallback(_channel.name,
+                                    _channel.callback, message, _timetoken, hreq, result);
                         }
                     }
                 } else if (jsa.length() < 3) {
@@ -1146,7 +1161,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                     if (_channel != null) {
                         for (int i = 0; i < messages.length(); i++) {
                             Object message = messages.get(i);
-                            invokeSubscribeCallback(_channel.name, _channel.callback, message, _timetoken, hreq);
+                            invokeSubscribeCallback(_channel.name,
+                                    _channel.callback, message, _timetoken, hreq, result);
                         }
                     }
 
@@ -1154,7 +1170,10 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
             }
 
-            public void handleResponse(HttpRequest hreq, String response) {
+            public void handleResponse(HttpRequest hreq, String response, Result result1) {
+
+
+                SubscribeResult result = (SubscribeResult)result1;
 
                 JSONArray jsa = null;
 
@@ -1194,16 +1213,30 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 _saved_timetoken = "0";
                 log.verbose("Saved Timetoken reset to 0");
 
+                StreamStatus status = new StreamStatus(new StreamResult(result));
+
                 if (!hreq.isDar()) {
-                    channelSubscriptions.invokeConnectCallbackOnItems(_timetoken);
-                    channelGroupSubscriptions.invokeConnectCallbackOnItems(_timetoken);
+                    channelSubscriptions.invokeConnectCallbackOnItems(_timetoken, result);
+                    channelGroupSubscriptions.invokeConnectCallbackOnItems(_timetoken, result);
+
+
+                    status.status.category = StatusCategory.CONNECT;
+
                 } else {
-                    channelSubscriptions.invokeReconnectCallbackOnItems(_timetoken);
-                    channelGroupSubscriptions.invokeReconnectCallbackOnItems(_timetoken);
+                    channelSubscriptions.invokeReconnectCallbackOnItems(_timetoken, result);
+                    channelGroupSubscriptions.invokeReconnectCallbackOnItems(_timetoken, result);
+
+                    status.status.category = StatusCategory.RECONNECT;
+
                 }
+
+                if (pn.globalCallback != null) {
+                    pn.globalCallback.subscribeCallback(status);
+                }
+
                 try {
 
-                    v1Handler(jsa, hreq);
+                    v1Handler(jsa, hreq, result);
 
                 } catch (JSONException e) {
 
@@ -1228,12 +1261,12 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 String timeoutTimetoken = (isResumeOnReconnect()) ? (_timetoken.equals("0")) ? _saved_timetoken
                         : _timetoken : "0";
                 log.verbose("Timeout Timetoken : " + timeoutTimetoken);
-                channelSubscriptions.invokeDisconnectCallbackOnItems(timeoutTimetoken);
-                channelGroupSubscriptions.invokeDisconnectCallbackOnItems(timeoutTimetoken);
+                channelSubscriptions.invokeDisconnectCallbackOnItems(timeoutTimetoken, result);
+                channelGroupSubscriptions.invokeDisconnectCallbackOnItems(timeoutTimetoken, result);
                 channelSubscriptions.invokeErrorCallbackOnItems(PubnubError.getErrorObject(
-                        PubnubError.PNERROBJ_TIMEOUT, 1));
+                        PubnubError.PNERROBJ_TIMEOUT, 1), result);
                 channelGroupSubscriptions.invokeErrorCallbackOnItems(PubnubError.getErrorObject(
-                        PubnubError.PNERROBJ_TIMEOUT, 1));
+                        PubnubError.PNERROBJ_TIMEOUT, 1), result);
                 // disconnectAndResubscribe();
 
                 // channelSubscriptions.removeAllItems();
@@ -1242,7 +1275,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             public String getTimetoken() {
                 return _timetoken;
             }
-        });
+        }, result);
         if (_timetoken.equals("0")) {
             hreq.setSubzero(true);
             log.verbose("This is a subscribe 0 request");
@@ -1250,11 +1283,13 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         hreq.setDar(dar);
         if (worker != null && worker instanceof Worker)
             hreq.setWorker(worker);
+
+        setResultData(result, OperationType.SUBSCRIBE, hreq);
         _request(hreq, subscribeManager, fresh);
     }
 
     private void handleFourElementsSubscribeResponse(String thirdString, String fourthString, Object message,
-            String timetoken, HttpRequest hreq) throws JSONException {
+            String timetoken, HttpRequest hreq, SubscribeResult result) throws JSONException {
 
         SubscriptionItem thirdChannelGroup = channelGroupSubscriptions.getItem(thirdString);
         SubscriptionItem thirdChannel = channelSubscriptions.getItem(thirdString);
@@ -1264,19 +1299,19 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             return;
 
         if (thirdString.equals(fourthString) && fourthChannel != null) {
-            invokeSubscribeCallback(fourthString, fourthChannel.callback, message, timetoken, hreq);
+            invokeSubscribeCallback(fourthString, fourthChannel.callback, message, timetoken, hreq, result);
         } else if (thirdString.endsWith("*")) {
             if (fourthChannel != null && fourthString.endsWith(PRESENCE_SUFFIX)) {
-                invokeSubscribeCallback(fourthString, fourthChannel.callback, message, timetoken, hreq);
+                invokeSubscribeCallback(fourthString, fourthChannel.callback, message, timetoken, hreq, result);
             } else if (thirdChannelGroup != null && !fourthString.endsWith(PRESENCE_SUFFIX)) {
-                invokeSubscribeCallback(fourthString, thirdChannelGroup.callback, message, timetoken, hreq);
+                invokeSubscribeCallback(fourthString, thirdChannelGroup.callback, message, timetoken, hreq, result);
             } else if (thirdChannel != null && thirdString.endsWith(WILDCARD_SUFFIX)
                     && !fourthString.endsWith(PRESENCE_SUFFIX) /*
                                                                 * !!! get
                                                                 * reviewed by
                                                                 * Alex
                                                                 */) {
-                invokeSubscribeCallback(fourthString, thirdChannel.callback, message, timetoken, hreq);
+                invokeSubscribeCallback(fourthString, thirdChannel.callback, message, timetoken, hreq, result);
             } else {
                 // !!! This should be handled by error Callback. Or use logging
                 // mechanism
@@ -1284,7 +1319,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 // + message);
             }
         } else if (!thirdString.equals(fourthString) && thirdChannelGroup != null) {
-            invokeSubscribeCallback(fourthString, thirdChannelGroup.callback, message, timetoken, hreq);
+            invokeSubscribeCallback(fourthString, thirdChannelGroup.callback, message, timetoken, hreq, result);
         } else {
             // !!!! This should be handled in error callback. Or use logging
             // mechanism.
@@ -1293,67 +1328,76 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         }
     }
 
+
+    List listeners = new ArrayList();
+
+    Callback globalCallback = new Callback(){
+
+        public void statusOnAll(StreamStatus status) {
+            for (int i = 0; i < listeners.size(); i++) {
+                StreamListener listener = (StreamListener)listeners.get(i);
+                listener.streamStatus(status);
+            }
+        }
+
+        public void subscribeCallback(SubscribeResult result) {
+            StreamResult res = new StreamResult(result);
+            for (int i = 0; i < listeners.size(); i++) {
+                StreamListener listener = (StreamListener)listeners.get(i);
+                listener.streamResult(res);
+            }
+        }
+        public void subscribeCallback(StreamStatus status) {
+            status.status.isError = false;
+            status.type = ResultType.STATUS;
+            status.status.wasAutoRetried = true;
+            statusOnAll(status);
+        }
+    };
+
+    public void addStreamListener(StreamListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeAllListeners() {
+        listeners.removeAll(null);
+    }
+
     private void invokeSubscribeCallback(String channel, Callback callback, Object message, String timetoken,
-            HttpRequest hreq) throws JSONException {
+            HttpRequest hreq, SubscribeResult result) throws JSONException {
+
+        if (callback == null) {
+            callback = this.globalCallback;
+        }
+
         if (CIPHER_KEY.length() > 0 && !channel.endsWith(PRESENCE_SUFFIX)) {
             PubnubCrypto pc = new PubnubCrypto(CIPHER_KEY, IV);
             try {
                 message = pc.decrypt(message.toString());
                 if (!isWorkerDead(hreq))
                     callback.successWrapperCallback(channel,
-                            PubnubUtil.parseJSON(PubnubUtil.stringToJSON(message.toString())), timetoken);
+                            PubnubUtil.parseJSON(PubnubUtil.stringToJSON(message.toString())), timetoken, result);
             } catch (IllegalStateException e) {
                 if (!isWorkerDead(hreq))
                     callback.errorCallback(channel,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 12, message.toString()));
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 12,
+                                    message.toString()), result);
             } catch (PubnubException e) {
                 if (!isWorkerDead(hreq))
                     callback.errorCallback(
                             channel,
                             getPubnubError(e, PubnubError.PNERROBJ_DECRYPTION_ERROR, 16,
-                                    message.toString() + " : " + e.toString()));
+                                    message.toString() + " : " + e.toString()), result);
             } catch (Exception e) {
                 if (!isWorkerDead(hreq))
                     callback.errorCallback(
                             channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 15, message.toString()
-                                    + " : " + e.toString()));
+                                    + " : " + e.toString()), result);
             }
         } else {
             if (!isWorkerDead(hreq))
-                callback.successWrapperCallback(channel, PubnubUtil.parseJSON(message), timetoken);
-        }
-    }
-
-    private void invokeSubscribeCallbackV2(String channel, Callback callback, Object message, JSONObject envelope,
-            String timetoken, HttpRequest hreq) throws JSONException {
-        if (CIPHER_KEY.length() > 0 && !channel.endsWith(PRESENCE_SUFFIX)) {
-            PubnubCrypto pc = new PubnubCrypto(CIPHER_KEY, IV);
-            try {
-                message = pc.decrypt(message.toString());
-                if (!isWorkerDead(hreq))
-                    callback.successWrapperCallbackV2(channel,
-                            PubnubUtil.parseJSON(PubnubUtil.stringToJSON(message.toString())), envelope, timetoken);
-            } catch (IllegalStateException e) {
-                if (!isWorkerDead(hreq))
-                    callback.errorCallback(channel,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 12, message.toString()));
-            } catch (PubnubException e) {
-                if (!isWorkerDead(hreq))
-                    callback.errorCallback(
-                            channel,
-                            getPubnubError(e, PubnubError.PNERROBJ_DECRYPTION_ERROR, 16,
-                                    message.toString() + " : " + e.toString()));
-            } catch (Exception e) {
-                if (!isWorkerDead(hreq))
-                    callback.errorCallback(
-                            channel,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 15, message.toString()
-                                    + " : " + e.toString()));
-            }
-        } else {
-            if (!isWorkerDead(hreq))
-                callback.successWrapperCallbackV2(channel, PubnubUtil.parseJSON(message), envelope, timetoken);
+                callback.successWrapperCallback(channel, PubnubUtil.parseJSON(message), timetoken, result);
         }
     }
 
@@ -1388,8 +1432,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     public void disconnectAndResubscribeWithTimetoken(String timetoken, PubnubError error) {
         log.verbose("Received disconnectAndResubscribeWithTimetoken");
-        channelSubscriptions.invokeErrorCallbackOnItems(error);
-        channelGroupSubscriptions.invokeErrorCallbackOnItems(error);
+        channelSubscriptions.invokeErrorCallbackOnItems(error, null);
+        channelGroupSubscriptions.invokeErrorCallbackOnItems(error, null);
         resubscribe(timetoken);
     }
 
@@ -1399,8 +1443,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     public void disconnectAndResubscribe(PubnubError error) {
         log.verbose("Received disconnectAndResubscribe");
-        channelSubscriptions.invokeErrorCallbackOnItems(error);
-        channelGroupSubscriptions.invokeErrorCallbackOnItems(error);
+        channelSubscriptions.invokeErrorCallbackOnItems(error, null);
+        channelGroupSubscriptions.invokeErrorCallbackOnItems(error, null);
         resubscribe();
     }
 

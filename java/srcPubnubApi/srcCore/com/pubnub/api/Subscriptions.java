@@ -15,10 +15,11 @@ class Subscriptions {
 
     JSONObject state;
 
-    void runConnectOnNewThread(final Callback callback, final String name, final JSONArray jsa) {
+    void runConnectOnNewThread(final Callback callback, final String name,
+                               final JSONArray jsa , final SubscribeResult result) {
         Runnable r = new Runnable() {
             public void run() {
-                callback.connectCallback(name, jsa);
+                callback.connectCallback(name, jsa, result);
             }
         };
         PnThread thread = new PnThread(r);
@@ -26,10 +27,11 @@ class Subscriptions {
         thread.start();
     }
 
-    void runReconnectOnNewThread(final Callback callback, final String name, final JSONArray jsa) {
+    void runReconnectOnNewThread(final Callback callback, final String name,
+                                 final JSONArray jsa, final SubscribeResult result) {
         Runnable r = new Runnable() {
             public void run() {
-                callback.disconnectCallback(name, jsa);
+                callback.disconnectCallback(name, jsa, result);
             }
         };
         PnThread thread = new PnThread(r);
@@ -37,10 +39,11 @@ class Subscriptions {
         thread.start();
     }
 
-    void runDisconnectOnNewThread(final Callback callback, final String name, final JSONArray jsa) {
+    void runDisconnectOnNewThread(final Callback callback, final String name,
+                                  final JSONArray jsa, final SubscribeResult result) {
         Runnable r = new Runnable() {
             public void run() {
-                callback.reconnectCallback(name, jsa);
+                callback.reconnectCallback(name, jsa, result);
             }
         };
         PnThread thread = new PnThread(r);
@@ -104,15 +107,15 @@ class Subscriptions {
         return PubnubUtil.hashTableKeysToDelimitedString(items, ",", filter);
     }
 
-    public void invokeConnectCallbackOnItems(Object message) {
-        invokeConnectCallbackOnItems(getItemNames(), message);
+    public void invokeConnectCallbackOnItems(Object message, SubscribeResult result) {
+        invokeConnectCallbackOnItems(getItemNames(), message, result);
     }
 
-    public void invokeDisconnectCallbackOnItems(Object message) {
-        invokeDisconnectCallbackOnItems(getItemNames(), message);
+    public void invokeDisconnectCallbackOnItems(Object message, SubscribeResult result) {
+        invokeDisconnectCallbackOnItems(getItemNames(), message, result);
     }
 
-    public void invokeErrorCallbackOnItems(PubnubError error) {
+    public void invokeErrorCallbackOnItems(PubnubError error, Result result) {
         /*
          * Iterate over all the items and call error callback for items
          */
@@ -121,12 +124,12 @@ class Subscriptions {
             while (itemsElements.hasMoreElements()) {
                 SubscriptionItem _item = (SubscriptionItem) itemsElements.nextElement();
                 _item.error = true;
-                _item.callback.errorCallback(_item.name, error);
+                _item.callback.errorCallback(_item.name, error, result);
             }
         }
     }
 
-    public void invokeConnectCallbackOnItems(String[] items, Object message) {
+    public void invokeConnectCallbackOnItems(String[] items, Object message, SubscribeResult result) {
         synchronized (items) {
             for (int i = 0; i < items.length; i++) {
                 SubscriptionItem _item = (SubscriptionItem) this.items.get(items[i]);
@@ -135,11 +138,11 @@ class Subscriptions {
                         _item.connected = true;
                         if (_item.subscribed == false) {
                             runConnectOnNewThread(_item.callback, _item.name,
-                                    new JSONArray().put(1).put("Subscribe connected").put(message));
+                                    new JSONArray().put(1).put("Subscribe connected").put(message), result);
                         } else {
                             _item.subscribed = true;
                             runReconnectOnNewThread(_item.callback, _item.name,
-                                    new JSONArray().put(1).put("Subscribe reconnected").put(message));
+                                    new JSONArray().put(1).put("Subscribe reconnected").put(message), result);
                         }
                     }
                 }
@@ -147,11 +150,11 @@ class Subscriptions {
         }
     }
 
-    public void invokeReconnectCallbackOnItems(Object message) {
-        invokeReconnectCallbackOnItems(getItemNames(), message);
+    public void invokeReconnectCallbackOnItems(Object message, SubscribeResult result) {
+        invokeReconnectCallbackOnItems(getItemNames(), message, result);
     }
 
-    public void invokeReconnectCallbackOnItems(String[] items, Object message) {
+    public void invokeReconnectCallbackOnItems(String[] items, Object message, SubscribeResult result) {
         synchronized (items) {
             for (int i = 0; i < items.length; i++) {
                 SubscriptionItem _item = (SubscriptionItem) this.items.get(items[i]);
@@ -159,7 +162,7 @@ class Subscriptions {
                     _item.connected = true;
                     if (_item.error) {
                         runReconnectOnNewThread(_item.callback, _item.name,
-                                new JSONArray().put(1).put("Subscribe reconnected").put(message));
+                                new JSONArray().put(1).put("Subscribe reconnected").put(message), result);
                         _item.error = false;
                     }
                 }
@@ -167,7 +170,7 @@ class Subscriptions {
         }
     }
 
-    public void invokeDisconnectCallbackOnItems(String[] items, Object message) {
+    public void invokeDisconnectCallbackOnItems(String[] items, Object message, SubscribeResult result) {
         synchronized (items) {
             for (int i = 0; i < items.length; i++) {
                 SubscriptionItem _item = (SubscriptionItem) this.items.get(items[i]);
@@ -175,7 +178,7 @@ class Subscriptions {
                     if (_item.connected == true) {
                         _item.connected = false;
                         runDisconnectOnNewThread(_item.callback, _item.name,
-                                new JSONArray().put(1).put("Subscribe unable to connect").put(message));
+                                new JSONArray().put(1).put("Subscribe unable to connect").put(message), result);
                     }
                 }
             }

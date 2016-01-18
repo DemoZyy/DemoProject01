@@ -92,30 +92,44 @@ class NonSubscribeWorker extends Worker {
 
     void process(HttpRequest hreq) {
         HttpResponse hresp = null;
+        Result result = hreq.getResult();
         try {
             log.debug(hreq.getUrl());
+            String url = hreq.getUrl();
+            result.clientRequest = url;
             hresp = httpclient.fetch(hreq.getUrl(), hreq.getHeaders());
         } catch (PubnubException pe) {
             log.debug("Pubnub Exception in Fetch : " + pe.getPubnubError());
+            if (result != null) {
+                result.code = pe.getStatusCode();
+                result.serverResponse = pe.getErrorResponse();
+            }
             if (!_die)
-                hreq.getResponseHandler().handleError(hreq, pe.getPubnubError());
+                hreq.getResponseHandler().handleError(hreq, pe.getPubnubError(), hreq.getResult());
             return;
         } catch (Exception e) {
             log.debug("Exception in Fetch : " + e.toString());
             if (!_die)
                 hreq.getResponseHandler().handleError(hreq,
-                        PubnubError.getErrorObject(PubnubError.PNERROBJ_HTTP_ERROR, 2, e.toString()));
+                        PubnubError.getErrorObject(PubnubError.PNERROBJ_HTTP_ERROR, 2, e.toString()), hreq.getResult());
             return;
+        } finally {
+
+            if (result != null && hresp != null) {
+                result.code = hresp.getStatusCode();
+                result.serverResponse = hresp.getResponse();
+            }
         }
+
 
         if (!_die) {
             if (hresp == null) {
                 log.debug("Error in fetching url : " + hreq.getUrl());
                 hreq.getResponseHandler().handleError(hreq,
-                        PubnubError.getErrorObject(PubnubError.PNERROBJ_HTTP_ERROR, 3));
+                        PubnubError.getErrorObject(PubnubError.PNERROBJ_HTTP_ERROR, 3), hreq.getResult());
                 return;
             }
-            hreq.getResponseHandler().handleResponse(hreq, hresp.getResponse());
+            hreq.getResponseHandler().handleResponse(hreq, hresp.getResponse(), hreq.getResult());
         }
     }
 

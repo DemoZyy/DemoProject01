@@ -13,6 +13,10 @@ import java.util.UUID;
  */
 public class PubnubSync extends PubnubCoreSync implements PubnubSyncInterfacePam, PubnubSyncInterfacePush {
 
+    public PubnubSync() {
+        
+    }
+    
     /**
      * Pubnub Constructor
      *

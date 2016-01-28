@@ -161,7 +161,7 @@
           <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
           <junitxml>.</junitxml>
           <filereports>WDF TestSuite.txt</filereports>
-          <!--<tagsToInclude>com.pubnub.api.tests.NewTest</tagsToInclude>-->
+          <tagsToInclude>com.pubnub.api.tests.ErrorTest</tagsToInclude>
           <systemProperties>
             <org.slf4j.simpleLogger.defaultLogLevel></org.slf4j.simpleLogger.defaultLogLevel>
           </systemProperties>

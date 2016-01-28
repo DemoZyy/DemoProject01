@@ -100,8 +100,14 @@ public abstract class Callback {
 				break;
 			case SUBSCRIBE:
 				((SubscribeResult)result).data.message = message;
-				result.type = ResultType.RESULT;
-				subscribeCallback((SubscribeResult)result);
+
+				if (channel.endsWith("-pnpres")) {
+	                result.type = ResultType.STATUS;
+	                subscribeCallback(new StreamStatus(new StreamResult((SubscribeResult)result)));
+				} else {
+	                result.type = ResultType.RESULT;
+				    subscribeCallback((SubscribeResult)result);
+				}
 				break;
 				
 			default:
@@ -226,7 +232,7 @@ public abstract class Callback {
     		status.status.isError = false;
     		status.status.wasAutoRetried = true;
     		subscribeCallback(status);   		
-    		subscribeCallback((SubscribeResult)status);
+    		//subscribeCallback((SubscribeResult)status);
     	}
     }
 
@@ -249,7 +255,7 @@ public abstract class Callback {
     		status.status.isError = false;
     		status.status.wasAutoRetried = true;
     		subscribeCallback(status);
-    		subscribeCallback((SubscribeResult)status);
+    		//subscribeCallback((SubscribeResult)status);
     	}
     }
     
@@ -271,7 +277,7 @@ public abstract class Callback {
     		status.status.isError = false;
     		status.status.wasAutoRetried = true;
     		subscribeCallback(status);
-    		subscribeCallback((SubscribeResult)status);
+    		//subscribeCallback((SubscribeResult)status);
     	}
     }
 

@@ -27,6 +27,10 @@ import static com.pubnub.api.PubnubUtil.*;
  */
 
 public class Pubnub extends PubnubCoreShared {
+    
+    public Pubnub() {
+        
+    }
 
     /**
      * Pubnub Constructor

@@ -13,6 +13,36 @@ import java.util.Vector;
  * @author PubnubCore
  */
 class PubnubUtilCore {
+    
+    
+    static String[] getCopyOfStringArray(String[] a) {
+        if (a == null)
+            return a;
+        String[] b = new String[a.length];
+        for (int i = 0; i < a.length; i++) {
+            b[i] = new String(a[i]);
+        }
+        return b;
+    }
+    
+    static String[] concatStringArrays(String[] a, String[] b) {
+        if ( a == null && b == null)
+            return null;
+        if ( b == null) 
+            return a;
+        if (a == null)
+            return b;
+        String[] c = new String[a.length + b.length];
+
+        for (int i = 0; i < a.length; i++) {
+            c[i] = new String(a[i]);
+        }
+        for (int i = 0; i < b.length; i++) {
+            c[i + a.length] = new String(b[i]);
+        }
+        return c;
+    }
+    
 
     static void addToHash(Hashtable h, String name, Object object) {
         if (object != null) {

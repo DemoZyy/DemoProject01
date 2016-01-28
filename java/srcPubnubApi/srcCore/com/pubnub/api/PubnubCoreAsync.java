@@ -13,6 +13,10 @@ import java.util.Random;
 
 abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterface {
 
+    public PubnubCoreAsync() {
+        
+    }
+    
     private volatile boolean resumeOnReconnect;
 
     public static boolean daemonThreads = false;
@@ -33,6 +37,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     private int PRESENCE_HEARTBEAT_TASK = 0;
     private int HEARTBEAT = 320;
     private volatile int PRESENCE_HB_INTERVAL = 0;
+    
+    private SubscribeState SUBSCRIBE_STATE = SubscribeState.INIT;
 
     private PubnubCoreAsync pn = this;
 
@@ -250,7 +256,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     Random random = new Random();
 
-    private void initAsync() {
+    void initAsync() {
 
         if (channelSubscriptions == null)
             channelSubscriptions = new Subscriptions();
@@ -849,11 +855,11 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         _subscribe(args);
     }
 
-    public void subscribe(String[] channels, Callback callback) throws PubnubException {
+    protected void subscribe(String[] channels, Callback callback) throws PubnubException {
         subscribe(channels, callback, "0");
     }
 
-    public void subscribe(String[] channels, Callback callback, String timetoken) throws PubnubException {
+    protected void subscribe(String[] channels, Callback callback, String timetoken) throws PubnubException {
 
         Hashtable args = new Hashtable();
 
@@ -866,67 +872,67 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         subscribe(args);
     }
 
-    public void subscribe(String[] channels, Callback callback, long timetoken) throws PubnubException {
+    protected void subscribe(String[] channels, Callback callback, long timetoken) throws PubnubException {
         subscribe(channels, callback, String.valueOf(timetoken));
     }
 
-    public void subscribe(String channel, Callback callback) throws PubnubException {
+    protected void subscribe(String channel, Callback callback) throws PubnubException {
         subscribe(channel, callback, "0");
     }
 
-    public void subscribe(String channel, Callback callback, String timetoken) throws PubnubException {
+    protected void subscribe(String channel, Callback callback, String timetoken) throws PubnubException {
         subscribe(new String[] { channel }, callback, timetoken);
     }
 
-    public void subscribe(String channel, Callback callback, long timetoken) throws PubnubException {
+    protected void subscribe(String channel, Callback callback, long timetoken) throws PubnubException {
         subscribe(channel, callback, String.valueOf(timetoken));
     }
 
-    public void subscribe(String channel, String group, Callback callback) throws PubnubException {
+    protected void subscribe(String channel, String group, Callback callback) throws PubnubException {
         subscribe(channel, group, callback, "0");
     }
 
-    public void subscribe(String channel, String group, Callback callback, long timetoken) throws PubnubException {
+    protected void subscribe(String channel, String group, Callback callback, long timetoken) throws PubnubException {
         subscribe(channel, group, callback, String.valueOf(timetoken));
     }
 
-    public void subscribe(String channel, String group, Callback callback, String timetoken) throws PubnubException {
+    protected void subscribe(String channel, String group, Callback callback, String timetoken) throws PubnubException {
         subscribe(new String[] { channel }, new String[] { group }, callback, timetoken);
     }
 
-    public void subscribe(String[] channels, String group, Callback callback) throws PubnubException {
+    protected void subscribe(String[] channels, String group, Callback callback) throws PubnubException {
         subscribe(channels, group, callback, "0");
     }
 
-    public void subscribe(String[] channels, String group, Callback callback, long timetoken) throws PubnubException {
+    protected void subscribe(String[] channels, String group, Callback callback, long timetoken) throws PubnubException {
         subscribe(channels, group, callback, String.valueOf(timetoken));
     }
 
-    public void subscribe(String[] channels, String group, Callback callback, String timetoken) throws PubnubException {
+    protected void subscribe(String[] channels, String group, Callback callback, String timetoken) throws PubnubException {
         subscribe(channels, new String[] { group }, callback, timetoken);
     }
 
-    public void subscribe(String channel, String[] groups, Callback callback) throws PubnubException {
+    protected void subscribe(String channel, String[] groups, Callback callback) throws PubnubException {
         subscribe(channel, groups, callback, "0");
     }
 
-    public void subscribe(String channel, String[] groups, Callback callback, long timetoken) throws PubnubException {
+    protected void subscribe(String channel, String[] groups, Callback callback, long timetoken) throws PubnubException {
         subscribe(channel, groups, callback, String.valueOf(timetoken));
     }
 
-    public void subscribe(String channel, String[] groups, Callback callback, String timetoken) throws PubnubException {
+    protected void subscribe(String channel, String[] groups, Callback callback, String timetoken) throws PubnubException {
         subscribe(new String[] { channel }, groups, callback, timetoken);
     }
 
-    public void subscribe(String[] channels, String[] groups, Callback callback) throws PubnubException {
+    protected void subscribe(String[] channels, String[] groups, Callback callback) throws PubnubException {
         subscribe(channels, groups, callback, "0");
     }
 
-    public void subscribe(String[] channels, String[] groups, Callback callback, long timetoken) throws PubnubException {
+    protected void subscribe(String[] channels, String[] groups, Callback callback, long timetoken) throws PubnubException {
         subscribe(channels, groups, callback, String.valueOf(timetoken));
     }
 
-    public void subscribe(String[] channels, String[] groups, Callback callback, String timetoken)
+    protected void subscribe(String[] channels, String[] groups, Callback callback, String timetoken)
             throws PubnubException {
         Hashtable args = new Hashtable();
 
@@ -940,32 +946,32 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         subscribe(args);
     }
 
-    public void subscribe(String channel)
+    protected void subscribe(String channel)
             throws PubnubException {
         subscribe(channel, null, "0");
     }
 
-    public void channelGroupSubscribe(String group, Callback callback) throws PubnubException {
+    protected void channelGroupSubscribe(String group, Callback callback) throws PubnubException {
         channelGroupSubscribe(group, callback, "0");
     }
 
-    public void channelGroupSubscribe(String[] groups, Callback callback) throws PubnubException {
+    protected void channelGroupSubscribe(String[] groups, Callback callback) throws PubnubException {
         channelGroupSubscribe(groups, callback, "0");
     }
 
-    public void channelGroupSubscribe(String group, Callback callback, long timetoken) throws PubnubException {
+    protected void channelGroupSubscribe(String group, Callback callback, long timetoken) throws PubnubException {
         channelGroupSubscribe(group, callback, String.valueOf(timetoken));
     }
 
-    public void channelGroupSubscribe(String group, Callback callback, String timetoken) throws PubnubException {
+    protected void channelGroupSubscribe(String group, Callback callback, String timetoken) throws PubnubException {
         channelGroupSubscribe(new String[] { group }, callback, timetoken);
     }
 
-    public void channelGroupSubscribe(String[] groups, Callback callback, long timetoken) throws PubnubException {
+    protected void channelGroupSubscribe(String[] groups, Callback callback, long timetoken) throws PubnubException {
         channelGroupSubscribe(groups, callback, String.valueOf(timetoken));
     }
 
-    public void channelGroupSubscribe(String[] groups, Callback callback, String timetoken) throws PubnubException {
+    protected void channelGroupSubscribe(String[] groups, Callback callback, String timetoken) throws PubnubException {
 
         Hashtable args = new Hashtable();
 
@@ -1231,7 +1237,10 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 }
 
                 if (pn.globalCallback != null) {
-                    pn.globalCallback.subscribeCallback(status);
+                    if (SUBSCRIBE_STATE != SubscribeState.CONNECTED) {
+                        pn.globalCallback.subscribeCallback(status);
+                        SUBSCRIBE_STATE = SubscribeState.CONNECTED;
+                    }
                 }
 
                 try {
@@ -1261,6 +1270,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 String timeoutTimetoken = (isResumeOnReconnect()) ? (_timetoken.equals("0")) ? _saved_timetoken
                         : _timetoken : "0";
                 log.verbose("Timeout Timetoken : " + timeoutTimetoken);
+                
                 channelSubscriptions.invokeDisconnectCallbackOnItems(timeoutTimetoken, result);
                 channelGroupSubscriptions.invokeDisconnectCallbackOnItems(timeoutTimetoken, result);
                 channelSubscriptions.invokeErrorCallbackOnItems(PubnubError.getErrorObject(
@@ -1337,6 +1347,13 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             for (int i = 0; i < listeners.size(); i++) {
                 StreamListener listener = (StreamListener)listeners.get(i);
                 listener.streamStatus(status);
+            }
+        }
+        
+        public void resultOnAll(StreamResult result) {
+            for (int i = 0; i < listeners.size(); i++) {
+                StreamListener listener = (StreamListener)listeners.get(i);
+                listener.streamResult(result);
             }
         }
 
@@ -1460,6 +1477,12 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     public void unsetAuthKey() {
         super.unsetAuthKey();
         resubscribe();
+    }
+    
+    public PubnubSubscribe pubnubSubscribe = new PubnubSubscribe((Pubnub)this);
+
+    public PubnubSubscribe subscribe() {
+        return pubnubSubscribe;
     }
 
 }

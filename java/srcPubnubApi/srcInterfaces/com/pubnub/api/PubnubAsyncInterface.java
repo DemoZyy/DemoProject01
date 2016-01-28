@@ -4,6 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 interface PubnubAsyncInterface {
+    
+
+    public PubnubSubscribe subscribe();
 
     /**
      *
@@ -134,7 +137,7 @@ interface PubnubAsyncInterface {
      * @throws PubnubException
      *             if Callback is null
      */
-    public void channelGroupSubscribe(String[] groups, Callback callback) throws PubnubException;
+    //public void channelGroupSubscribe(String[] groups, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on multiple channel group.
@@ -147,7 +150,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void channelGroupSubscribe(String[] groups, Callback callback, long timetoken) throws PubnubException;
+    //public void channelGroupSubscribe(String[] groups, Callback callback, long timetoken) throws PubnubException;
 
     /**
      * Listen for a message on multiple channel group.
@@ -160,7 +163,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void channelGroupSubscribe(String[] groups, Callback callback, String timetoken) throws PubnubException;
+    //public void channelGroupSubscribe(String[] groups, Callback callback, String timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel group.
@@ -171,20 +174,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void channelGroupSubscribe(String group, Callback callback) throws PubnubException;
-
-    /**
-     * Listen for a message on a channel group.
-     *
-     * @param group
-     *            name to subscribe
-     * @param callback
-     *            to call
-     * @param timetoken
-     *            to use for subscribing
-     * @throws PubnubException
-     */
-    public void channelGroupSubscribe(String group, Callback callback, long timetoken) throws PubnubException;
+    //public void channelGroupSubscribe(String group, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a channel group.
@@ -197,7 +187,20 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void channelGroupSubscribe(String group, Callback callback, String timetoken) throws PubnubException;
+    //public void channelGroupSubscribe(String group, Callback callback, long timetoken) throws PubnubException;
+
+    /**
+     * Listen for a message on a channel group.
+     *
+     * @param group
+     *            name to subscribe
+     * @param callback
+     *            to call
+     * @param timetoken
+     *            to use for subscribing
+     * @throws PubnubException
+     */
+    //public void channelGroupSubscribe(String group, Callback callback, String timetoken) throws PubnubException;
 
     /**
      * Unsubscribe from all channel groups.
@@ -779,7 +782,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, Callback callback) throws PubnubException;
+    //public void subscribe(String[] channels, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a channel.
@@ -792,7 +795,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, Callback callback, long timetoken) throws PubnubException;
+    //public void subscribe(String[] channels, Callback callback, long timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel.
@@ -806,7 +809,7 @@ interface PubnubAsyncInterface {
      * @throws PubnubException
      *             Throws PubnubException if Callback is null
      */
-    public void subscribe(String[] channels, Callback callback, String timetoken) throws PubnubException;
+    //public void subscribe(String[] channels, Callback callback, String timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a multiple channels and a multiple channel groups
@@ -819,22 +822,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, String[] groups, Callback callback) throws PubnubException;
-
-    /**
-     * Listen for a message on a multiple channels and a multiple channel groups
-     *
-     * @param channels
-     *            array to listen on
-     * @param groups
-     *            array to listen on
-     * @param callback
-     *            to call
-     * @param timetoken
-     *            to use for subscribing
-     * @throws PubnubException
-     */
-    public void subscribe(String[] channels, String[] groups, Callback callback, long timetoken) throws PubnubException;
+    //public void subscribe(String[] channels, String[] groups, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a multiple channels and a multiple channel groups
@@ -849,8 +837,23 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, String[] groups, Callback callback, String timetoken)
-            throws PubnubException;
+    //public void subscribe(String[] channels, String[] groups, Callback callback, long timetoken) throws PubnubException;
+
+    /**
+     * Listen for a message on a multiple channels and a multiple channel groups
+     *
+     * @param channels
+     *            array to listen on
+     * @param groups
+     *            array to listen on
+     * @param callback
+     *            to call
+     * @param timetoken
+     *            to use for subscribing
+     * @throws PubnubException
+     */
+    //public void subscribe(String[] channels, String[] groups, Callback callback, String timetoken)
+    //        throws PubnubException;
 
     /**
      * Listen for a message on a multiple channels and a single channel group.
@@ -863,7 +866,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, String group, Callback callback) throws PubnubException;
+    //public void subscribe(String[] channels, String group, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a multiple channels and a single channel group.
@@ -878,7 +881,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, String group, Callback callback, long timetoken) throws PubnubException;
+    //public void subscribe(String[] channels, String group, Callback callback, long timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a multiple channels and a single channel group.
@@ -893,7 +896,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String[] channels, String group, Callback callback, String timetoken) throws PubnubException;
+    //public void subscribe(String[] channels, String group, Callback callback, String timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel.
@@ -904,7 +907,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String channel, Callback callback) throws PubnubException;
+    //public void subscribe(String channel, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a channel.
@@ -915,7 +918,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String channel, Callback callback, long timetoken) throws PubnubException;
+    //public void subscribe(String channel, Callback callback, long timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel.
@@ -928,7 +931,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String channel, Callback callback, String timetoken) throws PubnubException;
+    //public void subscribe(String channel, Callback callback, String timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel and a multiple channel groups.
@@ -941,22 +944,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String channel, String[] groups, Callback callback) throws PubnubException;
-
-    /**
-     * Listen for a message on a channel and a multiple channel groups.
-     *
-     * @param channel
-     *            name
-     * @param groups
-     *            array to listen on
-     * @param callback
-     *            to call
-     * @param timetoken
-     *            to use for subscribing
-     * @throws PubnubException
-     */
-    public void subscribe(String channel, String[] groups, Callback callback, long timetoken) throws PubnubException;
+    //public void subscribe(String channel, String[] groups, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a channel and a multiple channel groups.
@@ -971,7 +959,22 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String channel, String[] groups, Callback callback, String timetoken) throws PubnubException;
+    //public void subscribe(String channel, String[] groups, Callback callback, long timetoken) throws PubnubException;
+
+    /**
+     * Listen for a message on a channel and a multiple channel groups.
+     *
+     * @param channel
+     *            name
+     * @param groups
+     *            array to listen on
+     * @param callback
+     *            to call
+     * @param timetoken
+     *            to use for subscribing
+     * @throws PubnubException
+     */
+    //public void subscribe(String channel, String[] groups, Callback callback, String timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel and on a channel group.
@@ -984,7 +987,7 @@ interface PubnubAsyncInterface {
      *            to call
      * @throws PubnubException
      */
-    public void subscribe(String channel, String group, Callback callback) throws PubnubException;
+    //public void subscribe(String channel, String group, Callback callback) throws PubnubException;
 
     /**
      * Listen for a message on a channel and on a channel group.
@@ -999,7 +1002,7 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String channel, String group, Callback callback, long timetoken) throws PubnubException;
+    //public void subscribe(String channel, String group, Callback callback, long timetoken) throws PubnubException;
 
     /**
      * Listen for a message on a channel and on a channel group.
@@ -1014,8 +1017,11 @@ interface PubnubAsyncInterface {
      *            to use for subscribing
      * @throws PubnubException
      */
-    public void subscribe(String channel, String group, Callback callback, String timetoken) throws PubnubException;
+    //public void subscribe(String channel, String group, Callback callback, String timetoken) throws PubnubException;
 
+    
+    
+    
     /**
      * Read current time from PubNub Cloud.
      *

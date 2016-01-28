@@ -38,6 +38,94 @@ abstract class PubnubCore implements PubnubInterface {
     protected HttpResponse fetch(String url) throws IOException, PubnubException {
         return null;
     }
+    
+    public PubnubCore() {
+        
+    }
+    
+    public static class Builder
+    {
+
+
+        private String domain;
+        private String origin;
+        private String publishKey = "";
+        private String subscribeKey = "";
+        private String secretKey = "";
+        private String cipherKey = "";
+        private String authKey;
+        private String uuid;
+        private boolean cacheBusting;
+        private boolean ssl;
+        private String IV;
+
+
+        public Builder setDomain(String domain) { this.domain = domain; return this; }
+        public Builder setOrigin(String origin) { this.origin = origin; return this; }
+        public Builder setPublishKey(String publishKey) { this.publishKey = publishKey; return this; }
+        public Builder setSubscribeKey(String subscribeKey) { this.subscribeKey = subscribeKey; return this; }
+        public Builder setSecretKey(String secretKey) { this.secretKey = secretKey; return this; }
+        public Builder setCipherKey(String cipherKey) { this.cipherKey = cipherKey; return this; }
+        public Builder setAuthKey(String authKey) { this.authKey = authKey; return this; }
+        public Builder setUuid(String uuid) { this.uuid = uuid; return this; }
+        public Builder setSsl(boolean ssl) { this.ssl = ssl; return this; }
+        public Builder setInitializationVector(String initializationVector) { this.IV = initializationVector; return this; }
+        
+ 
+
+        public Pubnub build()
+        {
+            Pubnub pubnub = new Pubnub();
+            pubnub.setPublishKey(publishKey);
+            pubnub.setSubscribeKey(subscribeKey);
+            pubnub.setSecretKey(secretKey);
+            pubnub.setCipherKey(cipherKey);
+            pubnub.setSSL(ssl);
+            pubnub.setInitializationVector(IV);
+            pubnub.init();
+            pubnub.initAsync();
+            return pubnub;
+        }
+        public PubnubSync buildSync(){
+            PubnubSync pubnub = new PubnubSync();
+            pubnub.setPublishKey(publishKey);
+            pubnub.setSubscribeKey(subscribeKey);
+            pubnub.setSecretKey(secretKey);
+            pubnub.setCipherKey(cipherKey);
+            pubnub.setSSL(ssl);
+            pubnub.setInitializationVector(IV);
+            pubnub.init();
+            return pubnub;
+        }
+    }
+    public void setInitializationVector(String initializationVector) {
+        this.IV = initializationVector;
+    }
+    
+    public void setPublishKey(String publishKey) {
+        this.PUBLISH_KEY = publishKey;
+    }
+    
+    public void setSubscribeKey(String subscribeKey) {
+        this.SUBSCRIBE_KEY = subscribeKey;
+    }
+    
+    public void setSecretKey(String secretKey) {
+        this.SECRET_KEY = secretKey;
+    }
+    
+    public void setCipherKey(String cipherKey) {
+        this.CIPHER_KEY = cipherKey;
+    }
+    
+    public void setSSL(boolean ssl) {
+        this.SSL = ssl;
+    }
+    
+    
+    void init() {
+        init(this.PUBLISH_KEY, this.SUBSCRIBE_KEY, this.SECRET_KEY, this.CIPHER_KEY, this.SSL, this.IV);
+    }
 
     // abstract String uuid();
 

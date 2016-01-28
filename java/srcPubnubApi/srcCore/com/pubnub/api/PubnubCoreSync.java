@@ -8,6 +8,10 @@ import org.json.JSONObject;
 
 abstract class PubnubCoreSync extends PubnubCore implements PubnubSyncInterface {
 
+    public PubnubCoreSync(){
+        
+    }
+    
     private HttpClient httpClient;
 
     protected HttpResponse fetch(String url) throws IOException, PubnubException {

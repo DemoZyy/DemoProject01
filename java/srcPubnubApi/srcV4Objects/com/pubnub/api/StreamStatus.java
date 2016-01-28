@@ -19,6 +19,9 @@ public class StreamStatus extends StreamResult implements StatusInterface  {
 		this.pubnub = result.pubnub;
 		this.serverResponse = result.serverResponse;
 		this.type = result.type;
+	    data = new StreamData();
+	    data.message = result.data.message;
+	    data.timetoken = result.data.timetoken;
 	}
 	
 	@Override

@@ -17,6 +17,9 @@ class Subscriptions {
 
     void runConnectOnNewThread(final Callback callback, final String name,
                                final JSONArray jsa , final SubscribeResult result) {
+        
+        if (callback == null) return;
+        
         Runnable r = new Runnable() {
             public void run() {
                 callback.connectCallback(name, jsa, result);
@@ -29,6 +32,9 @@ class Subscriptions {
 
     void runReconnectOnNewThread(final Callback callback, final String name,
                                  final JSONArray jsa, final SubscribeResult result) {
+        
+        if (callback == null) return;
+        
         Runnable r = new Runnable() {
             public void run() {
                 callback.disconnectCallback(name, jsa, result);
@@ -41,6 +47,9 @@ class Subscriptions {
 
     void runDisconnectOnNewThread(final Callback callback, final String name,
                                   final JSONArray jsa, final SubscribeResult result) {
+        
+        if (callback == null) return;
+        
         Runnable r = new Runnable() {
             public void run() {
                 callback.reconnectCallback(name, jsa, result);

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="libs"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcApi/publish"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcApi/subscribe"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcCore"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcCoreHttp"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcInterfaces"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcV4Objects"/>
+	<classpathentry kind="src" path="src1"/>
+	<classpathentry kind="src" path="srcCrypto"/>
+	<classpathentry kind="src" path="srcLogging"/>
+	<classpathentry kind="src" path="srcExamples"/>
+	<classpathentry kind="lib" path="libs/bcprov-jdk15on-1.47.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-api-1.7.5.jar"/>
+	<classpathentry kind="lib" path="libs/json-20090211.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

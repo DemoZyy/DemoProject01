@@ -369,4 +369,8 @@ public class PubnubError {
     public String getErrorString() {
         return errorString;
     }
+    
+    public String getErrorMessage() {
+        return message;
+    }
 }

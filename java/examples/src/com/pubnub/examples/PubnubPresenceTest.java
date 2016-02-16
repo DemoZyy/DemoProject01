@@ -24,7 +24,7 @@ import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubException;
 
-enum Status {
+enum Status1 {
     PASS, FAIL
 };
 

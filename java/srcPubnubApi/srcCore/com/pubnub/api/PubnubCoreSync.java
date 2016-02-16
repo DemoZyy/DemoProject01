@@ -20,37 +20,6 @@ abstract class PubnubCoreSync extends PubnubCore implements PubnubSyncInterface 
         return httpClient.fetch(url);
     }
 
-    public PubnubCoreSync(String publish_key, String subscribe_key, String secret_key, String cipher_key,
-            boolean ssl_on, String initialization_vector) {
-        super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
-        init();
-    }
-
-    public PubnubCoreSync(String publish_key, String subscribe_key, String secret_key, String cipher_key, boolean ssl_on) {
-        super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on);
-        init();
-    }
-
-    public PubnubCoreSync(String publish_key, String subscribe_key, String secret_key, boolean ssl_on) {
-        super(publish_key, subscribe_key, secret_key, ssl_on);
-        init();
-    }
-
-    public PubnubCoreSync(String publish_key, String subscribe_key) {
-        super(publish_key, subscribe_key);
-        init();
-    }
-
-    public PubnubCoreSync(String publish_key, String subscribe_key, boolean ssl) {
-        super(publish_key, subscribe_key, ssl);
-        init();
-    }
-
-    public PubnubCoreSync(String publish_key, String subscribe_key, String secret_key) {
-        super(publish_key, subscribe_key, secret_key);
-        init();
-    }
-
     protected void init() {
         // sync client
 

@@ -48,18 +48,6 @@ class HttpRequest {
         this.dar = dar;
     }
 
-    public HttpRequest(String[] urlComponents, Hashtable params, Hashtable headers, ResponseHandler rh) {
-        this.setUrlComponents(urlComponents);
-        this.setParams(params);
-        this.setHeaders(headers);
-        this.setResponseHandler(rh);
-    }
-
-    public HttpRequest(String[] urlComponents, Hashtable params, ResponseHandler rh) {
-        this.setUrlComponents(urlComponents);
-        this.setParams(params);
-        this.setResponseHandler(rh);
-    }
 
     public HttpRequest(String[] urlComponents, Hashtable params,
             ResponseHandler rh, Result result) {
@@ -69,9 +57,10 @@ class HttpRequest {
 		this.setResult(result);
     }
     
-    public HttpRequest(String[] urlComponents, ResponseHandler rh) {
+    public HttpRequest(String[] urlComponents, ResponseHandler rh, Result result) {
         this.setUrlComponents(urlComponents);
         this.setResponseHandler(rh);
+        this.setResult(result);
     }
 
     public String[] getUrlComponents() {

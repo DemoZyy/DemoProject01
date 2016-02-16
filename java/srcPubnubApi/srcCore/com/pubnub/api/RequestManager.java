@@ -121,7 +121,6 @@ class NonSubscribeWorker extends Worker {
             }
         }
 
-
         if (!_die) {
             if (hresp == null) {
                 log.debug("Error in fetching url : " + hreq.getUrl());

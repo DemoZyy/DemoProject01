@@ -17,6 +17,7 @@ abstract class PubnubCore implements PubnubInterface {
     protected int HOSTNAME_SUFFIX = 1;
     protected String DOMAIN = "pubnub.com";
     protected String ORIGIN_STR = null;
+    protected String ORIGIN = "pubsub.pubnub.com";
     protected String PUBLISH_KEY = "";
     protected String SUBSCRIBE_KEY = "";
     protected String SECRET_KEY = "";
@@ -25,7 +26,7 @@ abstract class PubnubCore implements PubnubInterface {
     protected volatile String AUTH_STR = null;
     private Random generator = new Random();
 
-    protected Hashtable params;
+    protected Hashtable params = new Hashtable();
 
     private boolean SSL = true;
     protected String UUID = null;
@@ -70,30 +71,37 @@ abstract class PubnubCore implements PubnubInterface {
         public Builder setUuid(String uuid) { this.uuid = uuid; return this; }
         public Builder setSsl(boolean ssl) { this.ssl = ssl; return this; }
         public Builder setInitializationVector(String initializationVector) { this.IV = initializationVector; return this; }
-        
+        public Builder setCacheBusting(boolean cacheBusting) { this.cacheBusting = cacheBusting; return this; }
  
 
         public Pubnub build()
         {
             Pubnub pubnub = new Pubnub();
+            pubnub.init();
+            pubnub.initAsync();
             pubnub.setPublishKey(publishKey);
             pubnub.setSubscribeKey(subscribeKey);
             pubnub.setSecretKey(secretKey);
             pubnub.setCipherKey(cipherKey);
             pubnub.setSSL(ssl);
             pubnub.setInitializationVector(IV);
-            pubnub.init();
-            pubnub.initAsync();
+            pubnub.setCacheBusting(cacheBusting);
+            pubnub.setOrigin(origin);
+            pubnub.setAuthKey(authKey);
             return pubnub;
         }
         public PubnubSync buildSync(){
             PubnubSync pubnub = new PubnubSync();
+            pubnub.init();
             pubnub.setPublishKey(publishKey);
             pubnub.setSubscribeKey(subscribeKey);
             pubnub.setSecretKey(secretKey);
             pubnub.setCipherKey(cipherKey);
             pubnub.setSSL(ssl);
+            pubnub.setCacheBusting(cacheBusting);
             pubnub.setInitializationVector(IV);
+            pubnub.setOrigin(origin);
+            pubnub.setAuthKey(authKey);
             pubnub.init();
             return pubnub;
         }
@@ -121,10 +129,26 @@ abstract class PubnubCore implements PubnubInterface {
     public void setSSL(boolean ssl) {
         this.SSL = ssl;
     }
+
+    public void setOrigin(String origin) {
+        this.ORIGIN = origin;
+        this.CACHE_BUSTING = false;
+    }
     
+    public void setCacheBusting(boolean cacheBusting) {
+        this.CACHE_BUSTING = cacheBusting;
+    }
     
     void init() {
-        init(this.PUBLISH_KEY, this.SUBSCRIBE_KEY, this.SECRET_KEY, this.CIPHER_KEY, this.SSL, this.IV);
+
+        if (UUID == null)
+            UUID = uuid();
+
+        if (params == null)
+            params = new Hashtable();
+
+        params.put("pnsdk", getUserAgent());
+
     }
 
     // abstract String uuid();
@@ -138,36 +162,35 @@ abstract class PubnubCore implements PubnubInterface {
             } else {
                 ORIGIN_STR = "http://";
             }
-            ORIGIN_STR += HOSTNAME;
-            ORIGIN_STR += ((!this.CACHE_BUSTING) ? "" : "-" + String.valueOf(HOSTNAME_SUFFIX));
-            ORIGIN_STR += "." + DOMAIN;
+            if (this.CACHE_BUSTING) {
+                ORIGIN_STR += HOSTNAME;
+                ORIGIN_STR += "-" + String.valueOf(HOSTNAME_SUFFIX);
+                ORIGIN_STR += "." + DOMAIN;               
+            } else {
+                ORIGIN_STR += ORIGIN;
+            }
+
 
         }
         if (result != null) {
             result.config.origin = ORIGIN_STR.split("://")[1];
             result.config.TLS = this.SSL;
+            result.config.uuid = this.UUID;
+            result.config.authKey = this.AUTH_STR;
         }
         return ORIGIN_STR;
     }
 
-    protected String getPubnubUrl() {
-        return getPubnubUrl(null);
-    }
-
-    public void setOrigin(String origin) {
-        this.HOSTNAME = origin;
-    }
 
     public String getOrigin() {
-        return this.HOSTNAME;
-    }
-
-    public void setDomain(String domain) {
-        this.DOMAIN = domain;
-    }
-
-    public String getDomain() {
-        return this.DOMAIN;
+        /*
+        if (ORIGIN_STR != null) {
+            return ORIGIN_STR.split("://")[1];
+        } else {
+            return this.HOSTNAME + "." + this.DOMAIN;
+        }
+        */
+        return this.ORIGIN;
     }
 
     public String getAuthKey() {
@@ -194,7 +217,14 @@ abstract class PubnubCore implements PubnubInterface {
     }
 
     protected Callback voidCallback = new Callback() {
-        public void successCallback(String channel, Object message) {
+        @Override
+        void successCallback(String channel, Object message, Result result) {
+            
+        }
+        
+        @Override
+        void errorCallback(String channel, PubnubError error, Result result) {
+            
         }
     };
 
@@ -215,7 +245,6 @@ abstract class PubnubCore implements PubnubInterface {
 
     protected void decryptJSONArray(JSONArray messages) throws JSONException, IllegalStateException, IOException,
             PubnubException {
-
         if (CIPHER_KEY.length() > 0) {
             for (int i = 0; i < messages.length(); i++) {
                 PubnubCrypto pc = new PubnubCrypto(CIPHER_KEY, IV);
@@ -227,52 +256,6 @@ abstract class PubnubCore implements PubnubInterface {
         }
     }
 
-    public PubnubCore(String publish_key, String subscribe_key, String secret_key, String cipher_key, boolean ssl_on,
-            String initialization_vector) {
-        this.init(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
-    }
-
-    public PubnubCore(String publish_key, String subscribe_key, String secret_key, String cipher_key, boolean ssl_on) {
-        this.init(publish_key, subscribe_key, secret_key, cipher_key, ssl_on);
-    }
-
-    public PubnubCore(String publish_key, String subscribe_key, String secret_key, boolean ssl_on) {
-        this.init(publish_key, subscribe_key, secret_key, "", ssl_on);
-    }
-
-    public PubnubCore(String publish_key, String subscribe_key) {
-        this.init(publish_key, subscribe_key, "", "", false);
-    }
-
-    public PubnubCore(String publish_key, String subscribe_key, boolean ssl) {
-        this.init(publish_key, subscribe_key, "", "", ssl);
-    }
-
-    public PubnubCore(String publish_key, String subscribe_key, String secret_key) {
-        this.init(publish_key, subscribe_key, secret_key, "", false);
-    }
-
-    private void init(String publish_key, String subscribe_key, String secret_key, String cipher_key, boolean ssl_on) {
-        this.init(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, null);
-    }
-
-    private void init(String publish_key, String subscribe_key, String secret_key, String cipher_key, boolean ssl_on,
-            String initialization_vector) {
-        this.PUBLISH_KEY = publish_key;
-        this.SUBSCRIBE_KEY = subscribe_key;
-        this.SECRET_KEY = secret_key;
-        this.CIPHER_KEY = cipher_key;
-        this.SSL = ssl_on;
-
-        if (UUID == null)
-            UUID = uuid();
-
-        if (params == null)
-            params = new Hashtable();
-
-        params.put("pnsdk", getUserAgent());
-
-    }
 
     public void setUUID(String uuid) {
         this.UUID = uuid;
@@ -310,7 +293,8 @@ abstract class PubnubCore implements PubnubInterface {
                 msgStr = "\"" + pc.encrypt(msgStr) + "\"";
             } catch (PubnubException e) {
                 callback.errorCallback(channel,
-                        getPubnubError(e, PubnubError.PNERROBJ_ENCRYPTION_ERROR, 4, msgStr + " : " + e.toString()));
+                        getPubnubError(e, PubnubError.PNERROBJ_ENCRYPTION_ERROR, 4, msgStr + " : " + e.toString())
+                        , result);
                 return null;
             }
         } else {
@@ -334,13 +318,14 @@ abstract class PubnubCore implements PubnubInterface {
             } catch (UnsupportedEncodingException e) {
                 PubnubError pe = PubnubError.getErrorObject(PubnubError.PNERROBJ_ENCRYPTION_ERROR, 6, msgStr + " : "
                         + e.toString());
-                callback.errorCallback(channel, pe);
+                callback.errorCallback(channel, pe, result);
             } catch (PubnubException e) {
                 callback.errorCallback(channel,
-                        getPubnubError(e, PubnubError.PNERROBJ_ENCRYPTION_ERROR, 5, msgStr + " : " + e.toString()));
+                        getPubnubError(e, PubnubError.PNERROBJ_ENCRYPTION_ERROR, 5, msgStr + " : " + e.toString()),
+                        result);
             }
         }
-        String[] urlComponents = { getPubnubUrl(), "publish", this.PUBLISH_KEY, this.SUBSCRIBE_KEY,
+        String[] urlComponents = { getPubnubUrl(result), "publish", this.PUBLISH_KEY, this.SUBSCRIBE_KEY,
                 PubnubUtil.urlEncode(signature), PubnubUtil.urlEncode(channel), "0", PubnubUtil.urlEncode(msgStr) };
 
         class PublishResponseHandler extends ResponseHandler {
@@ -349,14 +334,16 @@ abstract class PubnubCore implements PubnubInterface {
                 try {
                     jsarr = new JSONArray(response);
                 } catch (JSONException e) {
-                    handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+                    handleError(hreq, 
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response)
+                            , result);
                     return;
                 }
                 callback.successCallback(channel, jsarr, result);
             }
 
             public void handleError(HttpRequest hreq, PubnubError error, Result result) {
-                callback.errorCallback(channel, error, (PublishStatus) result);
+                callback.errorCallback(channel, error, result);
                 return;
             }
         }
@@ -368,19 +355,23 @@ abstract class PubnubCore implements PubnubInterface {
 
     JSONObject _whereNow(final String uuid, Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
-        String[] urlargs = { getPubnubUrl(), "v2", "presence", "sub_key", this.SUBSCRIBE_KEY, "uuid",
+        WhereNowResult result = new WhereNowResult();
+        String[] urlargs = { getPubnubUrl(result), "v2", "presence", "sub_key", this.SUBSCRIBE_KEY, "uuid",
                 PubnubUtil.urlEncode(uuid) };
 
         HttpRequest hreq = new HttpRequest(urlargs, params, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 4);
+            
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback("", response, "payload", cb, 4, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
                 return;
             }
-        });
+        }, result);
+        setResultData(result, OperationType.WHERE_NOW, hreq);
         return (JSONObject) _request(hreq, (sync) ? null : nonSubscribeManager);
     }
 
@@ -417,18 +408,20 @@ abstract class PubnubCore implements PubnubInterface {
     protected JSONArray _time(Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
 
-        String[] url = { getPubnubUrl(), "time", "0" };
+        Result result = new Result();
+        
+        String[] url = { getPubnubUrl(result), "time", "0" };
         HttpRequest hreq = new HttpRequest(url, params, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                cb.successCallback(null, response);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                cb.successCallback(null, response, result);
+            }
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
-            }
-
-        });
+        }, result);
 
         return (JSONArray) _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -470,11 +463,14 @@ abstract class PubnubCore implements PubnubInterface {
 
         return true;
     }
+    
 
     protected Object _history(final String channel, long start, long end, int count, boolean reverse,
             boolean includeTimetoken, Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
+        HistoryResult result = new HistoryResult();
+                
         if (count == -1)
             count = 100;
 
@@ -488,43 +484,47 @@ abstract class PubnubCore implements PubnubInterface {
         if (end != -1)
             parameters.put("end", Long.toString(end).toLowerCase());
 
-        String[] urlargs = { getPubnubUrl(), "v2", "history", "sub-key", this.SUBSCRIBE_KEY, "channel",
+        String[] urlargs = { getPubnubUrl(result), "v2", "history", "sub-key", this.SUBSCRIBE_KEY, "channel",
                 PubnubUtil.urlEncode(channel) };
 
         class HistoryResponseHandler extends ResponseHandler {
-
-            public void handleResponse(HttpRequest hreq, String response) {
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                setResultData(result, OperationType.HISTORY, hreq);
                 JSONArray respArr;
                 try {
                     respArr = new JSONArray(response);
                     decryptJSONArray((JSONArray) respArr.get(0));
-                    cb.successCallback(channel, respArr);
+                    cb.successCallback(channel, respArr, result);
                 } catch (JSONException e) {
-                    cb.errorCallback(channel, PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, 3));
+                    cb.errorCallback(channel, PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, 3),
+                            result);
                 } catch (IOException e) {
                     cb.errorCallback(channel,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 9, response));
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 9, response),
+                            result);
                 } catch (PubnubException e) {
                     cb.errorCallback(
                             channel,
                             getPubnubError(e, PubnubError.PNERROBJ_DECRYPTION_ERROR, 10,
-                                    response + " : " + e.toString()));
+                                    response + " : " + e.toString()), result);
                 } catch (Exception e) {
                     cb.errorCallback(
                             channel,
                             PubnubError.getErrorObject(PubnubError.PNERROBJ_DECRYPTION_ERROR, 11,
-                                    response + " : " + e.toString()));
+                                    response + " : " + e.toString()), result);
                 }
 
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(channel, error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                setResultData(result, OperationType.HISTORY, hreq);
+                cb.errorCallback(channel, error, result);
                 return;
             }
         }
 
-        HttpRequest hreq = new HttpRequest(urlargs, parameters, new HistoryResponseHandler());
+        HttpRequest hreq = new HttpRequest(urlargs, parameters, new HistoryResponseHandler(), result);
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
 
@@ -534,13 +534,13 @@ abstract class PubnubCore implements PubnubInterface {
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         ArrayList urlArgs = new ArrayList();
-
-        urlArgs.add(getPubnubUrl());
+        HereNowResult result = new HereNowResult();
+        urlArgs.add(getPubnubUrl(result));
         urlArgs.add("v2");
         urlArgs.add("presence");
         urlArgs.add("sub_key");
         urlArgs.add(this.SUBSCRIBE_KEY);
-        HereNowResult result = new HereNowResult();
+
 
         if (channels != null || channelGroups != null) {
             String channelsString = PubnubUtil.joinString(channels, ",");
@@ -565,13 +565,13 @@ abstract class PubnubCore implements PubnubInterface {
         String[] path = (String[]) urlArgs.toArray(new String[urlArgs.size()]);
 
         HttpRequest hreq = new HttpRequest(path, parameters, new ResponseHandler() {
+            @Override
             public void handleResponse(HttpRequest hreq, String response, Result result) {
                 invokeCallback(null, response, "payload", cb, 1, result);
             }
-
+            @Override
             public void handleError(HttpRequest hreq, PubnubError error, Result result) {
-                HereNowStatus status = new HereNowStatus((HereNowResult)result);
-                cb.errorCallback(null, error, status);
+                cb.errorCallback(null, error, result);
             }
         }, result);
 
@@ -584,16 +584,17 @@ abstract class PubnubCore implements PubnubInterface {
     protected void setResultData(Result result, OperationType operationType, HttpRequest hreq) {
         result.hreq = hreq;
         result.pubnub = this;
+        result.config.origin = this.ORIGIN_STR;
         result.config.authKey = this.AUTH_STR;
         result.config.uuid = this.UUID;
         result.operation = operationType;
     }
 
-    protected boolean validateInput(String name, Object input, Callback callback) {
+    protected boolean validateInput(String name, Object input, Callback callback, Result result) {
 
         if (input == null) {
             callback.errorCallback("",
-                    PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_ARGUMENTS, 1, name + " cannot be null"));
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_ARGUMENTS, 1, name + " cannot be null"), result);
             return false;
         }
 
@@ -601,7 +602,7 @@ abstract class PubnubCore implements PubnubInterface {
             callback.errorCallback(
                     "",
                     PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_ARGUMENTS, 2, name
-                            + " cannot be zero length"));
+                            + " cannot be zero length"), result);
             return false;
         }
         return true;
@@ -612,8 +613,10 @@ abstract class PubnubCore implements PubnubInterface {
         SubscriptionItem item = sub.getItem(channel);
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
+        
+        Result result = new Result();
 
-        String[] urlArgs = { getPubnubUrl(), "v2", "presence", "sub-key", this.SUBSCRIBE_KEY, "channel", channel,
+        String[] urlArgs = { getPubnubUrl(result), "v2", "presence", "sub-key", this.SUBSCRIBE_KEY, "channel", channel,
                 "uuid", PubnubUtil.urlEncode(uuid), "data" };
 
         if (state != null)
@@ -630,14 +633,15 @@ abstract class PubnubCore implements PubnubInterface {
         }
 
         HttpRequest hreq = new HttpRequest(urlArgs, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 2);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback("", response, "payload", cb, 2, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -645,19 +649,21 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _getState(String channel, String uuid, Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
+        Result result = new Result();
 
-        String[] urlArgs = { getPubnubUrl(), "v2", "presence", "sub-key", this.SUBSCRIBE_KEY, "channel",
+        String[] urlArgs = { getPubnubUrl(result), "v2", "presence", "sub-key", this.SUBSCRIBE_KEY, "channel",
                 PubnubUtil.urlEncode(channel), "uuid", PubnubUtil.urlEncode(uuid) };
 
         HttpRequest hreq = new HttpRequest(urlArgs, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 1);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback("", response, "payload", cb, 1, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -674,7 +680,8 @@ abstract class PubnubCore implements PubnubInterface {
             responseJso = new JSONObject(response);
         } catch (JSONException e) {
             callback.errorCallback(channel,
-                    PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response));
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response),
+                    result);
             return;
         }
 
@@ -688,7 +695,8 @@ abstract class PubnubCore implements PubnubInterface {
                     callback.successCallback(channel, responseJso, result);
                 } else {
                     callback.errorCallback(channel,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response));
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response)
+                            , result);
                 }
                 return;
 
@@ -698,70 +706,42 @@ abstract class PubnubCore implements PubnubInterface {
         }
     }
 
-    protected void invokeCallback(String channel, String response, String key, Callback callback, int extendedErrorCode) {
-        invokeCallback(channel, response, key, callback, extendedErrorCode, false);
-    }
 
-    protected void invokeCallback(String channel, String response, String key, Callback callback,
-            int extendedErrorCode, boolean key_strict) {
-        JSONObject responseJso = null;
-        try {
-            responseJso = new JSONObject(response);
-        } catch (JSONException e) {
-            callback.errorCallback(channel,
-                    PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response));
-            return;
-        }
 
-        JSONObject payloadJso = null;
 
-        if (key != null && key.length() > 0) {
-            try {
-                payloadJso = (JSONObject) responseJso.get(key);
-            } catch (JSONException e) {
-                if (!key_strict) {
-                    callback.successCallback(channel, responseJso);
-                } else {
-                    callback.errorCallback(channel,
-                            PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, extendedErrorCode, response));
-                }
-                return;
 
-            }
-            callback.successCallback(channel, payloadJso);
-            return;
-        }
-    }
-
-    protected void invokeJSONStringCallback(String response, String key, Callback callback) {
+    protected void invokeJSONStringCallback(String response, String key, Callback callback, Result result) {
         String responseJSON;
 
         try {
             responseJSON = (new JSONObject(response)).getString(key);
-            callback.successCallback(null, responseJSON);
+            callback.successCallback(null, responseJSON, result);
         } catch (JSONException e) {
-            callback.errorCallback(null, PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR, 0, response));
+            callback.errorCallback(null, PubnubError.getErrorObject(PubnubError.PNERROBJ_JSON_ERROR,
+                    0, response), result);
         }
     }
 
     protected Object _channelGroupRemoveNamespace(String namespace, Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
 
-        String[] url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+        Result result = new Result();
+        
+        String[] url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                 "namespace", namespace, "remove" };
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
         HttpRequest hreq = new HttpRequest(url, parameters, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeJSONStringCallback(response, "message", cb);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeJSONStringCallback(response, "message", cb, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -770,26 +750,28 @@ abstract class PubnubCore implements PubnubInterface {
         final Callback cb = getWrappedCallback(callback);
         String[] url;
 
+        Result result = new Result();
+        
         if (namespace != null) {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "namespace", namespace, "channel-group" };
         } else {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "channel-group" };
         }
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
         HttpRequest hreq = new HttpRequest(url, parameters, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 0);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback("", response, "payload", cb, 0, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -798,34 +780,36 @@ abstract class PubnubCore implements PubnubInterface {
         final Callback cb = getWrappedCallback(callback);
         ChannelGroup channelGroup;
         String[] url;
+        
+        Result result = new Result();
 
         try {
             channelGroup = new ChannelGroup(group);
         } catch (PubnubException e) {
-            cb.errorCallback(null, PubnubError.PNERROBJ_CHANNEL_GROUP_PARSING_ERROR);
+            cb.errorCallback(null, PubnubError.PNERROBJ_CHANNEL_GROUP_PARSING_ERROR, result);
             return null;
         }
 
         if (channelGroup.namespace != null) {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "namespace", channelGroup.namespace, "channel-group", channelGroup.group };
         } else {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "channel-group", channelGroup.group };
         }
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
         HttpRequest hreq = new HttpRequest(url, parameters, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 0);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback("", response, "payload", cb, 0, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -836,18 +820,20 @@ abstract class PubnubCore implements PubnubInterface {
         ChannelGroup channelGroup;
         String[] url;
 
+        Result result = new Result();
+        
         try {
             channelGroup = new ChannelGroup(group);
         } catch (PubnubException e) {
-            cb.errorCallback(null, PubnubError.PNERROBJ_CHANNEL_GROUP_PARSING_ERROR);
+            cb.errorCallback(null, PubnubError.PNERROBJ_CHANNEL_GROUP_PARSING_ERROR, result);
             return null;
         }
 
         if (channelGroup.namespace != null) {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "namespace", channelGroup.namespace, "channel-group", channelGroup.group };
         } else {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "channel-group", channelGroup.group };
         }
 
@@ -858,16 +844,16 @@ abstract class PubnubCore implements PubnubInterface {
         }
 
         HttpRequest hreq = new HttpRequest(url, parameters, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeJSONStringCallback(response, "message", cb);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeJSONStringCallback(response, "message", cb, result);
+            }
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
-            }
-
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -877,34 +863,36 @@ abstract class PubnubCore implements PubnubInterface {
         ChannelGroup channelGroup;
         String[] url;
 
+        Result result = new Result();
+        
         try {
             channelGroup = new ChannelGroup(group);
         } catch (PubnubException e) {
-            cb.errorCallback(null, PubnubError.PNERROBJ_CHANNEL_GROUP_PARSING_ERROR);
+            cb.errorCallback(null, PubnubError.PNERROBJ_CHANNEL_GROUP_PARSING_ERROR, result);
             return null;
         }
 
         if (channelGroup.namespace != null) {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "namespace", channelGroup.namespace, "channel-group", channelGroup.group, "remove" };
         } else {
-            url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+            url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                     "channel-group", channelGroup.group, "remove" };
         }
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
         HttpRequest hreq = new HttpRequest(url, parameters, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeJSONStringCallback(response, "message", cb);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeJSONStringCallback(response, "message", cb, result);
+            }
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
-            }
-
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -912,21 +900,23 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _channelGroupListNamespaces(Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
 
-        String[] url = new String[] { getPubnubUrl(), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
+        Result result = new Result();
+        
+        String[] url = new String[] { getPubnubUrl(result), "v1", "channel-registration", "sub-key", this.SUBSCRIBE_KEY,
                 "namespace" };
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
         HttpRequest hreq = new HttpRequest(url, parameters, new ResponseHandler() {
-
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback("", response, "payload", cb, 0);
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback("", response, "payload", cb, 0, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -934,32 +924,37 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _disablePushNotificationsOnChannels(final String[] channels, String gcmRegistrationId,
             final Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
+        
+        Result result = new Result();
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         String[] urlargs = null;
-        urlargs = new String[] { getPubnubUrl(), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
+        urlargs = new String[] { getPubnubUrl(result), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
                 gcmRegistrationId };
 
         parameters.put("type", "gcm");
         parameters.put("remove", PubnubUtil.joinString(channels, ","));
 
         HttpRequest hreq = new HttpRequest(urlargs, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
                 JSONArray jsarr;
                 try {
                     jsarr = new JSONArray(response);
                 } catch (JSONException e) {
-                    handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+                    handleError(hreq, 
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response)
+                            , result);
                     return;
                 }
-                cb.successCallback("", jsarr);
+                cb.successCallback("", jsarr, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
                 return;
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -967,60 +962,72 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _requestPushNotificationEnabledChannelsForDeviceRegistrationId(String gcmRegistrationId,
             final Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
+        
+        Result result = new Result();
+        
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         String[] urlargs = null;
-        urlargs = new String[] { getPubnubUrl(), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
+        urlargs = new String[] { getPubnubUrl(result), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
                 gcmRegistrationId };
 
         parameters.put("type", "gcm");
 
         HttpRequest hreq = new HttpRequest(urlargs, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
                 JSONArray jsarr;
                 try {
                     jsarr = new JSONArray(response);
                 } catch (JSONException e) {
-                    handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+                    handleError(hreq, 
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response)
+                            , result);
                     return;
                 }
-                cb.successCallback("", jsarr);
+                cb.successCallback("", jsarr, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
                 return;
             }
-        });
+        }, result);
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
 
     protected Object _removeAllPushNotificationsForDeviceRegistrationId(String gcmRegistrationId,
             final Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
+        
+        Result result = new Result();
+        
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         String[] urlargs = null;
-        urlargs = new String[] { getPubnubUrl(), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
+        urlargs = new String[] { getPubnubUrl(result), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
                 gcmRegistrationId, "remove" };
 
         parameters.put("type", "gcm");
 
         HttpRequest hreq = new HttpRequest(urlargs, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
+            @Override
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
                 JSONArray jsarr;
                 try {
                     jsarr = new JSONArray(response);
                 } catch (JSONException e) {
-                    handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+                    handleError(hreq, 
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response)
+                            , result);
                     return;
                 }
-                cb.successCallback("", jsarr);
+                cb.successCallback("", jsarr, result);
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
                 return;
             }
-        });
+        }, result);
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
 
@@ -1028,31 +1035,35 @@ abstract class PubnubCore implements PubnubInterface {
             final Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
 
+        Result result = new Result();
+        
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         String[] urlargs = null;
-        urlargs = new String[] { getPubnubUrl(), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
+        urlargs = new String[] { getPubnubUrl(result), "v1", "push", "sub-key", this.SUBSCRIBE_KEY, "devices",
                 gcmRegistrationId };
 
         parameters.put("type", "gcm");
         parameters.put("add", PubnubUtil.joinString(channels, ","));
 
         HttpRequest hreq = new HttpRequest(urlargs, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
                 JSONArray jsarr;
                 try {
                     jsarr = new JSONArray(response);
                 } catch (JSONException e) {
-                    handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+                    handleError(hreq, 
+                            PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response)
+                            , result);
                     return;
                 }
-                cb.successCallback("", jsarr);
+                cb.successCallback("", jsarr, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback("", error);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback("", error, result);
                 return;
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -1064,6 +1075,8 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _pamAuditChannelGroup(final String group, String auth_key, Callback callback, boolean sync) {
         String signature;
         final Callback cb = getWrappedCallback(callback);
+        
+        Result result = new Result();
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         parameters.remove("auth");
@@ -1071,7 +1084,8 @@ abstract class PubnubCore implements PubnubInterface {
         int timestamp = (int) ((new Date().getTime()) / 1000);
 
         if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback(group, PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 3));
+            cb.errorCallback(group, 
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 3), result);
             return null;
         }
 
@@ -1086,7 +1100,7 @@ abstract class PubnubCore implements PubnubInterface {
         try {
             signature = pamSign(this.SECRET_KEY, sign_input);
         } catch (PubnubException e1) {
-            callback.errorCallback(group, e1.getPubnubError());
+            callback.errorCallback(group, e1.getPubnubError(), result);
             return null;
         }
 
@@ -1097,17 +1111,17 @@ abstract class PubnubCore implements PubnubInterface {
         if (auth_key != null && auth_key.length() > 0)
             parameters.put("auth", auth_key);
 
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "audit", "sub-key", this.SUBSCRIBE_KEY };
+        String[] urlComponents = { getPubnubUrl(result), "v1", "auth", "audit", "sub-key", this.SUBSCRIBE_KEY };
 
         HttpRequest hreq = new HttpRequest(urlComponents, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback(group, response, "payload", cb, 6);
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback(group, response, "payload", cb, 6, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(group, error);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(group, error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -1117,12 +1131,15 @@ abstract class PubnubCore implements PubnubInterface {
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
+        Result result = new Result();
+        
         String signature = "0";
 
         int timestamp = (int) ((new Date().getTime()) / 1000);
 
         if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback(channel, PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 4));
+            callback.errorCallback(channel, 
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 4), result);
             return null;
         }
 
@@ -1133,7 +1150,7 @@ abstract class PubnubCore implements PubnubInterface {
         try {
             signature = pamSign(this.SECRET_KEY, sign_input);
         } catch (PubnubException e1) {
-            callback.errorCallback(channel, e1.getPubnubError());
+            callback.errorCallback(channel, e1.getPubnubError(), result);
             return null;
         }
 
@@ -1142,18 +1159,18 @@ abstract class PubnubCore implements PubnubInterface {
         parameters.put("channel", channel);
         parameters.put("auth", auth_key);
 
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "audit", "sub-key", this.SUBSCRIBE_KEY };
+        String[] urlComponents = { getPubnubUrl(result), "v1", "auth", "audit", "sub-key", this.SUBSCRIBE_KEY };
 
         HttpRequest hreq = new HttpRequest(urlComponents, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback(channel, response, "payload", cb, 2);
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback(channel, response, "payload", cb, 2, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(channel, error);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(channel, error, result);
                 return;
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
 
@@ -1162,6 +1179,8 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _pamAudit(final String channel, Callback callback, boolean sync) {
 
         final Callback cb = getWrappedCallback(callback);
+        
+        Result result = new Result();
 
         Hashtable parameters = PubnubUtil.hashtableClone(params);
         parameters.remove("auth");
@@ -1171,7 +1190,8 @@ abstract class PubnubCore implements PubnubInterface {
         int timestamp = (int) ((new Date().getTime()) / 1000);
 
         if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback(channel, PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 3));
+            callback.errorCallback(channel, 
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 3), result);
             return null;
         }
         String sign_input = null;
@@ -1187,7 +1207,7 @@ abstract class PubnubCore implements PubnubInterface {
         try {
             signature = pamSign(this.SECRET_KEY, sign_input);
         } catch (PubnubException e1) {
-            callback.errorCallback(channel, e1.getPubnubError());
+            callback.errorCallback(channel, e1.getPubnubError(), result);
             return null;
         }
 
@@ -1196,18 +1216,18 @@ abstract class PubnubCore implements PubnubInterface {
         if (channel != null)
             parameters.put("channel", channel);
 
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "audit", "sub-key", this.SUBSCRIBE_KEY };
+        String[] urlComponents = { getPubnubUrl(result), "v1", "auth", "audit", "sub-key", this.SUBSCRIBE_KEY };
 
         HttpRequest hreq = new HttpRequest(urlComponents, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback(channel, response, "payload", cb, 6);
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback(channel, response, "payload", cb, 6, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(channel, error);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(channel, error, result);
                 return;
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
 
@@ -1216,6 +1236,8 @@ abstract class PubnubCore implements PubnubInterface {
     protected Object _pamGrantChannelGroup(final String group, String auth_key, boolean read, boolean management,
             int ttl, Callback callback, boolean sync) {
         String signature;
+        Result result = new Result();
+        
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
 
@@ -1225,7 +1247,9 @@ abstract class PubnubCore implements PubnubInterface {
         int timestamp = (int) ((new Date().getTime()) / 1000);
 
         if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback(group, PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 1));
+            callback.errorCallback(group, 
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 1),
+                    result);
             return null;
         }
 
@@ -1241,7 +1265,7 @@ abstract class PubnubCore implements PubnubInterface {
         try {
             signature = pamSign(this.SECRET_KEY, sign_input);
         } catch (PubnubException e1) {
-            callback.errorCallback(group, e1.getPubnubError());
+            callback.errorCallback(group, e1.getPubnubError(), result);
             return null;
         }
 
@@ -1256,17 +1280,17 @@ abstract class PubnubCore implements PubnubInterface {
         if (auth_key != null && auth_key.length() > 0)
             parameters.put("auth", auth_key);
 
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "grant", "sub-key", this.SUBSCRIBE_KEY };
+        String[] urlComponents = { getPubnubUrl(result), "v1", "auth", "grant", "sub-key", this.SUBSCRIBE_KEY };
 
         HttpRequest hreq = new HttpRequest(urlComponents, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                invokeCallback(group, response, "payload", cb, 4);
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback(group, response, "payload", cb, 4, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(group, error);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(group, error, result);
             }
-        });
+        }, result);
 
         return _request(hreq, (sync) ? null : nonSubscribeManager);
     }
@@ -1275,7 +1299,7 @@ abstract class PubnubCore implements PubnubInterface {
             Callback callback, boolean sync) {
         final Callback cb = getWrappedCallback(callback);
         Hashtable parameters = PubnubUtil.hashtableClone(params);
-        final GrantStatus status = new GrantStatus();
+        final GrantResult result = new GrantResult();
         parameters.remove("auth");
 
         String r = (read) ? "1" : "0";
@@ -1286,7 +1310,8 @@ abstract class PubnubCore implements PubnubInterface {
         int timestamp = (int) ((new Date().getTime()) / 1000);
 
         if (this.SECRET_KEY.length() == 0) {
-            callback.errorCallback(channel, PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 1));
+            callback.errorCallback(channel, 
+                    PubnubError.getErrorObject(PubnubError.PNERROBJ_SECRET_KEY_MISSING, 1), result);
             return null;
         }
 
@@ -1302,7 +1327,7 @@ abstract class PubnubCore implements PubnubInterface {
         try {
             signature = pamSign(this.SECRET_KEY, sign_input);
         } catch (PubnubException e1) {
-            callback.errorCallback(channel, e1.getPubnubError());
+            callback.errorCallback(channel, e1.getPubnubError(), result);
             return null;
         }
 
@@ -1317,23 +1342,29 @@ abstract class PubnubCore implements PubnubInterface {
         if (ttl >= -1)
             parameters.put("ttl", String.valueOf(ttl));
 
-        String[] urlComponents = { getPubnubUrl(), "v1", "auth", "grant", "sub-key", this.SUBSCRIBE_KEY };
+        String[] urlComponents = { getPubnubUrl(result), "v1", "auth", "grant", "sub-key", this.SUBSCRIBE_KEY };
 
 
         HttpRequest hreq = new HttpRequest(urlComponents, parameters, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response, Result status) {
-                invokeCallback(channel, response, "payload", cb, 4, status);
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                invokeCallback(channel, response, "payload", cb, 4, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error, Result status) {
-                cb.errorCallback(channel, error, status);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(channel, error, result);
                 return;
             }
-        }, status);
+        }, result);
 
-        setResultData(status, OperationType.GRANT, hreq);
+        setResultData(result, OperationType.GRANT, hreq);
         return _request(hreq, (sync) ? null : nonSubscribeManager);
 
     }
 
+    public PubnubPublish pubnubPublish = new PubnubPublish((Pubnub)this);
+
+    public PubnubPublish publish() {
+        return pubnubPublish;
+    }
+    
 }

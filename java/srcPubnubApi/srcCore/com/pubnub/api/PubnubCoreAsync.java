@@ -70,11 +70,11 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     String[] getPresenceHeartbeatUrl() {
         String channelString = channelSubscriptions.getItemStringNoPresence();
-
+        Result result = new Result();
         if (channelString.length() <= 0) {
             return null;
         }
-        return new String[] { getPubnubUrl(), "v2", "presence", "sub-key", this.SUBSCRIBE_KEY, "channel",
+        return new String[] { getPubnubUrl(result), "v2", "presence", "sub-key", this.SUBSCRIBE_KEY, "channel",
                 PubnubUtil.urlEncode(channelString), "heartbeat" };
     }
 
@@ -92,6 +92,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
         public void run() {
 
+            Result result = new Result();
             String[] urlComponents = getPresenceHeartbeatUrl();
             if (urlComponents == null)
                 return;
@@ -109,22 +110,24 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 parameters.put("heartbeat", String.valueOf(HEARTBEAT));
 
             HttpRequest hreq = new HttpRequest(urlComponents, parameters, new ResponseHandler() {
-                public void handleResponse(HttpRequest hreq, String response) {
+                public void handleResponse(HttpRequest hreq, String response, Result result) {
                     JSONObject jso;
                     try {
                         jso = new JSONObject(response);
                         response = jso.getString("message");
                     } catch (JSONException e) {
-                        handleError(hreq, PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response));
+                        handleError(hreq, 
+                                PubnubError.getErrorObject(PubnubError.PNERROBJ_INVALID_JSON, 1, response)
+                                , result);
                         return;
                     }
-                    callback.successCallback(channelSubscriptions.getItemStringNoPresence(), response);
+                    callback.successCallback(channelSubscriptions.getItemStringNoPresence(), response, result);
                 }
 
-                public void handleError(HttpRequest hreq, PubnubError error) {
-                    callback.errorCallback(channelSubscriptions.getItemStringNoPresence(), error);
+                public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                    callback.errorCallback(channelSubscriptions.getItemStringNoPresence(), error, result);
                 }
-            });
+            }, result);
 
             _request(hreq, nonSubscribeManager);
 
@@ -222,37 +225,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         return this.resumeOnReconnect;
     }
 
-    public PubnubCoreAsync(String publish_key, String subscribe_key, String secret_key, String cipher_key,
-            boolean ssl_on, String initialization_vector) {
-        super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on, initialization_vector);
-        this.initAsync();
-    }
-
-    public PubnubCoreAsync(String publish_key, String subscribe_key, String secret_key, String cipher_key,
-            boolean ssl_on) {
-        super(publish_key, subscribe_key, secret_key, cipher_key, ssl_on);
-        this.initAsync();
-    }
-
-    public PubnubCoreAsync(String publish_key, String subscribe_key, String secret_key, boolean ssl_on) {
-        super(publish_key, subscribe_key, secret_key, "", ssl_on);
-        this.initAsync();
-    }
-
-    public PubnubCoreAsync(String publish_key, String subscribe_key) {
-        super(publish_key, subscribe_key, "", "", false);
-        this.initAsync();
-    }
-
-    public PubnubCoreAsync(String publish_key, String subscribe_key, boolean ssl) {
-        super(publish_key, subscribe_key, "", "", ssl);
-        this.initAsync();
-    }
-
-    public PubnubCoreAsync(String publish_key, String subscribe_key, String secret_key) {
-        super(publish_key, subscribe_key, secret_key, "", false);
-        this.initAsync();
-    }
 
     Random random = new Random();
 
@@ -302,95 +274,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         return nonSubscribeManager.requestTimeout;
     }
 
-    public void publish(String channel, JSONObject message, boolean storeInHistory, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        args.put("storeInHistory", (storeInHistory) ? "" : "0");
-        _publish(args, false);
-    }
-
-    public void publish(String channel, JSONArray message, boolean storeInHistory, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        args.put("storeInHistory", (storeInHistory) ? "" : "0");
-        _publish(args, false);
-    }
-
-    public void publish(String channel, String message, boolean storeInHistory, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        args.put("storeInHistory", (storeInHistory) ? "" : "0");
-        _publish(args, false);
-    }
-
-    public void publish(String channel, Integer message, boolean storeInHistory, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        args.put("storeInHistory", (storeInHistory) ? "" : "0");
-        _publish(args, false);
-    }
-
-    public void publish(String channel, Double message, boolean storeInHistory, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        args.put("storeInHistory", (storeInHistory) ? "" : "0");
-        _publish(args, false);
-    }
-
-    public void publish(String channel, JSONObject message, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        _publish(args, false);
-    }
-
-    public void publish(String channel, JSONArray message, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        _publish(args, false);
-    }
-
-    public void publish(String channel, String message, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        _publish(args, false);
-    }
-
-    public void publish(String channel, Integer message, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        _publish(args, false);
-    }
-
-    public void publish(String channel, Double message, Callback callback) {
-        Hashtable args = new Hashtable();
-        args.put("channel", channel);
-        args.put("message", message);
-        args.put("callback", callback);
-        _publish(args, false);
-    }
-
-    protected void publish(Hashtable args, Callback callback) {
-        args.put("callback", callback);
-        _publish(args, false);
-    }
 
     public void presence(String channel, Callback callback) throws PubnubException {
         Hashtable args = new Hashtable(2);
@@ -411,7 +294,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     }
 
     public void whereNow(final String uuid, Callback callback) {
-        whereNow(uuid, callback);
+        _whereNow(uuid, callback, false);
     }
 
     public void whereNow(Callback callback) {
@@ -600,6 +483,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     private void _leave(String channel, String channelGroup, Hashtable params, Callback callback) {
 
         final Callback cb = getWrappedCallback(callback);
+        
+        Result result = new Result();
 
         if (PubnubUtil.isEmptyString(channel) && PubnubUtil.isEmptyString(channelGroup))
             return;
@@ -607,7 +492,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         if (PubnubUtil.isEmptyString(channel))
             channel = ",";
 
-        String[] urlArgs = { getPubnubUrl(), "v2/presence/sub_key", this.SUBSCRIBE_KEY, "channel",
+        String[] urlArgs = { getPubnubUrl(result), "v2/presence/sub_key", this.SUBSCRIBE_KEY, "channel",
                 PubnubUtil.urlEncode(channel), "leave" };
 
         params.put("uuid", UUID);
@@ -616,14 +501,14 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             params.put("channel-group", channelGroup);
 
         HttpRequest hreq = new HttpRequest(urlArgs, params, new ResponseHandler() {
-            public void handleResponse(HttpRequest hreq, String response) {
-                cb.successCallback(null, response);
+            public void handleResponse(HttpRequest hreq, String response, Result result) {
+                cb.successCallback(null, response, result);
             }
 
-            public void handleError(HttpRequest hreq, PubnubError error) {
-                cb.errorCallback(null, error);
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
+                cb.errorCallback(null, error, result);
             }
-        });
+        }, result);
 
         _request(hreq, nonSubscribeManager);
     }
@@ -982,11 +867,11 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         subscribe(args);
     }
 
-    protected void callErrorCallbacks(String[] channelList, PubnubError error) {
+    protected void callErrorCallbacks(String[] channelList, PubnubError error, Result result) {
         for (int i = 0; i < channelList.length; i++) {
             String channel = channelList[i];
             Callback cb = channelSubscriptions.getItem(channel).callback;
-            cb.errorCallback(channel, error);
+            cb.errorCallback(channel, error, result);
         }
     }
 
@@ -1096,7 +981,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         }
 
         if (channelString == null) {
-            callErrorCallbacks(channelsArray, PubnubError.PNERROBJ_PARSING_ERROR);
+            callErrorCallbacks(channelsArray, PubnubError.PNERROBJ_PARSING_ERROR, result);
             return;
         }
 
@@ -1175,7 +1060,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 }
 
             }
-
+            @Override
             public void handleResponse(HttpRequest hreq, String response, Result result1) {
 
 
@@ -1219,26 +1104,26 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
                 _saved_timetoken = "0";
                 log.verbose("Saved Timetoken reset to 0");
 
-                StreamStatus status = new StreamStatus(new StreamResult(result));
+                //StreamStatus status = new StreamStatus(new StreamResult(result));
 
                 if (!hreq.isDar()) {
                     channelSubscriptions.invokeConnectCallbackOnItems(_timetoken, result);
                     channelGroupSubscriptions.invokeConnectCallbackOnItems(_timetoken, result);
 
 
-                    status.status.category = StatusCategory.CONNECT;
+                    //status.status.category = StatusCategory.CONNECT;
 
                 } else {
                     channelSubscriptions.invokeReconnectCallbackOnItems(_timetoken, result);
                     channelGroupSubscriptions.invokeReconnectCallbackOnItems(_timetoken, result);
 
-                    status.status.category = StatusCategory.RECONNECT;
+                   // status.status.category = StatusCategory.RECONNECT;
 
                 }
 
                 if (pn.globalCallback != null) {
                     if (SUBSCRIBE_STATE != SubscribeState.CONNECTED) {
-                        pn.globalCallback.subscribeCallback(status);
+                        //pn.globalCallback.subscribeCallback(status);
                         SUBSCRIBE_STATE = SubscribeState.CONNECTED;
                     }
                 }
@@ -1260,8 +1145,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             public void handleBackFromDar(HttpRequest hreq) {
                 _subscribe_base(false, hreq.getWorker());
             }
-
-            public void handleError(HttpRequest hreq, PubnubError error) {
+            @Override
+            public void handleError(HttpRequest hreq, PubnubError error, Result result) {
                 disconnectAndResubscribe(error);
             }
 
@@ -1343,6 +1228,18 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     Callback globalCallback = new Callback(){
 
+        @Override
+        void successCallback(String channel, Object response, Result result) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        void errorCallback(String channel, PubnubError error, Result result) {
+            // TODO Auto-generated method stub
+            
+        }
+        /*
         public void statusOnAll(StreamStatus status) {
             for (int i = 0; i < listeners.size(); i++) {
                 StreamListener listener = (StreamListener)listeners.get(i);
@@ -1370,6 +1267,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             status.status.wasAutoRetried = true;
             statusOnAll(status);
         }
+        */
     };
 
     public void addStreamListener(StreamListener listener) {

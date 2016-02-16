@@ -101,6 +101,7 @@ public class Result {
 	
 	public Result() {
 		config = new Config();
+		type = ResultType.RESULT;
 	}
 	
 	HttpRequest hreq;

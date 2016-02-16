@@ -23,21 +23,6 @@ interface PubnubInterface {
      */
     public void setAuthKey(String authKey);
 
-    /**
-     * Sets domain value, default is "pubnub.com"
-     *
-     * @param domain
-     *            Domain value
-     */
-    public void setDomain(String domain);
-
-    /**
-     * Sets origin value, default is "pubsub"
-     *
-     * @param origin
-     *            Origin value
-     */
-    public void setOrigin(String origin);
 
     /**
      * Gets current UUID
@@ -46,12 +31,7 @@ interface PubnubInterface {
      */
     public String getUUID();
 
-    /**
-     * Returns domain
-     * 
-     * @return domain
-     */
-    public String getDomain();
+
 
     /**
      * This method returns auth key. Return null if not set

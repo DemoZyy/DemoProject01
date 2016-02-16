@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,6 +20,18 @@ import org.json.JSONObject;
  */
 public class PubnubUtil extends PubnubUtilCore {
 
+    
+    public static String[] jsonArrayToStringArray(JSONArray arr) {
+        String[] a = new String[arr.length()];
+        for(int i = 0; i < arr.length(); i++){
+            try {
+                a[i] = arr.getString(i);
+            } catch (JSONException e) {
+            }
+        }
+        return a;
+    }
+    
     public static String stringReplaceAll(String s, String a, String b) {
 		return s.replaceAll(a, b);
     }

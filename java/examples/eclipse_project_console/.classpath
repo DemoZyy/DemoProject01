@@ -4,17 +4,19 @@
 	<classpathentry kind="src" path="libs"/>
 	<classpathentry kind="src" path="srcPubnubApi/srcApi/publish"/>
 	<classpathentry kind="src" path="srcPubnubApi/srcApi/subscribe"/>
-	<classpathentry kind="src" path="srcPubnubApi/srcCore"/>
+	<classpathentry excluding="com/pubnub/api/PnMessage.java" kind="src" path="srcPubnubApi/srcCore"/>
 	<classpathentry kind="src" path="srcPubnubApi/srcCoreHttp"/>
 	<classpathentry kind="src" path="srcPubnubApi/srcInterfaces"/>
-	<classpathentry kind="src" path="srcPubnubApi/srcV4Objects"/>
+	<classpathentry excluding="com/pubnub/api/HereNowStatus.java|com/pubnub/api/StreamStatus.java|com/pubnub/api/SubscribeStatus.java" kind="src" path="srcPubnubApi/srcV4Objects"/>
+	<classpathentry kind="src" path="srcPubnubApi/srcCallbacks"/>
 	<classpathentry kind="src" path="src1"/>
 	<classpathentry kind="src" path="srcCrypto"/>
 	<classpathentry kind="src" path="srcLogging"/>
-	<classpathentry kind="src" path="srcExamples"/>
+	<classpathentry excluding="com/pubnub/examples/PubnubPresenceTest.java|com/pubnub/examples/UnsubscribeCheck.java|com/pubnub/examples/PubnubTestClient.java|com/pubnub/examples/PubnubPublishTest.java|com/pubnub/examples/PubnubPushSampleCode.java|com/pubnub/examples/V4Example.java" kind="src" path="srcExamples"/>
 	<classpathentry kind="lib" path="libs/bcprov-jdk15on-1.47.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-api-1.7.5.jar"/>
 	<classpathentry kind="lib" path="libs/json-20090211.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/work1/Downloads/asg.cliche-110413.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

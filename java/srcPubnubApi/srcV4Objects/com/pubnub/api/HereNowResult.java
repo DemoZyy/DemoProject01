@@ -1,7 +1,7 @@
 package com.pubnub.api;
 
 public class HereNowResult extends Result {
-	public HereNowData data;
+	HereNowData data;
 
 	public HereNowResult() {
 		data = new HereNowData();

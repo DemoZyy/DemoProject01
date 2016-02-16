@@ -40,6 +40,7 @@
         <pathelement location="libs/junit-4.11.jar"/>
         <pathelement location="libs/hamcrest-all-1.3.jar" />
         <pathelement location="libs/commons-cli-1.2.jar"/>
+        <pathelement location="libs/asg.cliche-110413.jar"/>
     </path>
     <target name="build-all" depends="clean, debug-build, clean, build" />
     <target name="deploy-all" depends="clean, push_to_maven_central, clean, push_debug_to_maven_central" />
@@ -107,6 +108,7 @@
             <include name="**/*.java"/>
         </replace>
         <javac destdir="bin" debug="${debug}" source="${source}" target="${target}">
+            <excludesfile name="./excludes.txt" />
             <src path="${srcPubnubApi.link}"/>
             <src path="src"/>
             <src path="src1"/>
@@ -151,7 +153,7 @@
                 <attribute name="Company" value="Pubnub" />
                 <attribute name="Project" value="pubnub-api" />
                 <attribute name="Java-Version" value="${java.version}" />
-                <attribute name="Rsrc-Class-Path" value="./ bcprov-jdk15on-1.47.jar commons-cli-1.2.jar json-simple-1.1.1.jar json-20090211.jar slf4j-api-1.7.5.jar slf4j-simple-1.7.5.jar" />
+                <attribute name="Rsrc-Class-Path" value="./ asg.cliche-110413.jar bcprov-jdk15on-1.47.jar commons-cli-1.2.jar json-simple-1.1.1.jar json-20090211.jar slf4j-api-1.7.5.jar slf4j-simple-1.7.5.jar" />
                 <attribute name="Class-Path" value="." />
                 <attribute name="Rsrc-Main-Class" value="@{jar.classname}" />
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
@@ -232,6 +234,7 @@
             <include name="**/*.java"/>
         </replace>
         <javac debug="${debug}" srcdir="${maven}/src" destdir="${build}" >
+            <excludesfile name="./excludes.txt" />
             <classpath refid="PubnubApi.classpath"/>
         </javac>
         <replace dir="${maven}/src" token="boolean LOGGING = true" value="boolean LOGGING = false">
@@ -243,6 +246,7 @@
             <include name="**/*.java"/>
         </replace>
         <javac debug="${debug}" srcdir="${maven}/src" destdir="${build}" >
+            <excludesfile name="./excludes.txt" />
             <classpath refid="PubnubApi.classpath"/>
         </javac>
     </target>

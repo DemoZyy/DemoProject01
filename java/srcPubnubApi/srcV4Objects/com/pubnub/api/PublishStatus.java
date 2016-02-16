@@ -1,25 +1,31 @@
 package com.pubnub.api;
 
-public class PublishStatus extends Result implements StatusInterface {
-	private PublishData data;
+public class PublishStatus extends AcknowledgmentStatus {
+	PublishData data;
 	
 	public PublishData getData() {
 		return data;
 	}
-	void setData(PublishData data) {
-		this.data = data;
-	}
 
-	Status status;
+	void fillPublishStatusDetails() {
+        category = category.ACK;
+        operation = operation.PUBLISH; 
+	}
 	
+	public PublishStatus(Result result) {
+	    super(result);
+		data = new PublishData();
+		fillPublishStatusDetails();
+
+	}
 	
 	public PublishStatus() {
-		data = new PublishData();
-		status = new Status();
-	}
-	public String toString() {
+        super();
+        fillPublishStatusDetails();
+    }
+
+    public String toString() {
 		String s = super.toString();
-		s = s + status + "\n";
 		s = s + data + "\n";
 		return s;
 		
@@ -27,17 +33,17 @@ public class PublishStatus extends Result implements StatusInterface {
 
 	@Override
 	public StatusCategory getCategory() {
-		return status.category;
+		return category;
 	}
 
 	@Override
 	public boolean isError() {
-		return status.isError;
+		return isError;
 	}
 
 	@Override
 	public boolean wasAutoRetried() {
-		return status.wasAutoRetried;
+		return wasAutoRetried;
 	}
 
 	@Override

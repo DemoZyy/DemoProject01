@@ -1,5 +1,11 @@
 package com.pubnub.api;
 
+import static com.pubnub.api.PubnubError.PNERR_DECRYPTION_ERROR;
+import static com.pubnub.api.PubnubError.PNERR_ENCRYPTION_ERROR;
+import static com.pubnub.api.PubnubError.PNERR_FORBIDDEN;
+import static com.pubnub.api.PubnubError.PNERR_INVALID_JSON;
+import static com.pubnub.api.PubnubError.PNERR_UNAUTHORIZED;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,27 +21,41 @@ import org.json.JSONObject;
  * @author Pubnub
  *
  */
-public abstract class Callback {
-	
-	public void hereNowCallback(HereNowResult result) {
-		
-	}
-	public void hereNowCallback(HereNowStatus status) {
-		
-	}
-	
-	public void publishCallback(PublishStatus result) {
-		
-	}
-	
-	public void grantCallback(GrantStatus result) {
-		
-	}
 
-	public void historyCallback(Result result) {
-		
-	}
+
+abstract class Callback {
 	
+    ErrorStatus fillErrorStatusDetails(PubnubError error, Result result) {
+        
+        
+        ErrorStatus status = new ErrorStatus(result);
+        status.wasAutoRetried = false;
+        status.errorData.information = error.getErrorMessage();
+        
+        switch(error.errorCode) {
+        case PNERR_FORBIDDEN:
+        case PNERR_UNAUTHORIZED:
+            status.category = StatusCategory.ACCESS_DENIED;
+            break;
+        case PNERR_ENCRYPTION_ERROR:
+        case PNERR_DECRYPTION_ERROR:
+            status.category = StatusCategory.ENCRYPTION_ERROR;
+            break;
+        case PNERR_INVALID_JSON:
+            status.category = StatusCategory.NON_JSON_RESPONSE;
+            break;
+        default:
+            break;
+            
+        }
+        return status;
+    }
+    
+	abstract void successCallback(String channel, Object response, Result result);
+	abstract void errorCallback(String channel, PubnubError error, Result result);
+
+	
+	/*
 	public void subscribeCallback(SubscribeResult result) {
 		
 	}
@@ -48,13 +68,16 @@ public abstract class Callback {
 	void subscribeCallback(StreamStatus status) {
 
 	}
+	*/
+	/*
 
-	void successCallback(String channel, Object message, Result result) {
+	protected void successCallback(String channel, Object message, Result result) {
 		if (result == null) {
 			successCallback(channel, message);
 		} else {
 
 			switch(result.operation) {
+			
 			case HERE_NOW_FOR_CHANNEL:
 			case HERE_NOW_GLOBAL:
 			case HERE_NOW_FOR_CHANNEL_GROUP:
@@ -80,11 +103,14 @@ public abstract class Callback {
 				}
 				
 				hereNowCallback(hereNowResult);
+				
 				break;
+				
 			case GRANT:
 				grantCallback((GrantStatus)result);
 				break;
 			case PUBLISH:
+			    
 				JSONArray jsa = (JSONArray)message;
 				PublishStatus status = (PublishStatus)result;
 				status.type = ResultType.STATUS;
@@ -97,8 +123,11 @@ public abstract class Callback {
 
 				}
 				publishCallback(status);
+				
 				break;
+				
 			case SUBSCRIBE:
+			    
 				((SubscribeResult)result).data.message = message;
 
 				if (channel.endsWith("-pnpres")) {
@@ -108,6 +137,7 @@ public abstract class Callback {
 	                result.type = ResultType.RESULT;
 				    subscribeCallback((SubscribeResult)result);
 				}
+				
 				break;
 				
 			default:
@@ -116,7 +146,9 @@ public abstract class Callback {
 			}
 		}
 	}
+	*/
 	
+	/*
 	void errorCallback(String channel, PubnubError error, Result result) {
 		if (result == null) {
 			errorCallback(channel, error);
@@ -124,22 +156,24 @@ public abstract class Callback {
 			result.type = ResultType.STATUS;
 			switch(result.getOperation()) {
 			case HERE_NOW_FOR_CHANNEL:
-				HereNowStatus hereNowStatus = (HereNowStatus)result;
-				hereNowStatus.status.isError = true;
-				hereNowStatus.status.wasAutoRetried = false;
+			    
+				ErrorStatus hereNowStatus = (ErrorStatus)result;
+				hereNowStatus.isError = true;
+				hereNowStatus.wasAutoRetried = false;
 				switch(error.errorCode) {
 				case PubnubError.PNERR_FORBIDDEN:
-					hereNowStatus.status.category = StatusCategory.ACCESS_DENIED;
+					hereNowStatus.category = StatusCategory.ACCESS_DENIED;
 					break;
 				case PubnubError.PNERR_CLIENT_TIMEOUT:
-					hereNowStatus.status.category = StatusCategory.TIMEOUT;
+					hereNowStatus.category = StatusCategory.TIMEOUT;
 					break;
 				}
 				hereNowCallback(hereNowStatus);
 				hereNowCallback((HereNowResult)hereNowStatus);
+				
 				break;
 			case GRANT:
-				grantCallback((GrantStatus)result);			
+				//grantCallback((GrantStatus)result);			
 				break;
 			case PUBLISH:
 				
@@ -156,7 +190,7 @@ public abstract class Callback {
 					status.status.category = StatusCategory.TIMEOUT;
 					break;
 				}
-				publishCallback(status);
+				//publishCallback(status);
 				break;
 			default:
 				break;
@@ -164,64 +198,16 @@ public abstract class Callback {
 			}
 		}
 	}
+	*/
 	
-	
-
-    /**
-     * This callback will be invoked when a message is received on the channel
-     *
-     * @param channel
-     *            Channel Name
-     * @param message
-     *            Message
-     *
-     */
-    public void successCallback(String channel, Object message) {
-    	
-    }
-
-    /**
-     * This callback will be invoked when a message is received on the channel
-     *
-     * @param channel
-     *            Channel Name
-     * @param message
-     *            Message
-     * @param timetoken
-     *            Timetoken
-     */
-    public void successCallback(String channel, Object message, String timetoken) {
-
-    }
-
     void successWrapperCallback(String channel, Object message, String timetoken, SubscribeResult result) {
     	result.data.timetoken = timetoken;
-        successCallback(channel, message, result);
-        successCallback(channel, message, timetoken);
+        //successCallback(channel, message, result);
     }
 
-    /**
-     * This callback will be invoked when an error occurs
-     *
-     * @param channel
-     *            Channel Name
-     * @param error
-     *            error
-     */
-    public void errorCallback(String channel, PubnubError error) {
-
-    }
-
-    /**
-     * This callback will be invoked on getting connected to a channel
-     *
-     * @param channel
-     *            Channel Name
-     */
-    public void connectCallback(String channel, Object message) {
-    }
     
     void connectCallback(String channel, Object message, SubscribeResult result) {
+        /*
 		SubscribeStatus status = new SubscribeStatus(result);
     	if (status == null) {
     		connectCallback(channel, message);
@@ -234,19 +220,12 @@ public abstract class Callback {
     		subscribeCallback(status);   		
     		//subscribeCallback((SubscribeResult)status);
     	}
+    	*/
     }
 
-    /**
-     * This callback is invoked on getting reconnected to a channel after
-     * getting disconnected
-     *
-     * @param channel
-     *            Channel Name
-     */
-    public void reconnectCallback(String channel, Object message) {
-    }
 
     public void reconnectCallback(String channel, Object message, SubscribeResult result) {
+        /*
 		SubscribeStatus status = new SubscribeStatus(result);
     	if (status == null) {
     		reconnectCallback(channel, message);
@@ -257,18 +236,11 @@ public abstract class Callback {
     		subscribeCallback(status);
     		//subscribeCallback((SubscribeResult)status);
     	}
+    	*/
     }
-    
-    /**
-     * This callback is invoked on getting disconnected from a channel
-     *
-     * @param channel
-     *            Channel Name
-     */
-    public void disconnectCallback(String channel, Object message) {
-    }
-    
+
     void disconnectCallback(String channel, Object message, SubscribeResult result) {
+        /*
 		SubscribeStatus status = new SubscribeStatus(result);
     	if (status == null) {
     		disconnectCallback(channel, message);
@@ -279,6 +251,8 @@ public abstract class Callback {
     		subscribeCallback(status);
     		//subscribeCallback((SubscribeResult)status);
     	}
+    	*/
     }
 
 }
+

@@ -9,7 +9,7 @@ public class PubnubPublish implements PubnubPublishInterface {
 
     
     private Pubnub pubnub;
-    private Callback callback;
+    private PublishCallback callback;
     private String channel;
     private Object message;
     private JSONObject metadata;
@@ -27,8 +27,9 @@ public class PubnubPublish implements PubnubPublishInterface {
         PubnubUtil.addToHash(args, "message", message);
         PubnubUtil.addToHash(args, "storeInHistory", (storeInHistory) ? "" : "0");
         PubnubUtil.addToHash(args, "meta", metadata);
+        PubnubUtil.addToHash(args, "callback", callback);
     
-        if (pubnub != null) pubnub.publish(args, callback);
+        if (pubnub != null) pubnub._publish(args, false);
     }
     
     PubnubPublishApiState1 apiState1 = new PubnubPublishApiState1(){
@@ -138,7 +139,7 @@ public class PubnubPublish implements PubnubPublishInterface {
     };
     
     @Override
-    public PubnubPublishApiState callback(Callback callback) {
+    public PubnubPublishApiState callback(PublishCallback callback) {
         pns.callback = callback;
         return apiState;
     }

@@ -2,12 +2,6 @@ package com.pubnub.api;
 
 public class StreamStatus extends StreamResult implements StatusInterface  {
 
-	Status status;
-	
-	public StreamStatus(){
-		status = new Status();
-	}
-	
 	public StreamStatus(StreamResult result) {
 		this();
 		this.clientRequest = result.clientRequest;

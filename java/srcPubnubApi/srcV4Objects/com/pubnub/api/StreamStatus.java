@@ -2,6 +2,10 @@ package com.pubnub.api;
 
 public class StreamStatus extends StreamResult implements StatusInterface  {
 
+	boolean wasAutoRetried;
+	boolean isError;
+	StatusCategory category;
+    
 	public StreamStatus(StreamResult result) {
 		this();
 		this.clientRequest = result.clientRequest;
@@ -12,25 +16,29 @@ public class StreamStatus extends StreamResult implements StatusInterface  {
 		this.operation = result.operation;
 		this.pubnub = result.pubnub;
 		this.serverResponse = result.serverResponse;
-		this.type = result.type;
+		this.type = ResultType.STATUS;
 	    data = new StreamData();
 	    data.message = result.data.message;
 	    data.timetoken = result.data.timetoken;
 	}
 	
-	@Override
+	public StreamStatus() {
+        // TODO Auto-generated constructor stub
+    }
+
+    @Override
 	public StatusCategory getCategory() {
-		return status.category;
+		return category;
 	}
 
 	@Override
 	public boolean isError() {
-		return status.isError;
+		return isError;
 	}
 
 	@Override
 	public boolean wasAutoRetried() {
-		return status.wasAutoRetried;
+		return wasAutoRetried;
 	}
 
 	@Override
@@ -40,7 +48,9 @@ public class StreamStatus extends StreamResult implements StatusInterface  {
 	
 	public String toString() {
 		String s = super.toString();
-		s = s + status + "\n";
+		s = s + "Was Auto Retried ? : " + wasAutoRetried + "\n";
+		s = s + "Is Error ? : " + isError + "\n";
+		s = s + "Category : " + category + "\n";
 		return s;	
 	}
 

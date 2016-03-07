@@ -8,4 +8,9 @@ public class AcknowledgmentStatus extends ErrorStatus {
     AcknowledgmentStatus() {
         super();
     }
+    
+    AcknowledgmentStatus(ErrorStatus s) {
+        super();
+    }
+    
 }

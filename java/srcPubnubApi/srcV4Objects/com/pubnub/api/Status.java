@@ -1,6 +1,6 @@
 package com.pubnub.api;
 
-public abstract class  Status extends Result implements StatusInterface {
+public class  Status extends Result implements StatusInterface {
 	boolean wasAutoRetried;
 	boolean isError;
 	StatusCategory category;
@@ -40,6 +40,11 @@ public abstract class  Status extends Result implements StatusInterface {
         this.connectionId = result.connectionId;
         this.clientRequest = result.clientRequest;
         this.serverResponse = result.serverResponse;
+    }
+
+    @Override
+    public void retry() {
+
     }
 
 }

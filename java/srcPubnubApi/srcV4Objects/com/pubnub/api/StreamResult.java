@@ -12,7 +12,6 @@ public class StreamResult extends Result {
 	}
 	
 	public StreamResult(SubscribeResult result) {
-		this();
 		this.clientRequest = result.clientRequest;
 		this.code = result.code;
 		this.config = result.config;
@@ -28,6 +27,7 @@ public class StreamResult extends Result {
 	}
 	
 	public String toString() {
+		System.out.println("to string " + data.message);
 		String s = super.toString();
 		s = s + data + "\n";
 		return s;

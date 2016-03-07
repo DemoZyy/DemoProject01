@@ -4,7 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ChannelGroupHereNowData {
+public class GlobalHereNowData {
     int occupancy;
     public int getOccupancy() {
         return occupancy;
@@ -14,12 +14,12 @@ public class ChannelGroupHereNowData {
         return totalOccupancy;
     }
 
-    public ChannelGroupHereNowUuidData[] getUuids() {
+    public GlobalHereNowUuidData[] getUuids() {
         return uuids;
     }
 
     int totalOccupancy;
-    ChannelGroupHereNowUuidData[] uuids;
+    GlobalHereNowUuidData[] uuids;
     
     
     public String toString() {
@@ -27,20 +27,20 @@ public class ChannelGroupHereNowData {
         String s = "";
         s = s + "Occupancy: " + occupancy + "\n";
         s = s + "Total Occupancy: " + occupancy + "\n";
-        if (uuids != null) s = s + "UUIDS: " + ChannelGroupHereNowUuidData.arrayToString(uuids) + "\n";
+        if (uuids != null) s = s + "UUIDS: " + GlobalHereNowUuidData.arrayToString(uuids) + "\n";
 
         return s;
     }
 
-    public static ChannelGroupHereNowUuidData[] getUuidDataArray(JSONArray jsonArray) {
+    public static GlobalHereNowUuidData[] getUuidDataArray(JSONArray jsonArray) {
         System.out.println(jsonArray.toString());
-        ChannelGroupHereNowUuidData[] uuidData = new ChannelGroupHereNowUuidData[jsonArray.length()];
+        GlobalHereNowUuidData[] uuidData = new GlobalHereNowUuidData[jsonArray.length()];
         
         for (int i = 0; i < jsonArray.length(); i++) {
             Object a;
             try {
                 a = jsonArray.get(i);
-                ChannelGroupHereNowUuidData hd = uuidData[i] = new ChannelGroupHereNowUuidData();
+                GlobalHereNowUuidData hd = uuidData[i] = new GlobalHereNowUuidData();
                 if (a instanceof JSONObject) {
                     JSONObject jso = (JSONObject)a;
                     hd.uuid = jso.getString("uuid");
@@ -55,7 +55,7 @@ public class ChannelGroupHereNowData {
             }
 
         }
-        System.out.println(ChannelGroupHereNowUuidData.arrayToString(uuidData));
+
         return uuidData;
     }
 }

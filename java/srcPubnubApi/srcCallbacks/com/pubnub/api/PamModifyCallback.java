@@ -5,7 +5,7 @@ import com.pubnub.api.PubnubError;
 import com.pubnub.api.Result;
 
 public abstract class PamModifyCallback extends Callback {
-    public abstract void status(ErrorStatus status);
+    public abstract void status(AcknowledgmentStatus status);
     
     @Override
     void successCallback(String channel, Object message, Result result) {

@@ -1,5 +1,7 @@
 package com.pubnub.api;
 
+import java.util.Hashtable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +13,7 @@ import org.json.JSONObject;
  */
 public class PnMessage extends JSONObject {
     private String channel;
-    private Callback callback;
+    private PublishCallback callback;
     private Pubnub pubnub;
 
     /**
@@ -24,7 +26,7 @@ public class PnMessage extends JSONObject {
      * @param callback
      *            Callback object
      */
-    public PnMessage(Pubnub pubnub, String channel, Callback callback) {
+    public PnMessage(Pubnub pubnub, String channel, PublishCallback callback) {
         super();
         this.channel = channel;
         this.callback = callback;
@@ -72,7 +74,7 @@ public class PnMessage extends JSONObject {
      * @param gcmMsg
      *            Pubnub GCM message object
      */
-    public PnMessage(Pubnub pubnub, String channel, Callback callback, PnApnsMessage apnsMsg, PnGcmMessage gcmMsg) {
+    public PnMessage(Pubnub pubnub, String channel, PublishCallback callback, PnApnsMessage apnsMsg, PnGcmMessage gcmMsg) {
         super();
         this.channel = channel;
         this.callback = callback;
@@ -124,7 +126,7 @@ public class PnMessage extends JSONObject {
      * @param callback
      *            Callback
      */
-    public void setCallback(Callback callback) {
+    public void setCallback(PublishCallback callback) {
         this.callback = callback;
     }
 
@@ -176,7 +178,7 @@ public class PnMessage extends JSONObject {
      * @param gcmMsg
      *            Pubnub GCM message object
      */
-    public PnMessage(Pubnub pubnub, String channel, Callback callback, PnGcmMessage gcmMsg) {
+    public PnMessage(Pubnub pubnub, String channel, PublishCallback callback, PnGcmMessage gcmMsg) {
         super();
         this.channel = channel;
         this.callback = callback;
@@ -219,7 +221,7 @@ public class PnMessage extends JSONObject {
      * @param apnsMsg
      *            Pubnub APNS message object
      */
-    public PnMessage(Pubnub pubnub, String channel, Callback callback, PnApnsMessage apnsMsg) {
+    public PnMessage(Pubnub pubnub, String channel, PublishCallback callback, PnApnsMessage apnsMsg) {
         super();
         this.channel = channel;
         this.callback = callback;
@@ -245,7 +247,7 @@ public class PnMessage extends JSONObject {
      * @throws PubnubException
      *             Exception if either channel or pubnub object is not set
      */
-    public void publish(Pubnub pubnub, String channel, Callback callback) throws PubnubException {
+    public void publish(Pubnub pubnub, String channel, PublishCallback callback) throws PubnubException {
         this.channel = channel;
         this.callback = callback;
         this.pubnub = pubnub;
@@ -255,7 +257,11 @@ public class PnMessage extends JSONObject {
         if (this.pubnub == null) {
             throw new PubnubException(PubnubError.PNERROBJ_CONNECTION_NOT_SET);
         }
-        pubnub.publish(channel, this, callback);
+        Hashtable args = new Hashtable();
+        args.put("channel", channel);
+        args.put("message", this);
+        args.put("callback", callback);
+        pubnub._publish(args, false);
     }
 
     /**
@@ -272,7 +278,7 @@ public class PnMessage extends JSONObject {
      * @throws PubnubException
      *             Exception if either channel or pubnub object is not set
      */
-    public void publish(Pubnub pubnub, String channel, boolean storeInHistory, Callback callback)
+    public void publish(Pubnub pubnub, String channel, boolean storeInHistory, PublishCallback callback)
             throws PubnubException {
         this.channel = channel;
         this.callback = callback;
@@ -283,7 +289,12 @@ public class PnMessage extends JSONObject {
         if (this.pubnub == null) {
             throw new PubnubException(PubnubError.PNERROBJ_CONNECTION_NOT_SET);
         }
-        pubnub.publish(channel, this, storeInHistory, callback);
+        Hashtable args = new Hashtable();
+        args.put("channel", channel);
+        args.put("message", this);
+        args.put("storeInHistory", storeInHistory);
+        args.put("callback", callback);
+        pubnub._publish(args, false);
     }
 
     /**
@@ -299,7 +310,11 @@ public class PnMessage extends JSONObject {
         if (this.pubnub == null) {
             throw new PubnubException(PubnubError.PNERROBJ_CONNECTION_NOT_SET);
         }
-        pubnub.publish(channel, this, callback);
+        Hashtable args = new Hashtable();
+        args.put("channel", channel);
+        args.put("message", this);
+        args.put("callback", callback);
+        pubnub._publish(args, false);
     }
 
     /**
@@ -317,7 +332,12 @@ public class PnMessage extends JSONObject {
         if (this.pubnub == null) {
             throw new PubnubException(PubnubError.PNERROBJ_CONNECTION_NOT_SET);
         }
-        pubnub.publish(channel, this, storeInHistory, callback);
+        Hashtable args = new Hashtable();
+        args.put("channel", channel);
+        args.put("message", this);
+        args.put("storeInHistory", storeInHistory);
+        args.put("callback", callback);
+        pubnub._publish(args, false);
     }
 
 }

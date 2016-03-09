@@ -194,7 +194,8 @@ public class PubnubDemoConsole {
     
 
     private void history(String channel, int count, boolean includeToken) {
-        pubnub.history(channel, includeToken, count, new HistoryCallback() {
+        
+        pubnub.history().callback(new HistoryCallback() {
 
             @Override
             public void status(ErrorStatus status) {
@@ -206,7 +207,10 @@ public class PubnubDemoConsole {
                 notifyUser(result);
             }
 
-        });
+        }).channel(channel)
+        .count(count)
+        .get();
+        
     }
 
     private void hereNow(String channel) {
@@ -248,8 +252,7 @@ public class PubnubDemoConsole {
 
             @Override
             public void status(ErrorStatus status) {
-                // TODO Auto-generated method stub
-                
+                self.handleStatus(status);
             }
 
             @Override
@@ -559,23 +562,24 @@ public class PubnubDemoConsole {
 
 
     private void removeGroup(String group) {
+        
+        
+       pubnub.channelGroup().removeGroup().callback(new ChannelGroupChangeCallback() {
 
-        pubnub.channelGroupRemoveGroup(group, new ChannelGroupChangeCallback() {
+           @Override
+           public void status(AcknowledgmentStatus status) {
+               self.handleStatus(status);
+           }
 
-            @Override
-            public void status(AcknowledgmentStatus status) {
-                // TODO Auto-generated method stub
-                
-            }
+       }).channelGroup(group).remove();
 
-        });
 
     }
 
     private void listGroups() {
 
-
-        pubnub.channelGroupListGroups(new GroupAuditCallback() {
+        
+        pubnub.channelGroup().listGroups().callback(new GroupAuditCallback() {
 
             @Override
             public void status(ErrorStatus status) {
@@ -587,13 +591,14 @@ public class PubnubDemoConsole {
                 notifyUser(result);
             }
 
-        });
+        }).list();
+
 
     }
 
     private void listChannelsForGroup(String group) {
         
-        pubnub.channelGroupListChannels(group, new GroupChannelsAuditCallback() {
+        pubnub.channelGroup().listChannels().callback( new GroupChannelsAuditCallback() {
 
             @Override
             public void status(ErrorStatus status) {
@@ -605,42 +610,39 @@ public class PubnubDemoConsole {
                 notifyUser(result);
             }
 
-        });
-
-
+        }).channelGroup(group).list();
+        
     }
 
     private void removeChannelFromGroup(String group, String channel) {
         
-        pubnub.channelGroupRemoveChannel(group, channel, new ChannelGroupChangeCallback() {
+        pubnub.channelGroup().removeChannel().callback(new ChannelGroupChangeCallback() {
 
             @Override
             public void status(AcknowledgmentStatus status) {
                 self.handleStatus(status);
             }
 
-        });
-
-
+        }).channelGroup(group).channel(channel).remove();
+        
     }
 
     private void addChannelToGroup(String group, String channel) {
         
-        pubnub.channelGroupAddChannel(group, channel, new ChannelGroupChangeCallback() {
+        pubnub.channelGroup().addChannel().callback(new ChannelGroupChangeCallback() {
 
             @Override
             public void status(AcknowledgmentStatus status) {
                 self.handleStatus(status);
             }
 
-        });
+        }).channelGroup(group).channel(channel).add();
         
-
     }
 
     private void whereNow(String uuid) {
         
-        pubnub.whereNow(uuid, new WhereNowCallback() {
+        pubnub.whereNow().callback(new WhereNowCallback() {
 
             @Override
             public void status(ErrorStatus status) {
@@ -652,7 +654,7 @@ public class PubnubDemoConsole {
                 notifyUser(result);
             }
 
-        });
+        }).uuid(uuid).get();
         
     }
 
@@ -723,15 +725,21 @@ public class PubnubDemoConsole {
         boolean write = getBooleanFromConsole("Write");
         int ttl = getIntFromConsole("TTL");
         
-        pubnub.pamGrant(channel, auth_key, read, write, ttl, new PamModifyCallback() {
+        pubnub.pam().grant().callback( new PamModifyCallback() {
 
             @Override
-            public void status(ErrorStatus status) {
+            public void status(AcknowledgmentStatus status) {
                 self.handleStatus(status);
             }
 
 
-        });
+        })
+        .channel(channel)
+        .authKey(auth_key)
+        .read(read)
+        .write(write)
+        .ttl(ttl)
+        .invoke();
         
     }
 
@@ -755,12 +763,12 @@ public class PubnubDemoConsole {
 
         if (channel != null && channel.length() > 0) {
             if (auth_key != null && auth_key.length() != 0) {
-                pubnub.pamAudit(channel, auth_key, cb);
+                pubnub.pam().audit().callback(cb).channel(channel).authKey(auth_key).invoke();
             } else {
-                pubnub.pamAudit(channel, cb);
+                pubnub.pam().audit().callback(cb).channel(channel).invoke();
             }
         } else {
-            pubnub.pamAudit(cb);
+            pubnub.pam().audit().callback(cb).invoke();
         }
         
     }
@@ -768,15 +776,18 @@ public class PubnubDemoConsole {
     private void pamRevoke() {
         String channel = getStringFromConsole("Enter Channel");
         String auth_key = getStringFromConsole("Auth Key");
-        
-        pubnub.pamRevoke(channel, auth_key, new PamModifyCallback() {
+
+        pubnub.pam().revoke().callback(new PamModifyCallback() {
 
             @Override
-            public void status(ErrorStatus status) {
+            public void status(AcknowledgmentStatus status) {
                 self.handleStatus(status);
             }
 
-        });
+        })
+        .channel(channel)
+        .authKey(auth_key)
+        .invoke();
         
     }
 

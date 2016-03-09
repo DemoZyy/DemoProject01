@@ -11,6 +11,9 @@ public abstract class ChannelStateCallback extends Callback {
     
     @Override
     void errorCallback(String channel, PubnubError error, Result result) {
-        
+        ErrorStatus status = fillErrorStatusDetails(error, result);
+        status.operation = OperationType.STATE_FOR_CHANNEL;
+        status.errorData.channels = new String[]{channel};
+        status(status);         
     }
 }

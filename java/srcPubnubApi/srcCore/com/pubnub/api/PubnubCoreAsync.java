@@ -6,10 +6,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterface {
 
@@ -890,6 +887,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         }
 
         Callback callback = (Callback) args.get("callback");
+        if (callback == null) callback = this.globalCallback;
         String timetoken = (String) args.get("timetoken");
 
         if (!_timetoken.equals("0"))
@@ -1013,7 +1011,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         HttpRequest hreq = new HttpRequest(urlComponents, params, new ResponseHandler() {
 
             void v1Handler(JSONArray jsa, HttpRequest hreq, SubscribeResult result) throws JSONException {
-
+                System.out.println("V1 handler");
                 JSONArray messages = new JSONArray(jsa.get(0).toString());
 
                 if (jsa.length() == 4) {
@@ -1224,63 +1222,87 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     }
 
 
-    List listeners = new ArrayList();
+    HashMap<String,StreamListener> listeners = new HashMap<String, StreamListener>();
 
     Callback globalCallback = new Callback(){
 
         @Override
         void successCallback(String channel, Object response, Result result) {
-            // TODO Auto-generated method stub
-            
+            StreamResult res = new StreamResult((SubscribeResult)result);
+            res.data.channel = channel;
+            for (StreamListener listener : listeners.values()) {
+                listener.streamResult(res);
+            }
         }
 
         @Override
         void errorCallback(String channel, PubnubError error, Result result) {
-            // TODO Auto-generated method stub
-            
+
         }
-        /*
-        public void statusOnAll(StreamStatus status) {
-            for (int i = 0; i < listeners.size(); i++) {
-                StreamListener listener = (StreamListener)listeners.get(i);
+
+        @Override
+        void connectCallback(String channel, Object response, SubscribeResult result) {
+            StreamStatus status = new StreamStatus(new StreamResult(result));
+            status.isError = false;
+            status.category = StatusCategory.CONNECT;
+            status.data.channel = channel;
+            statusOnAll(status);
+        }
+
+        @Override
+        void reconnectCallback(String channel, Object response, SubscribeResult result) {
+
+        }
+
+        @Override
+        void disconnectCallback(String channel, Object response, SubscribeResult result) {
+
+        }
+
+        public synchronized  void statusOnAll(StreamStatus status) {
+            for (StreamListener listener : listeners.values()) {
                 listener.streamStatus(status);
             }
         }
         
-        public void resultOnAll(StreamResult result) {
-            for (int i = 0; i < listeners.size(); i++) {
-                StreamListener listener = (StreamListener)listeners.get(i);
+        public synchronized  void resultOnAll(StreamResult result) {
+            for (StreamListener listener : listeners.values()) {
                 listener.streamResult(result);
             }
         }
 
-        public void subscribeCallback(SubscribeResult result) {
+        public synchronized  void subscribeCallback(SubscribeResult result) {
+            System.out.println(result);
             StreamResult res = new StreamResult(result);
-            for (int i = 0; i < listeners.size(); i++) {
-                StreamListener listener = (StreamListener)listeners.get(i);
+            for (StreamListener listener : listeners.values()) {
                 listener.streamResult(res);
             }
         }
         public void subscribeCallback(StreamStatus status) {
-            status.status.isError = false;
+            status.isError = false;
             status.type = ResultType.STATUS;
-            status.status.wasAutoRetried = true;
+            status.wasAutoRetried = true;
             statusOnAll(status);
         }
-        */
+
     };
 
-    public void addStreamListener(StreamListener listener) {
-        listeners.add(listener);
+    public synchronized void addStreamListener(String id, StreamListener listener) {
+        listeners.put(id, listener);
     }
 
-    public void removeAllListeners() {
-        listeners.removeAll(null);
+    public synchronized  void removeAllListeners() {
+        listeners.clear();
     }
+
+    public synchronized void removeListener(String id) {
+        listeners.remove(id);
+    }
+
 
     private void invokeSubscribeCallback(String channel, Callback callback, Object message, String timetoken,
             HttpRequest hreq, SubscribeResult result) throws JSONException {
-
+        System.out.println("INVOKE SUBSCRIBE CALLBACK");
         if (callback == null) {
             callback = this.globalCallback;
         }
@@ -1383,4 +1405,43 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         return pubnubSubscribe;
     }
 
+    
+    PubnubPublishAsync pubnubPublishAsync = new PubnubPublishAsync((Pubnub)this);
+    
+    PubnubHistoryAsync pubnubHistoryAsync = new PubnubHistoryAsync((Pubnub)this);
+    
+    public PubnubPublishAsync publish() {
+        return pubnubPublishAsync;
+    }
+    
+    public PubnubHistoryAsync history() {
+        return pubnubHistoryAsync;
+    }
+    
+    PubnubPamAsync pubnubPamAsync = new PubnubPamAsync((Pubnub)this);
+    
+    public PubnubPamAsync pam() {
+        return pubnubPamAsync;
+    }
+    
+    PubnubCGAsync pubnubCGAsync = new PubnubCGAsync((Pubnub)this);
+    
+    public PubnubCGAsync channelGroup() {
+        return pubnubCGAsync;
+    }
+    
+    PubnubWhereNowAsync pubnubWhereNowAsync = new PubnubWhereNowAsync((Pubnub)this);
+    
+    
+    public PubnubWhereNowAsync whereNow() {
+        return pubnubWhereNowAsync;
+    }
+    
+    PubnubHereNowAsync pubnubHereNowAsync = new PubnubHereNowAsync((Pubnub)this);
+    
+    
+    public PubnubHereNowAsync hereNow() {
+        return pubnubHereNowAsync;
+    }
+    
 }

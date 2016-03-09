@@ -1,5 +1,5 @@
 package com.pubnub.api;
 
-public interface PubnubPublishEnd {
+public interface PubnubPublishAsyncEnd {
     void send();
 }

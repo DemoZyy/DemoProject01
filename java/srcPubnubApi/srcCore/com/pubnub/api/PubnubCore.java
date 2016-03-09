@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-abstract class PubnubCore implements PubnubInterface {
+abstract public class PubnubCore implements PubnubInterface {
 
     protected static String VERSION = "";
     protected volatile boolean CACHE_BUSTING = true;
@@ -48,8 +48,8 @@ abstract class PubnubCore implements PubnubInterface {
     {
 
 
-        private String domain;
-        private String origin;
+        private String domain = "pubnub.com";
+        private String origin = "pubsub.pubnub.com";
         private String publishKey = "";
         private String subscribeKey = "";
         private String secretKey = "";
@@ -1356,15 +1356,9 @@ abstract class PubnubCore implements PubnubInterface {
             }
         }, result);
 
-        setResultData(result, OperationType.GRANT, hreq);
+        setResultData(result, OperationType.PAM_MODIFY, hreq);
         return _request(hreq, (sync) ? null : nonSubscribeManager);
 
     }
 
-    public PubnubPublish pubnubPublish = new PubnubPublish((Pubnub)this);
-
-    public PubnubPublish publish() {
-        return pubnubPublish;
-    }
-    
 }

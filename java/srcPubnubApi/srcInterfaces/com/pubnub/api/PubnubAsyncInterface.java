@@ -8,7 +8,7 @@ interface PubnubAsyncInterface {
 
     public PubnubSubscribe subscribe();
     
-    public PubnubPublish publish();
+    public PubnubPublishAsync publish();
     
     
 

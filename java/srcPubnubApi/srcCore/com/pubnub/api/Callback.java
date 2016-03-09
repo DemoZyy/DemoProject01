@@ -25,6 +25,31 @@ import org.json.JSONObject;
 
 abstract class Callback {
 	
+    
+    ErrorStatus fillErrorStatusDetails(ErrorStatus status, PubnubError error, Result result) {
+
+        status.wasAutoRetried = false;
+        status.errorData.information = error.getErrorMessage();
+        
+        switch(error.errorCode) {
+        case PNERR_FORBIDDEN:
+        case PNERR_UNAUTHORIZED:
+            status.category = StatusCategory.ACCESS_DENIED;
+            break;
+        case PNERR_ENCRYPTION_ERROR:
+        case PNERR_DECRYPTION_ERROR:
+            status.category = StatusCategory.ENCRYPTION_ERROR;
+            break;
+        case PNERR_INVALID_JSON:
+            status.category = StatusCategory.NON_JSON_RESPONSE;
+            break;
+        default:
+            break;
+            
+        }
+        return status;
+    }
+    
     ErrorStatus fillErrorStatusDetails(PubnubError error, Result result) {
         
         
@@ -201,12 +226,16 @@ abstract class Callback {
 	*/
 	
     void successWrapperCallback(String channel, Object message, String timetoken, SubscribeResult result) {
+        System.out.println("wrapper callback");
+        System.out.println(message);
     	result.data.timetoken = timetoken;
-        //successCallback(channel, message, result);
+        result.data.message = message;
+        successCallback(channel, message, result);
     }
 
     
     void connectCallback(String channel, Object message, SubscribeResult result) {
+        System.out.println("CONNECT");
         /*
 		SubscribeStatus status = new SubscribeStatus(result);
     	if (status == null) {
@@ -224,7 +253,7 @@ abstract class Callback {
     }
 
 
-    public void reconnectCallback(String channel, Object message, SubscribeResult result) {
+    void reconnectCallback(String channel, Object message, SubscribeResult result) {
         /*
 		SubscribeStatus status = new SubscribeStatus(result);
     	if (status == null) {

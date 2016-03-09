@@ -11,6 +11,9 @@ public abstract class GroupChannelsAuditCallback extends Callback {
     
     @Override
     void errorCallback(String channel, PubnubError error, Result result) {
-        
+        ErrorStatus status = fillErrorStatusDetails(error, result);
+        status.operation = OperationType.CHANNELS_FOR_GROUP;
+        status.errorData.channels = new String[]{channel};
+        status(status);          
     }
 }

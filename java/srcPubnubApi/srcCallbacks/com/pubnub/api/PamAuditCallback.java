@@ -3,7 +3,6 @@ package com.pubnub.api;
 import com.pubnub.api.ErrorStatus;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.Result;
-import com.pubnub.examples.PamAuditResult;
 
 public abstract class PamAuditCallback extends Callback {
     public abstract void status(ErrorStatus status);
@@ -16,6 +15,8 @@ public abstract class PamAuditCallback extends Callback {
     
     @Override
     void errorCallback(String channel, PubnubError error, Result result) {
-        
+        ErrorStatus status = fillErrorStatusDetails(error, result);
+        status.operation = OperationType.PAM_AUDIT;
+        status(status);          
     }
 }

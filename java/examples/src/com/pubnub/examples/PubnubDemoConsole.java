@@ -217,7 +217,7 @@ public class PubnubDemoConsole {
         boolean metadata = getBooleanFromConsole("Metadata");
         boolean uuids = getBooleanFromConsole("Return UUIDs");
 
-        pubnub.hereNow(channel, metadata, uuids, new HereNowCallback() {
+        pubnub.hereNow().callback(new HereNowCallback() {
 
             @Override
             public void status(ErrorStatus status) {
@@ -230,7 +230,8 @@ public class PubnubDemoConsole {
                 notifyUser(result);
             }
 
-        });
+        }).channel(channel).state(metadata).uuids(uuids).get();
+        
     }
 
     private void unsubscribe(String channel) {

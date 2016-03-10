@@ -29,13 +29,15 @@ import static com.pubnub.api.PubnubUtil.*;
 public class Pubnub extends PubnubCoreShared {
     
     public Pubnub() {
-        
+       
     }
 
+    public static class Build {
+
+    };
 
     protected String getUserAgent() {
         return "Java/" + VERSION;
     }
-
 
 }

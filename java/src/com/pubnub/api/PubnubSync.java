@@ -11,31 +11,10 @@ import java.util.UUID;
  * @author Pubnub
  *
  */
-public class PubnubSync extends PubnubCoreSync implements PubnubSyncInterfacePam, PubnubSyncInterfacePush {
+public class PubnubSync extends PubnubCoreSync {
 
     public PubnubSync() {
         
-    }
-
-
-    @Override
-    public Object enablePushNotificationsOnChannel(String channel, String gcmRegistrationId) {
-        return _enablePushNotificationsOnChannels(new String[] { channel }, gcmRegistrationId, null, true);
-    }
-
-    @Override
-    public Object enablePushNotificationsOnChannels(String[] channels, String gcmRegistrationId) {
-        return _enablePushNotificationsOnChannels(channels, gcmRegistrationId, null, true);
-    }
-
-    @Override
-    public Object disablePushNotificationsOnChannel(String channel, String gcmRegistrationId) {
-        return _disablePushNotificationsOnChannels(new String[] { channel }, gcmRegistrationId, null, true);
-    }
-
-    @Override
-    public Object disablePushNotificationsOnChannels(String[] channels, String gcmRegistrationId) {
-        return _disablePushNotificationsOnChannels(channels, gcmRegistrationId, null, true);
     }
 
     protected String getUserAgent() {

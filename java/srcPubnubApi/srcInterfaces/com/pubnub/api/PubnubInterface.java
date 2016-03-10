@@ -40,12 +40,5 @@ interface PubnubInterface {
      */
     public String getAuthKey();
 
-    /**
-     * Sets value for UUID
-     *
-     * @param uuid
-     *            UUID value for Pubnub client
-     */
-    public void setUUID(String uuid);
 
 }

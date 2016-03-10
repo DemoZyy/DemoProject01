@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
-abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterface {
+abstract class PubnubCoreAsync extends PubnubCore {
 
     public PubnubCoreAsync() {
         
@@ -49,11 +49,11 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         return resumeOnReconnect;
     }
 
-    public void setRetryInterval(int retryInterval) {
+    void setRetryInterval(int retryInterval) {
         subscribeManager.setRetryInterval(retryInterval);
     }
 
-    public void setWindowInterval(int windowInterval) {
+    void setWindowInterval(int windowInterval) {
         subscribeManager.setWindowInterval(windowInterval);
     }
 
@@ -132,9 +132,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     }
 
-    public void setPnExpires(int pnexpires, Callback callback) {
-        setHeartbeat(pnexpires, callback);
-    }
 
     public void setHeartbeat(int heartbeat, Callback callback) {
         Callback cb = getWrappedCallback(callback);
@@ -152,10 +149,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
             timedTaskManager.updateTask(PRESENCE_HEARTBEAT_TASK, PRESENCE_HB_INTERVAL);
         }
         disconnectAndResubscribe();
-    }
-
-    public void setPnExpires(int pnexpires) {
-        setPnExpires(pnexpires, null);
     }
 
     public void setHeartbeat(int heartbeat) {
@@ -193,17 +186,10 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         return HEARTBEAT;
     }
 
-    public void setMaxRetries(int maxRetries) {
-        subscribeManager.setMaxRetries(maxRetries);
-    }
-
     public int getMaxRetries() {
         return subscribeManager.maxRetries;
     }
 
-    public void setCacheBusting(boolean cacheBusting) {
-        this.CACHE_BUSTING = cacheBusting;
-    }
 
     public boolean getCacheBusting() {
         return this.CACHE_BUSTING;
@@ -213,11 +199,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         String currentChannels = channelSubscriptions.getItemString();
         return currentChannels.equals("") ? "no channels." : currentChannels;
     }
-
-    public void setResumeOnReconnect(boolean resumeOnReconnect) {
-        this.resumeOnReconnect = resumeOnReconnect;
-    }
-
+    
     public boolean getResumeOnReconnect() {
         return this.resumeOnReconnect;
     }
@@ -254,17 +236,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
 
     }
 
-    public void setSubscribeTimeout(int timeout) {
-        subscribeManager.setRequestTimeout(timeout);
-        this.disconnectAndResubscribe();
-    }
-
     protected int getSubscribeTimeout() {
         return subscribeManager.requestTimeout;
-    }
-
-    public void setNonSubscribeTimeout(int timeout) {
-        nonSubscribeManager.setRequestTimeout(timeout);
     }
 
     protected int getNonSubscribeTimeout() {
@@ -272,7 +245,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     }
 
 
-    public void presence(String channel, Callback callback) throws PubnubException {
+    void presence(String channel, Callback callback) throws PubnubException {
         Hashtable args = new Hashtable(2);
 
         args.put("channels", new String[] { channel + PRESENCE_SUFFIX });
@@ -281,7 +254,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         subscribe(args);
     }
 
-    public void channelGroupPresence(String group, Callback callback) throws PubnubException {
+    void channelGroupPresence(String group, Callback callback) throws PubnubException {
         Hashtable args = new Hashtable(2);
 
         args.put("groups", new String[] { group + PRESENCE_SUFFIX });
@@ -290,19 +263,19 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         subscribe(args);
     }
 
-    public void whereNow(final String uuid, Callback callback) {
+    void whereNow(final String uuid, Callback callback) {
         _whereNow(uuid, callback, false);
     }
 
-    public void whereNow(Callback callback) {
+    void whereNow(Callback callback) {
         whereNow(this.UUID, callback);
     }
 
-    public void setState(String channel, String uuid, JSONObject state, Callback callback) {
+    void setState(String channel, String uuid, JSONObject state, Callback callback) {
         _setState(channelSubscriptions, PubnubUtil.urlEncode(channel), null, uuid, state, callback, false);
     }
 
-    public void channelGroupSetState(String group, String uuid, JSONObject state, Callback callback) {
+    void channelGroupSetState(String group, String uuid, JSONObject state, Callback callback) {
         _setState(channelSubscriptions, ".", group, uuid, state, callback, false);
     }
 
@@ -311,43 +284,35 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         _setState(sub, channel, group, uuid, state, callback, true);
     }
 
-    public void getState(String channel, String uuid, Callback callback) {
+    void getState(String channel, String uuid, Callback callback) {
         _getState(channel, uuid, callback, false);
     }
 
-    public void channelGroupListNamespaces(Callback callback) {
-        _channelGroupListNamespaces(callback, false);
-    }
-
-    public void channelGroupRemoveNamespace(String namespace, Callback callback) {
-        _channelGroupRemoveNamespace(namespace, callback, false);
-    }
-
-    public void channelGroupListGroups(String namespace, Callback callback) {
+    void channelGroupListGroups(String namespace, Callback callback) {
         _channelGroupListGroups(null, callback, false);
     }
 
-    public void channelGroupListGroups(Callback callback) {
+    void channelGroupListGroups(Callback callback) {
         channelGroupListGroups(null, callback);
     }
 
-    public void channelGroupListChannels(String group, Callback callback) {
+    void channelGroupListChannels(String group, Callback callback) {
         _channelGroupListChannels(group, callback, false);
     }
 
-    public void channelGroupAddChannel(String group, String channel, Callback callback) {
+    void channelGroupAddChannel(String group, String channel, Callback callback) {
         channelGroupUpdate("add", group, new String[] { channel }, callback);
     }
 
-    public void channelGroupAddChannel(String group, String[] channels, Callback callback) {
+    void channelGroupAddChannel(String group, String[] channels, Callback callback) {
         channelGroupUpdate("add", group, channels, callback);
     }
 
-    public void channelGroupRemoveChannel(String group, String channel, Callback callback) {
+    void channelGroupRemoveChannel(String group, String channel, Callback callback) {
         channelGroupUpdate("remove", group, new String[] { channel }, callback);
     }
 
-    public void channelGroupRemoveChannel(String group, String[] channels, Callback callback) {
+    void channelGroupRemoveChannel(String group, String[] channels, Callback callback) {
         channelGroupUpdate("remove", group, channels, callback);
     }
 
@@ -355,11 +320,11 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         _channelGroupUpdate(action, group, channels, callback, false);
     }
 
-    public void channelGroupRemoveGroup(String group, Callback callback) {
+    void channelGroupRemoveGroup(String group, Callback callback) {
         _channelGroupRemoveGroup(group, callback, false);
     }
 
-    public void hereNow(final String channel, Callback callback) {
+    void hereNow(final String channel, Callback callback) {
         hereNow(new String[] { channel }, null, false, true, callback);
     }
 
@@ -367,72 +332,72 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         hereNow(null, null, state, uuids, callback);
     }
 
-    public void hereNow(final String channel, boolean state, boolean uuids, Callback callback) {
+    void hereNow(final String channel, boolean state, boolean uuids, Callback callback) {
         hereNow(new String[] { channel }, null, state, uuids, callback);
     }
 
-    public void channelGroupHereNow(String group, Callback callback) {
+    void channelGroupHereNow(String group, Callback callback) {
         channelGroupHereNow(group, false, true, callback);
     }
 
-    public void channelGroupHereNow(String group, boolean state, boolean uuids, Callback callback) {
+    void channelGroupHereNow(String group, boolean state, boolean uuids, Callback callback) {
         channelGroupHereNow(new String[] { group }, state, uuids, callback);
     }
 
-    public void channelGroupHereNow(String[] groups, boolean state, boolean uuids, Callback callback) {
+    void channelGroupHereNow(String[] groups, boolean state, boolean uuids, Callback callback) {
         hereNow(null, groups, state, uuids, callback);
     }
 
-    public void hereNow(String[] channels, String[] channelGroups, boolean state, boolean uuids, Callback callback) {
+    void hereNow(String[] channels, String[] channelGroups, boolean state, boolean uuids, Callback callback) {
         _hereNow(channels, channelGroups, state, uuids, callback, false);
     }
 
-    public void history(final String channel, long start, long end, int count, boolean reverse, Callback callback) {
+    void history(final String channel, long start, long end, int count, boolean reverse, Callback callback) {
         history(channel, start, end, count, reverse, false, callback);
     }
 
-    public void history(final String channel, long start, long end, int count, boolean reverse,
+    void history(final String channel, long start, long end, int count, boolean reverse,
             boolean includeTimetoken, Callback callback) {
         _history(channel, start, end, count, reverse, includeTimetoken, callback, false);
     }
 
-    public void history(String channel, long start, long end, boolean reverse, Callback callback) {
+    void history(String channel, long start, long end, boolean reverse, Callback callback) {
         history(channel, start, end, -1, reverse, callback);
     }
 
-    public void history(String channel, int count, Callback callback) {
+    void history(String channel, int count, Callback callback) {
         history(channel, -1, -1, count, false, callback);
     }
 
-    public void history(String channel, boolean includeTimetoken, int count, Callback callback) {
+    void history(String channel, boolean includeTimetoken, int count, Callback callback) {
         history(channel, -1, -1, count, false, includeTimetoken, callback);
     }
 
-    public void history(String channel, long start, boolean reverse, Callback callback) {
+    void history(String channel, long start, boolean reverse, Callback callback) {
         history(channel, start, -1, -1, reverse, callback);
     }
 
-    public void history(String channel, long start, long end, Callback callback) {
+    void history(String channel, long start, long end, Callback callback) {
         history(channel, start, end, -1, false, callback);
     }
 
-    public void history(String channel, long start, long end, int count, Callback callback) {
+    void history(String channel, long start, long end, int count, Callback callback) {
         history(channel, start, end, count, false, callback);
     }
 
-    public void history(String channel, long start, int count, boolean reverse, Callback callback) {
+    void history(String channel, long start, int count, boolean reverse, Callback callback) {
         history(channel, start, -1, count, reverse, callback);
     }
 
-    public void history(String channel, long start, int count, Callback callback) {
+    void history(String channel, long start, int count, Callback callback) {
         history(channel, start, -1, count, false, callback);
     }
 
-    public void history(String channel, int count, boolean reverse, Callback callback) {
+    void history(String channel, int count, boolean reverse, Callback callback) {
         history(channel, -1, -1, count, reverse, callback);
     }
 
-    public void history(String channel, boolean reverse, Callback callback) {
+    void history(String channel, boolean reverse, Callback callback) {
         history(channel, -1, -1, -1, reverse, callback);
     }
 
@@ -510,13 +475,7 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         _request(hreq, nonSubscribeManager);
     }
 
-    /**
-     * Unsubscribe from channels.
-     *
-     * @param channels
-     *            String array containing channel names
-     */
-    public void unsubscribe(String[] channels, Callback callback) {
+    void unsubscribe(String[] channels, Callback callback) {
         for (int i = 0; i < channels.length; i++) {
             String channel = channels[i];
             channelSubscriptions.removeItem(channel);
@@ -524,72 +483,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         }
         _leave(channels, null, callback);
         resubscribe();
-    }
-
-    /**
-     * Unsubscribe from channels.
-     *
-     * @param channels
-     *            String array containing channel names
-     */
-    public void unsubscribe(String[] channels) {
-        unsubscribe(channels, null);
-    }
-
-    /**
-     * Unsubscribe/Disconnect from channel.
-     *
-     * @param channel
-     *            channel name as String.
-     */
-    public void unsubscribe(String channel) {
-        unsubscribe(channel, null);
-    }
-
-    /**
-     * Unsubscribe/Disconnect from channel.
-     *
-     * @param channel
-     *            channel name as String.
-     */
-    public void unsubscribe(String channel, Callback callback) {
-        unsubscribe(new String[] { channel }, callback);
-    }
-
-    /**
-     * Unsubscribe/Disconnect from channel.
-     *
-     * @param args
-     *            Hashtable containing channel name.
-     */
-    protected void unsubscribe(Hashtable args) {
-        String[] channelList = (String[]) args.get("channels");
-        if (channelList == null) {
-            channelList = new String[] { (String) args.get("channel") };
-        }
-        unsubscribe(channelList);
-    }
-
-    /**
-     * Unsubscribe from channel group
-     *
-     * @param group
-     *            to unsubscribe
-     */
-    public void channelGroupUnsubscribe(String group) {
-        channelGroupUnsubscribe(group, null);
-    }
-
-    /**
-     * Unsubscribe from channel group
-     *
-     * @param group
-     *            to unsubscribe
-     * @param callback
-     *            Callback
-     */
-    public void channelGroupUnsubscribe(String group, Callback callback) {
-        channelGroupUnsubscribe(new String[] { group }, callback);
     }
 
     /**
@@ -609,15 +502,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         resubscribe();
     }
 
-    /**
-     * Unsubscribe from multiple channel groups
-     *
-     * @param groups
-     *            to unsubscribe
-     */
-    public void channelGroupUnsubscribe(String[] groups) {
-        channelGroupUnsubscribe(groups, null);
-    }
 
     /**
      * Unsubscribe from presence channel.
@@ -629,16 +513,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
      */
     public void unsubscribePresence(String channel, Callback callback) {
         unsubscribe(new String[] { channel + PRESENCE_SUFFIX }, callback);
-    }
-
-    /**
-     * Unsubscribe from presence channel.
-     *
-     * @param channel
-     *            channel name as String.
-     */
-    public void unsubscribePresence(String channel) {
-        unsubscribePresence(channel, null);
     }
 
     /**
@@ -663,27 +537,15 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         disconnectAndResubscribe();
     }
 
-    /**
-     * Unsubscribe from all channels and channel groups.
-     */
     public void unsubscribeAll() {
         unsubscribeAll(null);
     }
 
-    /**
-     * Unsubscribe from all channels.
-     */
-    public void unsubscribeAllChannels() {
+    void unsubscribeAllChannels() {
         unsubscribeAllChannels(null);
     }
 
-    /**
-     * Unsubscribe from all channels.
-     *
-     * @param callback
-     *            Callback
-     */
-    public void unsubscribeAllChannels(Callback callback) {
+    void unsubscribeAllChannels(Callback callback) {
         String[] channels = channelSubscriptions.getItemNames();
 
         for (int i = 0; i < channels.length; i++) {
@@ -695,20 +557,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         disconnectAndResubscribe();
     }
 
-    /**
-     * Unsubscribe from all channel groups.
-     */
-    public void channelGroupUnsubscribeAllGroups() {
-        channelGroupUnsubscribeAllGroups(null);
-    }
 
-    /**
-     * Unsubscribe from all channel groups.
-     *
-     * @param callback
-     *            Callback
-     */
-    public void channelGroupUnsubscribeAllGroups(Callback callback) {
+    void channelGroupUnsubscribeAllGroups(Callback callback) {
         String[] groups = channelGroupSubscriptions.getItemNames();
 
         for (int i = 0; i < groups.length; i++) {
@@ -754,65 +604,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         subscribe(args);
     }
 
-    protected void subscribe(String[] channels, Callback callback, long timetoken) throws PubnubException {
-        subscribe(channels, callback, String.valueOf(timetoken));
-    }
-
-    protected void subscribe(String channel, Callback callback) throws PubnubException {
-        subscribe(channel, callback, "0");
-    }
-
-    protected void subscribe(String channel, Callback callback, String timetoken) throws PubnubException {
-        subscribe(new String[] { channel }, callback, timetoken);
-    }
-
-    protected void subscribe(String channel, Callback callback, long timetoken) throws PubnubException {
-        subscribe(channel, callback, String.valueOf(timetoken));
-    }
-
-    protected void subscribe(String channel, String group, Callback callback) throws PubnubException {
-        subscribe(channel, group, callback, "0");
-    }
-
-    protected void subscribe(String channel, String group, Callback callback, long timetoken) throws PubnubException {
-        subscribe(channel, group, callback, String.valueOf(timetoken));
-    }
-
-    protected void subscribe(String channel, String group, Callback callback, String timetoken) throws PubnubException {
-        subscribe(new String[] { channel }, new String[] { group }, callback, timetoken);
-    }
-
-    protected void subscribe(String[] channels, String group, Callback callback) throws PubnubException {
-        subscribe(channels, group, callback, "0");
-    }
-
-    protected void subscribe(String[] channels, String group, Callback callback, long timetoken) throws PubnubException {
-        subscribe(channels, group, callback, String.valueOf(timetoken));
-    }
-
-    protected void subscribe(String[] channels, String group, Callback callback, String timetoken) throws PubnubException {
-        subscribe(channels, new String[] { group }, callback, timetoken);
-    }
-
-    protected void subscribe(String channel, String[] groups, Callback callback) throws PubnubException {
-        subscribe(channel, groups, callback, "0");
-    }
-
-    protected void subscribe(String channel, String[] groups, Callback callback, long timetoken) throws PubnubException {
-        subscribe(channel, groups, callback, String.valueOf(timetoken));
-    }
-
-    protected void subscribe(String channel, String[] groups, Callback callback, String timetoken) throws PubnubException {
-        subscribe(new String[] { channel }, groups, callback, timetoken);
-    }
-
-    protected void subscribe(String[] channels, String[] groups, Callback callback) throws PubnubException {
-        subscribe(channels, groups, callback, "0");
-    }
-
-    protected void subscribe(String[] channels, String[] groups, Callback callback, long timetoken) throws PubnubException {
-        subscribe(channels, groups, callback, String.valueOf(timetoken));
-    }
 
     protected void subscribe(String[] channels, String[] groups, Callback callback, String timetoken)
             throws PubnubException {
@@ -826,31 +617,6 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         args.put("timetoken", timetoken);
 
         subscribe(args);
-    }
-
-    protected void subscribe(String channel)
-            throws PubnubException {
-        subscribe(channel, null, "0");
-    }
-
-    protected void channelGroupSubscribe(String group, Callback callback) throws PubnubException {
-        channelGroupSubscribe(group, callback, "0");
-    }
-
-    protected void channelGroupSubscribe(String[] groups, Callback callback) throws PubnubException {
-        channelGroupSubscribe(groups, callback, "0");
-    }
-
-    protected void channelGroupSubscribe(String group, Callback callback, long timetoken) throws PubnubException {
-        channelGroupSubscribe(group, callback, String.valueOf(timetoken));
-    }
-
-    protected void channelGroupSubscribe(String group, Callback callback, String timetoken) throws PubnubException {
-        channelGroupSubscribe(new String[] { group }, callback, timetoken);
-    }
-
-    protected void channelGroupSubscribe(String[] groups, Callback callback, long timetoken) throws PubnubException {
-        channelGroupSubscribe(groups, callback, String.valueOf(timetoken));
     }
 
     protected void channelGroupSubscribe(String[] groups, Callback callback, String timetoken) throws PubnubException {
@@ -1399,6 +1165,8 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
         resubscribe();
     }
     
+    
+    
     public PubnubSubscribe pubnubSubscribe = new PubnubSubscribe((Pubnub)this);
 
     public PubnubSubscribe subscribe() {
@@ -1442,6 +1210,18 @@ abstract class PubnubCoreAsync extends PubnubCore implements PubnubAsyncInterfac
     
     public PubnubHereNowAsync hereNow() {
         return pubnubHereNowAsync;
+    }
+    
+    PubnubAsyncUnsubscribe pubnubUnsubscribeAsync = new PubnubAsyncUnsubscribe((Pubnub)this);
+    
+    public PubnubAsyncUnsubscribe unsubscribe() {
+        return pubnubUnsubscribeAsync;
+    }
+    
+    PubnubAsyncState pubnubAsyncState = new PubnubAsyncState((Pubnub)this);
+    
+    public PubnubAsyncState state() {
+        return pubnubAsyncState;
     }
     
 }

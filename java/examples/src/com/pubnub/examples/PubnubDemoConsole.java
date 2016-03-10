@@ -236,17 +236,27 @@ public class PubnubDemoConsole {
 
     private void unsubscribe(String channel) {
         
-        pubnub.unsubscribe(channel);
-        
+        pubnub.unsubscribe().callback(new UnsubscribeCallback(){
+
+            @Override
+            public void status(AcknowledgmentStatus status) {
+                self.handleStatus(status);
+            }
+            
+        }).presence(false).channel(channel).invoke();
     }
 
     private void unsubscribeFromGroup(String groupName) {
-        pubnub.channelGroupUnsubscribe(groupName);
+        pubnub.unsubscribe().callback(new UnsubscribeCallback(){
+
+            @Override
+            public void status(AcknowledgmentStatus status) {
+                self.handleStatus(status);
+            }
+            
+        }).presence(false).channelGroup(groupName).invoke();
     }
 
-    private void unsubscribePresence(String channel) {
-        pubnub.unsubscribePresence(channel);
-    }
 
     private void time() {
         pubnub.time(new TimeCallback() {
@@ -307,7 +317,6 @@ public class PubnubDemoConsole {
                 .setCacheBusting(false)
                 .build();
         
-        pubnub.setCacheBusting(false);
         displayMenuOptions();
 
         String channelName = null;
@@ -370,8 +379,10 @@ public class PubnubDemoConsole {
             }
                 break;
             case 7:
+                /*
                 channelName = getStringFromConsole("Channel Name");
                 unsubscribePresence(channelName);
+                */
                 break;
             case 8:
                 time();
@@ -383,30 +394,6 @@ public class PubnubDemoConsole {
                 notifyUser("Disconnect and Resubscribe with timetoken : Enter timetoken");
                 String timetoken = getStringFromConsole("Timetoken");
                 disconnectAndResubscribeWithTimetoken(timetoken);
-                break;
-            case 12:
-                pubnub.setResumeOnReconnect(pubnub.isResumeOnReconnect() ? false : true);
-                notifyUser("RESUME ON RECONNECT : " + pubnub.isResumeOnReconnect());
-                break;
-            case 13:
-                int maxRetries = getIntFromConsole("Max Retries");
-                setMaxRetries(maxRetries);
-                break;
-            case 14:
-                int retryInterval = getIntFromConsole("Retry Interval");
-                setRetryInterval(retryInterval);
-                break;
-            case 15:
-                int windowInterval = getIntFromConsole("Window Interval");
-                setWindowInterval(windowInterval);
-                break;
-            case 16:
-                int subscribeTimeout = getIntFromConsole("Subscribe Timeout ( in milliseconds) ");
-                setSubscribeTimeout(subscribeTimeout);
-                break;
-            case 17:
-                int nonSubscribeTimeout = getIntFromConsole("Non Subscribe Timeout ( in milliseconds) ");
-                setNonSubscribeTimeout(nonSubscribeTimeout);
                 break;
             case 18:
                 notifyUser("Set/Unset Auth Key: Enter blank for unsetting key");
@@ -421,18 +408,6 @@ public class PubnubDemoConsole {
                 break;
             case 21:
                 pamAudit();
-                break;
-            case 22:
-                //pubnub.setOrigin(getStringFromConsole("Origin"));
-                break;
-            case 23:
-                //pubnub.setDomain(getStringFromConsole("Domain"));
-                break;
-            case 24:
-                pubnub.setCacheBusting(true);
-                break;
-            case 25:
-                pubnub.setCacheBusting(false);
                 break;
             case 26:
                 notifyUser("Set UUID");
@@ -668,14 +643,18 @@ public class PubnubDemoConsole {
                 uuid = pubnub.getUUID();
             JSONObject metadata = getJSONObjectFromConsole("Metadata");
             
-            pubnub.setState(channel, uuid, metadata, new SetStateCallback() {
+            
+            pubnub.state().set().channel(channel).uuid(uuid).state(metadata)
+            .callback(new SetStateCallback() {
 
                 @Override
                 public void status(ClientStateUpdateStatus status) {
                     self.handleStatus(status);
                 }
 
-            });
+            }).set();
+            
+            
             
         } else {
             String group = getStringFromConsole("Group");
@@ -684,14 +663,16 @@ public class PubnubDemoConsole {
                 uuid = pubnub.getUUID();
             JSONObject metadata = getJSONObjectFromConsole("Metadata");
             
-            pubnub.channelGroupSetState(group, uuid, metadata, new SetStateCallback() {
+            
+            pubnub.state().set().channelGroup(group).uuid(uuid).state(metadata)
+            .callback(new SetStateCallback() {
 
                 @Override
                 public void status(ClientStateUpdateStatus status) {
                     self.handleStatus(status);
                 }
 
-            });
+            }).set();
             
         }
     }
@@ -702,7 +683,8 @@ public class PubnubDemoConsole {
         if (uuid == null || uuid.length() == 0)
             uuid = pubnub.getUUID();
         
-        pubnub.getState(channel, uuid, new ChannelStateCallback() {
+        
+        pubnub.state().get().channel(channel).uuid(uuid).callback(new ChannelStateCallback() {
 
             @Override
             public void status(ErrorStatus status) {
@@ -714,7 +696,7 @@ public class PubnubDemoConsole {
                 notifyUser(result);
             }
 
-        });
+        }).get();
         
     }
 
@@ -792,26 +774,6 @@ public class PubnubDemoConsole {
         
     }
 
-    private void setMaxRetries(int maxRetries) {
-        pubnub.setMaxRetries(maxRetries);
-    }
-
-    private void setRetryInterval(int retryInterval) {
-        pubnub.setRetryInterval(retryInterval);
-    }
-
-    private void setWindowInterval(int windowInterval) {
-        pubnub.setWindowInterval(windowInterval);
-    }
-
-    private void setSubscribeTimeout(int subscribeTimeout) {
-        pubnub.setSubscribeTimeout(subscribeTimeout);
-    }
-
-    private void setNonSubscribeTimeout(int nonSubscribeTimeout) {
-        pubnub.setNonSubscribeTimeout(nonSubscribeTimeout);
-    }
-
     private void displayMenuOptions() {
         notifyUser("ENTER 1  FOR Subscribe " + "(Currently subscribed to "
                 + this.pubnub.getCurrentlySubscribedChannelNames() + ")");
@@ -825,22 +787,10 @@ public class PubnubDemoConsole {
         notifyUser("ENTER 9  FOR EXIT OR QUIT");
         notifyUser("ENTER 10 FOR Disconnect-And-Resubscribe");
         notifyUser("ENTER 11 FOR Disconnect-And-Resubscribe with timetoken");
-        notifyUser("ENTER 12 FOR Toggle Resume On Reconnect ( current: " + pubnub.getResumeOnReconnect() + " )");
-        notifyUser("ENTER 13 FOR Setting MAX Retries ( current: " + pubnub.getMaxRetries() + " )");
-        notifyUser("ENTER 14 FOR Setting Retry Interval ( current: " + pubnub.getRetryInterval() + " milliseconds )");
-        notifyUser("ENTER 15 FOR Setting Window Interval ( current: " + pubnub.getWindowInterval() + " milliseconds )");
-        notifyUser("ENTER 16 FOR Setting Subscribe Timeout ( current: " + pubnub.getSubscribeTimeout()
-                + " milliseconds )");
-        notifyUser("ENTER 17 FOR Setting Non Subscribe Timeout ( current: " + pubnub.getNonSubscribeTimeout()
-                + " milliseconds )");
         notifyUser("ENTER 18 FOR Setting/Unsetting auth key ( current: " + pubnub.getAuthKey() + " )");
         notifyUser("ENTER 19 FOR PAM grant");
         notifyUser("ENTER 20 FOR PAM revoke");
         notifyUser("ENTER 21 FOR PAM Audit");
-        notifyUser("ENTER 22 FOR Setting Origin ( current: " + pubnub.getOrigin() + " )");
-        notifyUser("ENTER 24 FOR Enabling Cache Busting  ( current: " + pubnub.getCacheBusting() + " )");
-        notifyUser("ENTER 25 FOR Disabling Cache Busting ( current: " + pubnub.getCacheBusting() + " )");
-        notifyUser("ENTER 26 FOR Setting UUID ( current: " + pubnub.getUUID() + " )");
         notifyUser("ENTER 27 FOR Setting Presence Heartbeat ( current: " + pubnub.getHeartbeat() + " )");
         notifyUser("ENTER 28 FOR Setting Presence Heartbeat Interval ( current: " + pubnub.getHeartbeatInterval()
                 + " )");

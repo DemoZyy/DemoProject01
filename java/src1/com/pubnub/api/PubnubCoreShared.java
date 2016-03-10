@@ -24,7 +24,7 @@ import static com.pubnub.api.PubnubError.getErrorObject;
  *
  */
 
-abstract class PubnubCoreShared extends PubnubCoreAsync implements PubnubAsyncInterfacePam, PubnubAsyncInterfacePush {
+abstract class PubnubCoreShared extends PubnubCoreAsync {
 
     public PubnubCoreShared() {
         
@@ -44,16 +44,7 @@ abstract class PubnubCoreShared extends PubnubCoreAsync implements PubnubAsyncIn
         return java.util.UUID.randomUUID().toString();
     }
 
-    /**
-     * This method sets timeout value for subscribe/presence. Default value is
-     * 310000 milliseconds i.e. 310 seconds
-     *
-     * @param timeout
-     *            Timeout value in milliseconds for subscribe/presence
-     */
-    public void setSubscribeTimeout(int timeout) {
-        super.setSubscribeTimeout(timeout);
-    }
+
 
     /**
      * This method returns timeout value for subscribe/presence.
@@ -64,17 +55,6 @@ abstract class PubnubCoreShared extends PubnubCoreAsync implements PubnubAsyncIn
         return super.getSubscribeTimeout();
     }
 
-    /**
-     * This method set timeout value for non subscribe operations like publish,
-     * history, hereNow. Default value is 15000 milliseconds i.e. 15 seconds.
-     *
-     * @param timeout
-     *            Timeout value in milliseconds for Non subscribe operations
-     *            like publish, history, hereNow
-     */
-    public void setNonSubscribeTimeout(int timeout) {
-        super.setNonSubscribeTimeout(timeout);
-    }
 
     /**
      * This method returns timeout value for non subscribe operations like

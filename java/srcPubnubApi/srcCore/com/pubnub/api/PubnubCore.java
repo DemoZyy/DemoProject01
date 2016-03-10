@@ -90,6 +90,7 @@ abstract public class PubnubCore implements PubnubInterface {
             pubnub.setAuthKey(authKey);
             return pubnub;
         }
+        /*
         public PubnubSync buildSync(){
             PubnubSync pubnub = new PubnubSync();
             pubnub.init();
@@ -105,37 +106,38 @@ abstract public class PubnubCore implements PubnubInterface {
             pubnub.init();
             return pubnub;
         }
+        */
     }
-    public void setInitializationVector(String initializationVector) {
+    void setInitializationVector(String initializationVector) {
         this.IV = initializationVector;
     }
     
-    public void setPublishKey(String publishKey) {
+    void setPublishKey(String publishKey) {
         this.PUBLISH_KEY = publishKey;
     }
     
-    public void setSubscribeKey(String subscribeKey) {
+    void setSubscribeKey(String subscribeKey) {
         this.SUBSCRIBE_KEY = subscribeKey;
     }
-    
-    public void setSecretKey(String secretKey) {
+
+    void setSecretKey(String secretKey) {
         this.SECRET_KEY = secretKey;
     }
     
-    public void setCipherKey(String cipherKey) {
+    void setCipherKey(String cipherKey) {
         this.CIPHER_KEY = cipherKey;
     }
     
-    public void setSSL(boolean ssl) {
+    void setSSL(boolean ssl) {
         this.SSL = ssl;
     }
 
-    public void setOrigin(String origin) {
+    void setOrigin(String origin) {
         this.ORIGIN = origin;
         this.CACHE_BUSTING = false;
     }
     
-    public void setCacheBusting(boolean cacheBusting) {
+    void setCacheBusting(boolean cacheBusting) {
         this.CACHE_BUSTING = cacheBusting;
     }
     

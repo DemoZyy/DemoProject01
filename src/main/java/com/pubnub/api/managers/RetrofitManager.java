@@ -3,6 +3,7 @@ package com.pubnub.api.managers;
 
 import com.pubnub.api.PubNub;
 import com.pubnub.api.enums.PNLogVerbosity;
+import com.pubnub.api.vendor.AppEngineFactory;
 import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -36,20 +37,27 @@ public class RetrofitManager {
     }
 
     protected final Retrofit createRetrofit(int requestTimeout, int connectTimeOut) {
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        httpClient.readTimeout(requestTimeout, TimeUnit.SECONDS);
-        httpClient.connectTimeout(connectTimeOut, TimeUnit.SECONDS);
+        Retrofit.Builder retrofitBuilder = new Retrofit.Builder();
 
-        if (pubnub.getConfiguration().getLogVerbosity() == PNLogVerbosity.BODY) {
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-            httpClient.addInterceptor(logging);
+        if (pubnub.getConfiguration().isGoogleAppEngineNetworking()) {
+            retrofitBuilder.callFactory(new AppEngineFactory.Factory());
+        } else {
+            OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+            httpClient.readTimeout(requestTimeout, TimeUnit.SECONDS);
+            httpClient.connectTimeout(connectTimeOut, TimeUnit.SECONDS);
+            retrofitBuilder.client(httpClient.build());
+
+            if (pubnub.getConfiguration().getLogVerbosity() == PNLogVerbosity.BODY) {
+                HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+                logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+                httpClient.addInterceptor(logging);
+            }
+
         }
 
-        return new Retrofit.Builder()
+        return retrofitBuilder
                 .baseUrl(pubnub.getBaseUrl())
                 .addConverterFactory(JacksonConverterFactory.create())
-                .client(httpClient.build())
                 .build();
     }
 

@@ -98,6 +98,12 @@ public class PNConfiguration {
     private PNReconnectionPolicy reconnectionPolicy;
 
     /**
+     * Use GAE base configuration
+     */
+    @Setter
+    private boolean googleAppEngineNetworking;
+
+    /**
      * Initialize the PNConfiguration with default values
      */
     public PNConfiguration() {

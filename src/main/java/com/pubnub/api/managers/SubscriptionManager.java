@@ -90,8 +90,10 @@ public class SubscriptionManager {
             }
         });
 
-        consumerThread = new Thread(new SubscribeMessageWorker(this.pubnub, listenerManager, messageQueue));
-        consumerThread.start();
+        if (!this.pubnub.getConfiguration().isGoogleAppEngineNetworking()) {
+            consumerThread = new Thread(new SubscribeMessageWorker(this.pubnub, listenerManager, messageQueue));
+            consumerThread.start();
+        }
     }
 
     public final void addListener(SubscribeCallback listener) {

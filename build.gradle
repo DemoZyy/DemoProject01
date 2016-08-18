@@ -2,11 +2,12 @@ plugins {
     id 'io.franzbecker.gradle-lombok' version '1.6'
     id 'com.github.johnrengelman.shadow' version '1.2.3'
     id "com.bmuschko.nexus" version "2.3.1"
+    id 'com.github.ben-manes.versions' version '0.13.0'
     id 'java'
     id 'jacoco'
     id 'maven'
     id 'checkstyle'
-    id 'findbugs'
+    // id 'findbugs'
 }
 group = 'com.pubnub'
 version = '4.0.7'
@@ -27,11 +28,11 @@ repositories {
 }
 
 dependencies {
-    compile group: 'com.squareup.retrofit2', name: 'retrofit', version:'2.0.2'
+    compile group: 'com.squareup.retrofit2', name: 'retrofit', version:'2.1.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.7.3'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.7.3'
-    compile group: 'com.squareup.retrofit2', name: 'converter-jackson', version:'2.0.2'
-    compile group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'3.2.0'
+    compile group: 'com.squareup.retrofit2', name: 'converter-jackson', version:'2.1.0'
+    compile group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'3.4.1'
     compile group: 'org.slf4j', name: 'slf4j-nop', version:'1.7.21'
 
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.1.7'
@@ -68,15 +69,14 @@ tasks.withType(Checkstyle) {
     }
 }
 
+/*
 tasks.withType(FindBugs) {
-
-    exclude '**/vendor/**', "**/*Test*"
-
     reports {
         xml.enabled false
         html.enabled true
     }
 }
+*/
 
 check.dependsOn jacocoTestReport
 

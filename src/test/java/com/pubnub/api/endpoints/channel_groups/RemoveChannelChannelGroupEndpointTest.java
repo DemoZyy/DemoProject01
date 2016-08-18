@@ -50,7 +50,7 @@ public class RemoveChannelChannelGroupEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v1/channel-registration/sub-key/mySubscribeKey/channel-group/groupA"))
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {}, \"service\": \"ChannelGroups\"}")));
 
-        PNChannelGroupsRemoveChannelResult response = partialRemoveChannelChannelGroup.channels(Arrays.asList("ch1", "ch2")).sync();
+        partialRemoveChannelChannelGroup.channels(Arrays.asList("ch1", "ch2")).sync();
     }
 
     @org.junit.Test(expected = PubNubException.class)
@@ -58,7 +58,7 @@ public class RemoveChannelChannelGroupEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v1/channel-registration/sub-key/mySubscribeKey/channel-group/groupA"))
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {}, \"service\": \"ChannelGroups\"}")));
 
-        PNChannelGroupsRemoveChannelResult response = partialRemoveChannelChannelGroup.channelGroup("groupA").sync();
+        partialRemoveChannelChannelGroup.channelGroup("groupA").sync();
     }
 
     @org.junit.Test

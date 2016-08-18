@@ -154,7 +154,7 @@ public class GetStateEndpointTest extends TestHarness {
 
         stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/channel/testChannel/uuid/sampleUUID"))
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
-        PNGetStateResult result = partialGetState.uuid("sampleUUID").sync();
+        partialGetState.uuid("sampleUUID").sync();
     }
 
     @org.junit.Test
@@ -164,7 +164,7 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setAuthKey("myKey");
-        PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
@@ -199,7 +199,7 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setSubscribeKey(null);
-        PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
     }
 
     @org.junit.Test(expected=PubNubException.class)
@@ -209,6 +209,6 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setSubscribeKey("");
-        PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
     }
 }

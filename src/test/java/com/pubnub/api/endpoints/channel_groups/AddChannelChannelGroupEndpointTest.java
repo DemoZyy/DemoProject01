@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints.channel_groups;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
@@ -11,7 +10,6 @@ import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.channel_group.PNChannelGroupsAddChannelResult;
 import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,16 +18,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class AddChannelChannelGroupEndpointTest extends TestHarness {
     private AddChannelChannelGroup partialAddChannelChannelGroup;
     private PubNub pubnub;
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Before
     public void beforeEach() throws IOException {
@@ -52,7 +46,7 @@ public class AddChannelChannelGroupEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v1/channel-registration/sub-key/mySubscribeKey/channel-group/groupA"))
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {} , \"service\": \"ChannelGroups\"}")));
 
-        PNChannelGroupsAddChannelResult response = partialAddChannelChannelGroup.channels(Arrays.asList("ch1", "ch2")).sync();
+        partialAddChannelChannelGroup.channels(Arrays.asList("ch1", "ch2")).sync();
     }
 
     @org.junit.Test(expected = PubNubException.class)
@@ -60,7 +54,7 @@ public class AddChannelChannelGroupEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v1/channel-registration/sub-key/mySubscribeKey/channel-group/groupA"))
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {} , \"service\": \"ChannelGroups\"}")));
 
-        PNChannelGroupsAddChannelResult response = partialAddChannelChannelGroup.channelGroup("").channels(Arrays.asList("ch1", "ch2")).sync();
+        partialAddChannelChannelGroup.channelGroup("").channels(Arrays.asList("ch1", "ch2")).sync();
     }
 
     @org.junit.Test(expected = PubNubException.class)
@@ -68,7 +62,7 @@ public class AddChannelChannelGroupEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v1/channel-registration/sub-key/mySubscribeKey/channel-group/groupA"))
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {} , \"service\": \"ChannelGroups\"}")));
 
-        PNChannelGroupsAddChannelResult response = partialAddChannelChannelGroup.channelGroup("groupA").sync();
+        partialAddChannelChannelGroup.channelGroup("groupA").sync();
     }
 
     @org.junit.Test

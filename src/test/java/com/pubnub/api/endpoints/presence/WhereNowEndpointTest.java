@@ -187,7 +187,7 @@ public class WhereNowEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {\"channels\": [\"a\",\"b\"]}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setSubscribeKey(null);
-        PNWhereNowResult response = partialWhereNow.sync();
+        partialWhereNow.sync();
     }
 
     @org.junit.Test(expected=PubNubException.class)
@@ -197,7 +197,7 @@ public class WhereNowEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {\"channels\": [\"a\",\"b\"]}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setSubscribeKey("");
-        PNWhereNowResult response = partialWhereNow.sync();
+        partialWhereNow.sync();
     }
 
     @org.junit.Test(expected=PubNubException.class)
@@ -206,7 +206,7 @@ public class WhereNowEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/uuid/myUUID"))
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"service\": \"Presence\"}")));
 
-        PNWhereNowResult response = partialWhereNow.sync();
+        partialWhereNow.sync();
     }
 
 }

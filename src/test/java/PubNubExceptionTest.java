@@ -14,9 +14,6 @@ import java.io.IOException;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by tukunare on 7/5/2016.
- */
 public class PubNubExceptionTest extends TestHarness {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule();
@@ -53,15 +50,6 @@ public class PubNubExceptionTest extends TestHarness {
         }
         catch (PubNubException error) {
             statusCode = error.getStatusCode();
-            pubnubError = error.getPubnubError();
-            pnErrorCode = pubnubError.getErrorCode();
-            pnErroCodeExtended = pubnubError.getErrorCodeExtended();
-            pnErrorJNode = pubnubError.getErrorObject();
-            pnErrorMessage = pubnubError.getMessage();
-            pnErrorString = pubnubError.getErrorString();
-            response = error.getResponse();
-            erroMsg = error.getErrormsg();
-            jNode = error.getJso();
         }
 
         assertEquals(0, statusCode);

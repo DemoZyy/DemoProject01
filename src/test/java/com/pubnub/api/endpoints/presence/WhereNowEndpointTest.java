@@ -1,17 +1,15 @@
 package com.pubnub.api.endpoints.presence;
 
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
-import com.pubnub.api.callbacks.WhereNowCallback;
 import com.pubnub.api.PubNubException;
+import com.pubnub.api.callbacks.WhereNowCallback;
+import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.presence.PNWhereNowResult;
-import com.pubnub.api.endpoints.TestHarness;
 import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,9 +23,6 @@ import static org.junit.Assert.assertThat;
 public class WhereNowEndpointTest extends TestHarness {
     private PubNub pubnub;
     private WhereNow partialWhereNow;
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Before
     public void beforeEach() throws IOException {
@@ -173,7 +168,7 @@ public class WhereNowEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {\"channels\": [\"a\",\"b\"]}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setAuthKey("myKey");
-        PNWhereNowResult response = partialWhereNow.sync();
+        partialWhereNow.sync();
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());

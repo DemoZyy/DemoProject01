@@ -1,17 +1,15 @@
 package com.pubnub.api.endpoints.channel_groups;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.callbacks.PNCallback;
+import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.channel_group.PNChannelGroupsListAllResult;
-import com.pubnub.api.endpoints.TestHarness;
 import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,15 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class ListAllChannelGroupEndpointTest extends TestHarness {
     private ListAllChannelGroup partialChannelGroup;
     private PubNub pubnub;
-
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Before
     public void beforeEach() throws IOException {
@@ -70,7 +63,7 @@ public class ListAllChannelGroupEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"payload\": {\"groups\": [\"a\",\"b\"]}, \"service\": \"ChannelGroups\"}")));
 
         pubnub.getConfiguration().setAuthKey("myKey");
-        PNChannelGroupsListAllResult response = partialChannelGroup.sync();
+        partialChannelGroup.sync();
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());

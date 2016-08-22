@@ -1,13 +1,11 @@
 package com.pubnub.api.endpoints.presence;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
-import com.pubnub.api.models.consumer.presence.PNSetStateResult;
 import com.pubnub.api.endpoints.TestHarness;
+import com.pubnub.api.models.consumer.presence.PNSetStateResult;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -21,10 +19,6 @@ import static org.junit.Assert.assertEquals;
 
 
 public class SetStateEndpointTest extends TestHarness {
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
-
     private SetState partialSetState;
     private PubNub pubnub;
 
@@ -216,7 +210,7 @@ public class SetStateEndpointTest extends TestHarness {
         myState.put("age", 20);
 
         pubnub.getConfiguration().setAuthKey("myKey");
-        PNSetStateResult result = partialSetState.channels(Arrays.asList("testChannel")).state(myState).sync();
+        partialSetState.channels(Arrays.asList("testChannel")).state(myState).sync();
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());

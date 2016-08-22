@@ -7,7 +7,7 @@ plugins {
     id 'jacoco'
     id 'maven'
     id 'checkstyle'
-    // id 'findbugs'
+    id 'findbugs'
 }
 group = 'com.pubnub'
 version = '4.0.7'
@@ -69,14 +69,12 @@ tasks.withType(Checkstyle) {
     }
 }
 
-/*
 tasks.withType(FindBugs) {
     reports {
         xml.enabled false
         html.enabled true
     }
 }
-*/
 
 check.dependsOn jacocoTestReport
 

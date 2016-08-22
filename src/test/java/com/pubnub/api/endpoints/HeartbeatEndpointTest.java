@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
@@ -8,7 +7,6 @@ import com.pubnub.api.endpoints.presence.Heartbeat;
 import com.pubnub.api.managers.RetrofitManager;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -23,9 +21,6 @@ public class HeartbeatEndpointTest extends TestHarness {
 
     private Heartbeat partialHeartbeat;
     private PubNub pubnub;
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Before
     public void beforeEach() throws IOException {

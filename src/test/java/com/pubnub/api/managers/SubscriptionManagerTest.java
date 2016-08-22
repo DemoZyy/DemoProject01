@@ -1,23 +1,26 @@
 package com.pubnub.api.managers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.http.QueryParameter;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
+import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubUtil;
 import com.pubnub.api.callbacks.PNCallback;
 import com.pubnub.api.callbacks.SubscribeCallback;
-import com.pubnub.api.PubNub;
+import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.enums.PNHeartbeatNotificationOptions;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.enums.PNStatusCategory;
+import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.presence.PNSetStateResult;
 import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
 import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
-import com.pubnub.api.models.consumer.PNStatus;
-import com.pubnub.api.endpoints.TestHarness;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,25 +31,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class SubscriptionManagerTest extends TestHarness {
-
     private PubNub pubnub;
+    private WireMockServer wireMockServer;
 
     @Before
     public void beforeEach() throws IOException {
+        wireMockServer = new WireMockServer(wireMockConfig().port(8080));
+        wireMockServer.start();
         pubnub = this.createPubNubInstance(8080);
     }
 
     @After
     public void afterEach() {
         pubnub.stop();
+        wireMockServer.stop();
     }
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Test
     public void testGetSubscribedChannels() {
@@ -118,8 +122,6 @@ public class SubscriptionManagerTest extends TestHarness {
 
             @Override
             public void message(PubNub pubnub, PNMessageResult message) {
-                List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/v2/subscribe.*")));
-
                 assertEquals("Message", message.getMessage().get("text").asText());
                 gotMessage.set(true);
             }
@@ -163,8 +165,6 @@ public class SubscriptionManagerTest extends TestHarness {
 
             @Override
             public void message(PubNub pubnub, PNMessageResult message) {
-                List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/v2/subscribe.*")));
-
                 if (message.getMessage().get("text").asText().equals("Message")) {
                     gotMessage1.set(true);
                 } else if (message.getMessage().get("text").asText().equals("Message3")) {
@@ -200,8 +200,6 @@ public class SubscriptionManagerTest extends TestHarness {
 
             @Override
             public void message(PubNub pubnub, PNMessageResult message) {
-                List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/v2/subscribe.*")));
-
                 assertEquals(10, message.getMessage().asInt());
                 atomic.addAndGet(1);
             }
@@ -434,8 +432,6 @@ public class SubscriptionManagerTest extends TestHarness {
 
             @Override
             public void message(PubNub pubnub, PNMessageResult message) {
-                List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/v2/subscribe.*")));
-
                 Assert.assertEquals("{\"text\":\"Enter Message Here\"}", message.getMessage().toString());
                 atomic.addAndGet(1);
             }

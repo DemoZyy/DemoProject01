@@ -1,18 +1,16 @@
 package com.pubnub.api.endpoints.push;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.callbacks.PNCallback;
+import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.enums.PNPushType;
-import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.push.PNPushListProvisionsResult;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -24,10 +22,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
 
 public class ListPushProvisionsTest extends TestHarness {
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
-
     private ListPushProvisions instance;
     private PubNub pubnub;
 

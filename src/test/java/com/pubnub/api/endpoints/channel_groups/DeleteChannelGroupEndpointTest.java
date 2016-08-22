@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints.channel_groups;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
@@ -11,7 +10,6 @@ import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.channel_group.PNChannelGroupsDeleteGroupResult;
 import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,9 +23,6 @@ import static org.junit.Assert.assertNotNull;
 public class DeleteChannelGroupEndpointTest extends TestHarness {
     private DeleteChannelGroup partialDeleteChannelGroup;
     private PubNub pubnub;
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Before
     public void beforeEach() throws IOException {

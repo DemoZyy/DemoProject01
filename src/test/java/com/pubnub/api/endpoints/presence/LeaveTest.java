@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints.presence;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
@@ -10,7 +9,6 @@ import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.managers.RetrofitManager;
 import com.pubnub.api.models.consumer.PNStatus;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -24,10 +22,6 @@ import static org.junit.Assert.assertEquals;
 
 
 public class LeaveTest extends TestHarness {
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
-
     private Leave instance;
     private PubNub pubnub;
 

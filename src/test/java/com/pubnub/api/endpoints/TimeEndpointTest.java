@@ -1,16 +1,13 @@
 package com.pubnub.api.endpoints;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
-import com.pubnub.api.callbacks.TimeCallback;
 import com.pubnub.api.PubNubException;
+import com.pubnub.api.callbacks.TimeCallback;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.PNTimeResult;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,9 +21,6 @@ import static org.junit.Assert.assertTrue;
 public class TimeEndpointTest extends TestHarness {
     private Time partialTime;
     private PubNub pubnub;
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
 
     @Before
     public void beforeEach() throws IOException {
@@ -67,7 +61,7 @@ public class TimeEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/time/0"))
                 .willReturn(aResponse().withBody("[14593046077243110]").withStatus(404)));
         PNTimeResult response = partialTime.sync();
-        assertEquals(response.getTimetoken(), "14593046077243110");
+        assert(response.getTimetoken().equals(14593046077243110L));
     }
 
     @org.junit.Test

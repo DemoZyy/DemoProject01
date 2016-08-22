@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints.pubsub;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
@@ -10,13 +9,11 @@ import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.PNPublishResult;
 import com.pubnub.api.models.consumer.PNStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,10 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class PublishTest extends TestHarness {
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule();
-
     private PubNub pubnub;
     private Publish instance;
 
@@ -127,7 +120,7 @@ public class PublishTest extends TestHarness {
         List<LoggedRequest> requests = findAll(postRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
         assertEquals("myUUID", requests.get(0).queryParameter("uuid").firstValue());
-        assertEquals("[\"m1\",\"m2\"]", new String(requests.get(0).getBody()));
+        assertEquals("[\"m1\",\"m2\"]", new String(requests.get(0).getBody(), Charset.forName("UTF-8")));
     }
 
     @Test
@@ -240,7 +233,7 @@ public class PublishTest extends TestHarness {
         List<LoggedRequest> requests = findAll(postRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
         assertEquals("myUUID", requests.get(0).queryParameter("uuid").firstValue());
-        assertEquals("\"HFP7V6bDwBLrwc1t8Rnrog==\"", new String(requests.get(0).getBody()));
+        assertEquals("\"HFP7V6bDwBLrwc1t8Rnrog==\"", new String(requests.get(0).getBody(), Charset.forName("UTF-8")));
     }
 
     @Test
@@ -262,15 +255,7 @@ public class PublishTest extends TestHarness {
 
     @Test
     public void testSuccessPOJOSync() throws PubNubException, InterruptedException {
-
-        @AllArgsConstructor
-        @Getter
-        class TestPojo {
-            String field1;
-            String field2;
-        }
-
-        TestPojo testPojo = new TestPojo("10", "20");
+        SamplePublishPayload testPojo = new SamplePublishPayload("10", "20");
 
         stubFor(get(urlPathEqualTo("/publish/myPublishKey/mySubscribeKey/0/coolChannel/0/%7B%22field1%22%3A%2210%22%2C%22field2%22%3A%2220%22%7D"))
                 .willReturn(aResponse().withBody("[1,\"Sent\",\"14598111595318003\"]")));

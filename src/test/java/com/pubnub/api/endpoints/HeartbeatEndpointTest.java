@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
+import com.pubnub.api.PubNubUtil;
 import com.pubnub.api.endpoints.presence.Heartbeat;
 import com.pubnub.api.managers.RetrofitManager;
 import org.junit.Assert;
@@ -30,7 +31,7 @@ public class HeartbeatEndpointTest extends TestHarness {
     @Before
     public void beforeEach() throws IOException {
         pubnub = this.createPubNubInstance(8080);
-        RetrofitManager retrofitManager = new RetrofitManager(pubnub);
+        RetrofitManager retrofitManager = new RetrofitManager(pubnub, PubNubUtil.createGson());
         partialHeartbeat = new Heartbeat(pubnub, retrofitManager.getTransactionInstance());
         wireMockRule.start();
     }
@@ -172,13 +173,4 @@ public class HeartbeatEndpointTest extends TestHarness {
         partialHeartbeat.channels(Arrays.asList("ch1")).sync();
     }
 
-    @org.junit.Test(expected=PubNubException.class)
-    public void testInvalidStateSync() throws PubNubException, InterruptedException {
-        pubnub.getConfiguration().setPresenceTimeout(123);
-
-        stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/channel/ch1/heartbeat"))
-                .willReturn(aResponse().withBody("{\"status\": 200, \"message\": \"OK\", \"service\": \"Presence\"}")));
-
-        partialHeartbeat.channels(Arrays.asList("ch1")).state(new Object()).sync();
-    }
 }

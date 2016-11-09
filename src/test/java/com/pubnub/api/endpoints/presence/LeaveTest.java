@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
+import com.pubnub.api.PubNubUtil;
 import com.pubnub.api.callbacks.PNCallback;
 import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.managers.RetrofitManager;
@@ -34,7 +35,7 @@ public class LeaveTest extends TestHarness {
     @Before
     public void beforeEach() throws IOException {
         pubnub = this.createPubNubInstance(8080);
-        RetrofitManager retrofitManager = new RetrofitManager(pubnub);
+        RetrofitManager retrofitManager = new RetrofitManager(pubnub, PubNubUtil.createGson());
         instance = new Leave(pubnub, retrofitManager.getTransactionInstance());
         wireMockRule.start();
     }

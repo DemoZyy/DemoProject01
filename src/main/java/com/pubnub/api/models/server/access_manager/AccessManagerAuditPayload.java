@@ -1,29 +1,27 @@
 package com.pubnub.api.models.server.access_manager;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerKeyData;
 import lombok.Getter;
 
 import java.util.Map;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 public class AccessManagerAuditPayload {
 
-    @JsonProperty("level")
+    @SerializedName("level")
     private String level;
 
-    @JsonProperty("subscribe_key")
+    @SerializedName("subscribe_key")
     private String subscribeKey;
 
-    @JsonProperty("channel")
+    @SerializedName("channel")
     private String channel;
 
-    @JsonProperty("channel-group")
+    @SerializedName("channel-group")
     private String channelGroup;
 
-    @JsonProperty("auths")
+    @SerializedName("auths")
     private Map<String, PNAccessManagerKeyData> authKeys;
 
 

@@ -1,5 +1,6 @@
 package com.pubnub.api;
 
+import com.google.gson.Gson;
 import com.pubnub.api.builder.PubNubErrorBuilder;
 import com.pubnub.api.callbacks.SubscribeCallback;
 import com.pubnub.api.builder.SubscribeBuilder;
@@ -41,6 +42,8 @@ import java.util.UUID;
 public class PubNub {
 
     private PNConfiguration configuration;
+    private Gson gsonParser;
+
     @Getter(AccessLevel.NONE)
     private String instanceId;
     @Getter(AccessLevel.NONE)
@@ -53,15 +56,17 @@ public class PubNub {
     private RetrofitManager retrofitManager;
 
 
+
     private static final int TIMESTAMP_DIVIDER = 1000;
     private static final int MAX_SEQUENCE = 65535;
 
-    private static final String SDK_VERSION = "4.2.0";
+    private static final String SDK_VERSION = "4.3.0";
 
     public PubNub(final PNConfiguration initialConfig) {
         this.configuration = initialConfig;
         this.basePathManager = new BasePathManager(initialConfig);
-        this.retrofitManager = new RetrofitManager(this);
+        this.gsonParser = PubNubUtil.createGson();
+        this.retrofitManager = new RetrofitManager(this, this.gsonParser);
         this.subscriptionManager = new SubscriptionManager(this, retrofitManager);
         this.publishSequenceManager = new PublishSequenceManager(MAX_SEQUENCE);
         instanceId = UUID.randomUUID().toString();

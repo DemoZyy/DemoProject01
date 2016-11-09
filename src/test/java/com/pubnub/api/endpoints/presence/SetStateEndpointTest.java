@@ -48,7 +48,7 @@ public class SetStateEndpointTest extends TestHarness {
         myState.put("age", 20);
 
         PNSetStateResult result = partialSetState.channels(Arrays.asList("testChannel")).state(myState).sync();
-        assertEquals(result.getState().get("age"), 20);
+        assertEquals(result.getState().get("age"), 20.0);
         assertEquals(result.getState().get("status"), "online");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -68,7 +68,7 @@ public class SetStateEndpointTest extends TestHarness {
         myState.put("age", 20);
 
         PNSetStateResult result = partialSetState.channels(Arrays.asList("testChannel")).state(myState).uuid("someoneElseUUID").sync();
-        assertEquals(result.getState().get("age"), 20);
+        assertEquals(result.getState().get("age"), 20.0);
         assertEquals(result.getState().get("status"), "online");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -88,7 +88,7 @@ public class SetStateEndpointTest extends TestHarness {
         myState.put("age", 20);
 
         PNSetStateResult result = partialSetState.channels(Arrays.asList("testChannel", "testChannel2")).state(myState).sync();
-        assertEquals(result.getState().get("age"), 20);
+        assertEquals(result.getState().get("age"), 20.0);
         assertEquals(result.getState().get("status"), "online");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -110,7 +110,7 @@ public class SetStateEndpointTest extends TestHarness {
 
         PNSetStateResult result = partialSetState.channelGroups(Arrays.asList("cg1")).state(myState).sync();
 
-        assertEquals(result.getState().get("age"), 20);
+        assertEquals(result.getState().get("age"), 20.0);
         assertEquals(result.getState().get("status"), "online");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -132,7 +132,7 @@ public class SetStateEndpointTest extends TestHarness {
 
         PNSetStateResult result = partialSetState.channelGroups(Arrays.asList("cg1", "cg2")).state(myState).sync();
 
-        assertEquals(result.getState().get("age"), 20);
+        assertEquals(result.getState().get("age"), 20.0);
         assertEquals(result.getState().get("status"), "online");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -155,7 +155,7 @@ public class SetStateEndpointTest extends TestHarness {
 
         PNSetStateResult result = partialSetState.channels(Arrays.asList("ch1")).channelGroups(Arrays.asList("cg1", "cg2")).state(myState).sync();
 
-        assertEquals(result.getState().get("age"), 20);
+        assertEquals(result.getState().get("age"), 20.0);
         assertEquals(result.getState().get("status"), "online");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -188,17 +188,6 @@ public class SetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\" }, \"service\": \"Presence\"}")));
 
         partialSetState.channels(Arrays.asList("testChannel")).sync();
-    }
-
-    @org.junit.Test(expected = PubNubException.class)
-    public void invalidStateSync() throws PubNubException, InterruptedException {
-
-        stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/channel/testChannel/uuid/myUUID/data"))
-                .withQueryParam("uuid", matching("myUUID"))
-                .withQueryParam("pnsdk", matching("PubNub-Java-Unified/suchJava"))
-                .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\" }, \"service\": \"Presence\"}")));
-
-        partialSetState.channels(Arrays.asList("testChannel")).state(new Object()).sync();
     }
 
     @org.junit.Test
@@ -277,7 +266,7 @@ public class SetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"service\": \"Presence\"}")));
 
         Map<String, Object> myState = new HashMap<>();
-        myState.put("age", 20);
+        myState.put("age", 20.0);
 
         partialSetState.channels(Arrays.asList("testChannel")).state(myState).sync();
     }

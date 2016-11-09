@@ -1,6 +1,7 @@
 package com.pubnub.api.managers;
 
 
+import com.google.gson.Gson;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.enums.PNLogVerbosity;
 import com.pubnub.api.interceptors.SignatureInterceptor;
@@ -8,7 +9,7 @@ import lombok.Getter;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +26,7 @@ public class RetrofitManager {
     @Getter private Retrofit transactionInstance;
     @Getter private Retrofit subscriptionInstance;
 
-    public RetrofitManager(PubNub pubNubInstance) {
+    public RetrofitManager(PubNub pubNubInstance, Gson gson) {
         this.pubnub = pubNubInstance;
 
         this.signatureInterceptor = new SignatureInterceptor(pubNubInstance);
@@ -40,8 +41,8 @@ public class RetrofitManager {
                 this.pubnub.getConfiguration().getConnectTimeout()
         );
 
-        this.transactionInstance = createRetrofit(this.transactionClientInstance);
-        this.subscriptionInstance = createRetrofit(this.subscriptionClientInstance);
+        this.transactionInstance = createRetrofit(this.transactionClientInstance, gson);
+        this.subscriptionInstance = createRetrofit(this.subscriptionClientInstance, gson);
     }
 
     private OkHttpClient createOkHttpClient(int requestTimeout, int connectTimeOut) {
@@ -64,10 +65,10 @@ public class RetrofitManager {
         return httpClient.build();
     }
 
-    private Retrofit createRetrofit(OkHttpClient client) {
+    private Retrofit createRetrofit(OkHttpClient client, Gson gson) {
         return new Retrofit.Builder()
                 .baseUrl(pubnub.getBaseUrl())
-                .addConverterFactory(JacksonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
                 .build();
     }

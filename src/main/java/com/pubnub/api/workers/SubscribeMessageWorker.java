@@ -1,8 +1,7 @@
 package com.pubnub.api.workers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -19,7 +18,6 @@ import com.pubnub.api.models.server.SubscribeMessage;
 import com.pubnub.api.vendor.Crypto;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -29,14 +27,12 @@ public class SubscribeMessageWorker implements Runnable {
     private PubNub pubnub;
     private ListenerManager listenerManager;
     private LinkedBlockingQueue<SubscribeMessage> queue;
-    private ObjectMapper mapper;
 
     private boolean isRunning;
 
     public SubscribeMessageWorker(PubNub pubnubInstance, ListenerManager listenerManagerInstance, LinkedBlockingQueue<SubscribeMessage> queueInstance) {
         this.pubnub = pubnubInstance;
         this.listenerManager = listenerManagerInstance;
-        this.mapper = new ObjectMapper();
         this.queue = queueInstance;
     }
 
@@ -59,7 +55,7 @@ public class SubscribeMessageWorker implements Runnable {
         }
     }
 
-    private JsonNode processMessage(final JsonNode input) {
+    private JsonElement processMessage(final JsonElement input) {
         // if we do not have a crypto key, there is no way to process the node; let's return.
         if (pubnub.getConfiguration().getCipherKey() == null) {
             return input;
@@ -68,12 +64,12 @@ public class SubscribeMessageWorker implements Runnable {
         Crypto crypto = new Crypto(pubnub.getConfiguration().getCipherKey());
         String inputText;
         String outputText;
-        JsonNode outputObject;
+        JsonElement outputObject;
 
-        if (input.isObject() && input.has("pn_other")) {
-            inputText = input.get("pn_other").asText();
+        if (input.isJsonObject() && input.getAsJsonObject().has("pn_other")) {
+            inputText = input.getAsJsonObject().get("pn_other").getAsString();
         } else {
-            inputText = input.asText();
+            inputText = input.getAsString();
         }
 
         try {
@@ -90,8 +86,8 @@ public class SubscribeMessageWorker implements Runnable {
         }
 
         try {
-            outputObject = mapper.readValue(outputText, JsonNode.class);
-        } catch (IOException e) {
+            outputObject = this.pubnub.getGsonParser().fromJson(outputText, JsonElement.class);
+        } catch (Exception e) {
             PNStatus pnStatus = PNStatus.builder().error(true)
                     .errorData(new PNErrorData(e.getMessage(), e))
                     .operation(PNOperationType.PNSubscribeOperation)
@@ -103,9 +99,9 @@ public class SubscribeMessageWorker implements Runnable {
         }
 
         // inject the decoded response into the payload
-        if (input.isObject() && input.has("pn_other")) {
-            ObjectNode objectNode = (ObjectNode) input;
-            objectNode.set("pn_other", outputObject);
+        if (input.isJsonObject() && input.getAsJsonObject().has("pn_other")) {
+            JsonObject objectNode = input.getAsJsonObject();
+            objectNode.add("pn_other", outputObject);
             outputObject = objectNode;
         }
 
@@ -122,7 +118,7 @@ public class SubscribeMessageWorker implements Runnable {
         }
 
         if (message.getChannel().endsWith("-pnpres")) {
-            PresenceEnvelope presencePayload = mapper.convertValue(message.getPayload(), PresenceEnvelope.class);
+            PresenceEnvelope presencePayload = this.pubnub.getGsonParser().fromJson(message.getPayload(), PresenceEnvelope.class);
 
             String strippedPresenceChannel = null;
             String strippedPresenceSubscription = null;
@@ -136,10 +132,6 @@ public class SubscribeMessageWorker implements Runnable {
 
             PNPresenceEventResult pnPresenceEventResult = PNPresenceEventResult.builder()
                     .event(presencePayload.getAction())
-                    // deprecated
-                    .actualChannel((subscriptionMatch != null) ? channel : null)
-                    .subscribedChannel(subscriptionMatch != null ? subscriptionMatch : channel)
-                    // deprecated
                     .channel(strippedPresenceChannel)
                     .subscription(strippedPresenceSubscription)
                     .state(presencePayload.getData())
@@ -151,7 +143,7 @@ public class SubscribeMessageWorker implements Runnable {
 
             listenerManager.announce(pnPresenceEventResult);
         } else {
-            JsonNode extractedMessage = processMessage(message.getPayload());
+            JsonElement extractedMessage = processMessage(message.getPayload());
 
             if (extractedMessage == null) {
                 log.debug("unable to parse payload on #processIncomingMessages");
@@ -159,10 +151,6 @@ public class SubscribeMessageWorker implements Runnable {
 
             PNMessageResult pnMessageResult = PNMessageResult.builder()
                     .message(extractedMessage)
-                    // deprecated
-                    .actualChannel((subscriptionMatch != null) ? channel : null)
-                    .subscribedChannel(subscriptionMatch != null ? subscriptionMatch : channel)
-                    // deprecated
                     .channel(channel)
                     .subscription(subscriptionMatch)
                     .timetoken(publishMetaData.getPublishTimetoken())

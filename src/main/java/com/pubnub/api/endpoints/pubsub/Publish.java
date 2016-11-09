@@ -1,7 +1,5 @@
 package com.pubnub.api.endpoints.pubsub;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -65,20 +63,19 @@ public class Publish extends Endpoint<List<Object>, PNPublishResult> {
     protected final Call<List<Object>> doWork(Map<String, String> params) throws PubNubException {
         String stringifiedMessage;
         String stringifiedMeta;
-        ObjectMapper mapper = new ObjectMapper();
 
         try {
-            stringifiedMessage = mapper.writeValueAsString(message);
-        } catch (JsonProcessingException e) {
+            stringifiedMessage = this.getPubnub().getGsonParser().toJson(message);
+        } catch (Exception e) {
             throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
         }
 
         if (meta != null) {
             try {
-                stringifiedMeta = mapper.writeValueAsString(meta);
+                stringifiedMeta = this.getPubnub().getGsonParser().toJson(meta);
                 stringifiedMeta = PubNubUtil.urlEncode(stringifiedMeta);
                 params.put("meta", stringifiedMeta);
-            } catch (JsonProcessingException e) {
+            } catch (Exception e) {
                 throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
             }
         }

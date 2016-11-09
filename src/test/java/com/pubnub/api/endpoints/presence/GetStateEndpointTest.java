@@ -2,14 +2,15 @@ package com.pubnub.api.endpoints.presence;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
+import com.google.gson.JsonElement;
 import com.jayway.awaitility.Awaitility;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.callbacks.PNCallback;
+import com.pubnub.api.endpoints.TestHarness;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.presence.PNGetStateResult;
-import com.pubnub.api.endpoints.TestHarness;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,8 +18,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,10 +49,10 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
 
-        PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
-        Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("testChannel");
-        Assert.assertEquals(ch1Data.get("age"), 20);
-        Assert.assertEquals(ch1Data.get("status"), "online");
+        PNGetStateResult result = partialGetState.channels(Collections.singletonList("testChannel")).uuid("sampleUUID").sync();
+        JsonElement ch1Data = result.getStateByUUID().get("testChannel");
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("age").getAsInt(), 20);
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("status").getAsString(), "online");
     }
 
     @Test
@@ -61,10 +62,10 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
 
-        PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).sync();
-        Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("testChannel");
-        Assert.assertEquals(ch1Data.get("age"), 20);
-        Assert.assertEquals(ch1Data.get("status"), "online");
+        PNGetStateResult result = partialGetState.channels(Collections.singletonList("testChannel")).sync();
+        JsonElement ch1Data = result.getStateByUUID().get("testChannel");
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("age").getAsInt(), 20);
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("status").getAsString(), "online");
     }
 
 
@@ -74,7 +75,7 @@ public class GetStateEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/channel/testChannel/uuid/sampleUUID"))
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
-        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Collections.singletonList("testChannel")).uuid("sampleUUID").sync();
     }
 
     @Test
@@ -84,12 +85,12 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"ch1\": { \"age\" : 20, \"status\" : \"online\"}, \"ch2\": { \"age\": 100, \"status\": \"offline\" } }, \"service\": \"Presence\"}")));
 
         PNGetStateResult result = partialGetState.channels(Arrays.asList("ch1", "ch2")).uuid("sampleUUID").sync();
-        Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("ch1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
-        Assert.assertEquals(ch1Data.get("status"), "online");
-        Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("ch2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
-        Assert.assertEquals(ch2Data.get("status"), "offline");
+        JsonElement ch1Data = result.getStateByUUID().get("ch1");
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("age").getAsInt(), 20);
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("status").getAsString(), "online");
+        JsonElement ch2Data = result.getStateByUUID().get("ch2");
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("age").getAsInt(), 100);
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("status").getAsString(), "offline");
     }
 
     @Test
@@ -98,13 +99,13 @@ public class GetStateEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/channel/,/uuid/sampleUUID"))
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"chcg1\": { \"age\" : 20, \"status\" : \"online\"}, \"chcg2\": { \"age\": 100, \"status\": \"offline\" } }, \"service\": \"Presence\"}")));
 
-        PNGetStateResult result = partialGetState.channelGroups(Arrays.asList("cg1")).uuid("sampleUUID").sync();
-        Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("chcg1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
-        Assert.assertEquals(ch1Data.get("status"), "online");
-        Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("chcg2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
-        Assert.assertEquals(ch2Data.get("status"), "offline");
+        PNGetStateResult result = partialGetState.channelGroups(Collections.singletonList("cg1")).uuid("sampleUUID").sync();
+        JsonElement ch1Data = result.getStateByUUID().get("chcg1");
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("age").getAsInt(), 20);
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("status").getAsString(), "online");
+        JsonElement ch2Data = result.getStateByUUID().get("chcg2");
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("age").getAsInt(), 100);
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("status").getAsString(), "offline");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
@@ -118,12 +119,12 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"chcg1\": { \"age\" : 20, \"status\" : \"online\"}, \"chcg2\": { \"age\": 100, \"status\": \"offline\" } }, \"service\": \"Presence\"}")));
 
         PNGetStateResult result = partialGetState.channelGroups(Arrays.asList("cg1", "cg2")).uuid("sampleUUID").sync();
-        Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("chcg1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
-        Assert.assertEquals(ch1Data.get("status"), "online");
-        Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("chcg2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
-        Assert.assertEquals(ch2Data.get("status"), "offline");
+        JsonElement ch1Data = result.getStateByUUID().get("chcg1");
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("age").getAsInt(), 20);
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("status").getAsString(), "online");
+        JsonElement ch2Data = result.getStateByUUID().get("chcg2");
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("age").getAsInt(), 100);
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("status").getAsString(), "offline");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
@@ -136,13 +137,13 @@ public class GetStateEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v2/presence/sub-key/mySubscribeKey/channel/ch1/uuid/sampleUUID"))
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"chcg1\": { \"age\" : 20, \"status\" : \"online\"}, \"chcg2\": { \"age\": 100, \"status\": \"offline\" } }, \"service\": \"Presence\"}")));
 
-        PNGetStateResult result = partialGetState.channels(Arrays.asList("ch1")).channelGroups(Arrays.asList("cg1", "cg2")).uuid("sampleUUID").sync();
-        Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("chcg1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
-        Assert.assertEquals(ch1Data.get("status"), "online");
-        Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("chcg2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
-        Assert.assertEquals(ch2Data.get("status"), "offline");
+        PNGetStateResult result = partialGetState.channels(Collections.singletonList("ch1")).channelGroups(Arrays.asList("cg1", "cg2")).uuid("sampleUUID").sync();
+        JsonElement ch1Data = result.getStateByUUID().get("chcg1");
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("age").getAsInt(), 20);
+        Assert.assertEquals(ch1Data.getAsJsonObject().get("status").getAsString(), "online");
+        JsonElement ch2Data = result.getStateByUUID().get("chcg2");
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("age").getAsInt(), 100);
+        Assert.assertEquals(ch2Data.getAsJsonObject().get("status").getAsString(), "offline");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
@@ -165,7 +166,7 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setAuthKey("myKey");
-        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Collections.singletonList("testChannel")).uuid("sampleUUID").sync();
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());
@@ -180,7 +181,7 @@ public class GetStateEndpointTest extends TestHarness {
 
         final AtomicInteger atomic = new AtomicInteger(0);
 
-        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").async(new PNCallback<PNGetStateResult>() {
+        partialGetState.channels(Collections.singletonList("testChannel")).uuid("sampleUUID").async(new PNCallback<PNGetStateResult>() {
             @Override
             public void onResponse(PNGetStateResult result, PNStatus status) {
                 if (status != null && status.getOperation()== PNOperationType.PNGetState) {
@@ -199,7 +200,7 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setSubscribeKey(null);
-        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Collections.singletonList("testChannel")).uuid("sampleUUID").sync();
     }
 
     @org.junit.Test(expected=PubNubException.class)
@@ -209,6 +210,6 @@ public class GetStateEndpointTest extends TestHarness {
                 .willReturn(aResponse().withBody("{ \"status\": 200, \"message\": \"OK\", \"payload\": { \"age\" : 20, \"status\" : \"online\"}, \"service\": \"Presence\"}")));
 
         pubnub.getConfiguration().setSubscribeKey("");
-        partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
+        partialGetState.channels(Collections.singletonList("testChannel")).uuid("sampleUUID").sync();
     }
 }

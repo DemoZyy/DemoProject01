@@ -1,8 +1,13 @@
 name: java
-version: 4.2.0
+version: 4.3.0
 schema: 1
 scm: github.com/pubnub/java
 changelog:
+  - version: v4.3.0
+    date:
+    changes:
+      - type: improvement
+        text: (BREAKING CHANGE) switched library to use GSON as jackson did not provide good android support
   - version: v4.2.0
     date:
     changes:

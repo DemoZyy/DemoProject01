@@ -1,8 +1,5 @@
 package com.pubnub.api.endpoints.presence;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -63,7 +60,6 @@ public class SetState extends Endpoint<Envelope<Map<String, Object>>, PNSetState
 
     @Override
     protected Call<Envelope<Map<String, Object>>> doWork(Map<String, String> params) throws PubNubException {
-        ObjectWriter ow = new ObjectMapper().writer();
         String selectedUUID = uuid != null ? uuid : this.getPubnub().getConfiguration().getUuid();
         String stringifiedState;
 
@@ -84,8 +80,8 @@ public class SetState extends Endpoint<Envelope<Map<String, Object>>, PNSetState
         }
 
         try {
-            stringifiedState = ow.writeValueAsString(state);
-        } catch (JsonProcessingException e) {
+            stringifiedState = this.getPubnub().getGsonParser().toJson(state);
+        } catch (Exception e) {
             throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
         }
 

@@ -1,6 +1,6 @@
 package com.pubnub.api.models.consumer.pubsub;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,12 +8,7 @@ import lombok.Getter;
 @Builder
 public class PNMessageResult {
 
-    private JsonNode message;
-
-    @Deprecated
-    private String subscribedChannel;
-    @Deprecated
-    private String actualChannel;
+    private JsonElement message;
 
     private String channel;
     private String subscription;

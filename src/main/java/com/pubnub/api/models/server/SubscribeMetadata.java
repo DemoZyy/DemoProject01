@@ -1,17 +1,15 @@
 package com.pubnub.api.models.server;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 
 @Getter
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class SubscribeMetadata {
 
-    @JsonProperty("t")
+    @SerializedName("t")
     private Long timetoken;
 
-    @JsonProperty("r")
+    @SerializedName("r")
     private String region;
 
 }

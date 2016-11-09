@@ -37,6 +37,7 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
     @Setter
     private Integer count;
     @Setter
+    @Deprecated
     private Boolean includeTimetoken;
 
     public History(PubNub pubnub, Retrofit retrofit) {
@@ -68,6 +69,8 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
 
         if (includeTimetoken != null) {
             params.put("include_token", String.valueOf(includeTimetoken));
+        } else {
+            params.put("include_token", "true");
         }
 
         if (count != null && count > 0 && count <= MAX_COUNT) {

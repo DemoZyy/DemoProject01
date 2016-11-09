@@ -8,6 +8,10 @@ changelog:
     changes:
       - type: improvement
         text: (BREAKING CHANGE) switched library to use GSON as jackson did not provide good android support
+      - type: improvement
+        text: (BREAKING CHANGE) subscribedChannel and actualChannel are no longer reported.
+      - type: improvement
+        text: (DEPRECATION) include_timetoken is deprecated and is set to true by default.
   - version: v4.2.0
     date:
     changes:

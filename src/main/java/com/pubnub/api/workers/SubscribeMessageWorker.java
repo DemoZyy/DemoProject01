@@ -1,8 +1,5 @@
 package com.pubnub.api.workers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -29,14 +26,12 @@ public class SubscribeMessageWorker implements Runnable {
     private PubNub pubnub;
     private ListenerManager listenerManager;
     private LinkedBlockingQueue<SubscribeMessage> queue;
-    private ObjectMapper mapper;
 
     private boolean isRunning;
 
     public SubscribeMessageWorker(PubNub pubnubInstance, ListenerManager listenerManagerInstance, LinkedBlockingQueue<SubscribeMessage> queueInstance) {
         this.pubnub = pubnubInstance;
         this.listenerManager = listenerManagerInstance;
-        this.mapper = new ObjectMapper();
         this.queue = queueInstance;
     }
 

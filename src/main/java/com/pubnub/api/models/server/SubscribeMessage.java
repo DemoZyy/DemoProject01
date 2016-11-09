@@ -3,44 +3,44 @@ package com.pubnub.api.models.server;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 public class SubscribeMessage {
 
-    @JsonProperty("a")
+    @SerializedName("a")
     private String shard;
 
-    @JsonProperty("b")
+    @SerializedName("b")
     private String subscriptionMatch;
 
-    @JsonProperty("c")
+    @SerializedName("c")
     private String channel;
 
-    @JsonProperty("d")
+    @SerializedName("d")
     private JsonNode payload;
 
     // TODO: figure me out
     //@JsonProperty("ear")
     //private String payload;
 
-    @JsonProperty("f")
+    @SerializedName("f")
     private String flags;
 
-    @JsonProperty("i")
+    @SerializedName("i")
     private String issuingClientId;
 
-    @JsonProperty("k")
+    @SerializedName("k")
     private String subscribeKey;
 
     //@JsonProperty("s")
     //private String sequenceNumber;
 
-    @JsonProperty("o")
+    @SerializedName("o")
     private OriginationMetaData originationMetadata;
 
-    @JsonProperty("p")
+    @SerializedName("p")
     private PublishMetaData publishMetaData;
 
     //@JsonProperty("r")

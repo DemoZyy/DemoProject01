@@ -1,8 +1,6 @@
 package com.pubnub.api.endpoints.presence;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.gson.Gson;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -48,7 +46,6 @@ public class Heartbeat extends Endpoint<Envelope, Boolean> {
 
     @Override
     protected Call<Envelope> doWork(Map<String, String> params) throws PubNubException {
-        ObjectWriter ow = new ObjectMapper().writer();
 
         params.put("heartbeat", String.valueOf(this.getPubnub().getConfiguration().getPresenceTimeout()));
 
@@ -65,14 +62,7 @@ public class Heartbeat extends Endpoint<Envelope, Boolean> {
         }
 
         if (state != null) {
-            String stringifiedState;
-
-            try {
-                stringifiedState = ow.writeValueAsString(state);
-            } catch (JsonProcessingException e) {
-                throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
-            }
-
+            String stringifiedState = new Gson().toJson(state);
             stringifiedState = PubNubUtil.urlEncode(stringifiedState);
             params.put("state", stringifiedState);
         }

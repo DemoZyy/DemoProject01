@@ -70,6 +70,7 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
         if (includeTimetoken != null) {
             params.put("include_token", String.valueOf(includeTimetoken));
         } else {
+            includeTimetoken = true;
             params.put("include_token", "true");
         }
 

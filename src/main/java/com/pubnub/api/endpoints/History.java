@@ -142,7 +142,7 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
         if (message.isJsonObject() && message.getAsJsonObject().has("pn_other")) {
             inputText = message.getAsJsonObject().get("pn_other").getAsString();
         } else {
-            inputText = message.getAsString();
+            inputText = message.toString();
         }
 
         outputText = crypto.decrypt(inputText);

@@ -47,8 +47,8 @@ public class HistoryEndpointTest extends TestHarness {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
 
-        Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
-        Map<String, Object> historyItem1 = new HashMap<String, Object>();
+        Map<String, Object> historyEnvelope1 = new HashMap<>();
+        Map<String, Object> historyItem1 = new HashMap<>();
         historyItem1.put("a", 11);
         historyItem1.put("b", 22);
         historyEnvelope1.put("timetoken", 1111);

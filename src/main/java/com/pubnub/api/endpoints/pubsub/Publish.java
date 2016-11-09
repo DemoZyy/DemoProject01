@@ -61,13 +61,23 @@ public class Publish extends Endpoint<List<Object>, PNPublishResult> {
 
     @Override
     protected final Call<List<Object>> doWork(Map<String, String> params) throws PubNubException {
-        String stringifiedMessage = this.getPubnub().getGsonParser().toJson(message);
+        String stringifiedMessage;
         String stringifiedMeta;
 
+        try {
+            stringifiedMessage = this.getPubnub().getGsonParser().toJson(message);
+        } catch (Exception e) {
+            throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
+        }
+
         if (meta != null) {
-            stringifiedMeta = this.getPubnub().getGsonParser().toJson(meta);
-            stringifiedMeta = PubNubUtil.urlEncode(stringifiedMeta);
-            params.put("meta", stringifiedMeta);
+            try {
+                stringifiedMeta = this.getPubnub().getGsonParser().toJson(meta);
+                stringifiedMeta = PubNubUtil.urlEncode(stringifiedMeta);
+                params.put("meta", stringifiedMeta);
+            } catch (Exception e) {
+                throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
+            }
         }
 
         if (shouldStore != null) {

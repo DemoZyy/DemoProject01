@@ -80,7 +80,7 @@ public class SetState extends Endpoint<Envelope<Map<String, Object>>, PNSetState
         }
 
         try {
-            stringifiedState = this.getPubnub().getGsonParser().toJson(state);;
+            stringifiedState = this.getPubnub().getGsonParser().toJson(state);
         } catch (Exception e) {
             throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
         }

@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints.pubsub;
 
-import com.google.gson.Gson;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -62,11 +61,11 @@ public class Publish extends Endpoint<List<Object>, PNPublishResult> {
 
     @Override
     protected final Call<List<Object>> doWork(Map<String, String> params) throws PubNubException {
-        String stringifiedMessage = new Gson().toJson(message);;
+        String stringifiedMessage = this.getPubnub().getGsonParser().toJson(message);
         String stringifiedMeta;
 
         if (meta != null) {
-            stringifiedMeta = new Gson().toJson(meta);
+            stringifiedMeta = this.getPubnub().getGsonParser().toJson(meta);
             stringifiedMeta = PubNubUtil.urlEncode(stringifiedMeta);
             params.put("meta", stringifiedMeta);
         }

@@ -1,6 +1,6 @@
 package com.pubnub.api.models.server.access_manager;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerKeyData;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerKeysData;
@@ -23,7 +23,7 @@ public class AccessManagerGrantPayload {
     private Map<String, PNAccessManagerKeysData> channels;
 
     @SerializedName("channel-groups")
-    private JsonNode channelGroups;
+    private JsonElement channelGroups;
 
     @SerializedName("auths")
     private Map<String, PNAccessManagerKeyData> authKeys;

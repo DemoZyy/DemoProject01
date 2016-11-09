@@ -1,7 +1,7 @@
 package com.pubnub.api;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,7 +18,7 @@ public class PubNubError {
 
     private final int errorCode;
     private final int errorCodeExtended;
-    private final JsonNode errorObject;
+    private final JsonElement errorObject;
     /**
      * includes a message from the thrown exception (if any.)
      */

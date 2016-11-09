@@ -187,7 +187,7 @@ public class HereNowEndpointTest extends TestHarness {
         Assert.assertEquals(response.getChannels().get("game1").getOccupancy(), 1);
         Assert.assertEquals(response.getChannels().get("game1").getOccupants().size(), 1);
         Assert.assertEquals(response.getChannels().get("game1").getOccupants().get(0).getUuid(), "a3ffd012-a3b9-478c-8705-64089f24d71e");
-        Assert.assertEquals(response.getChannels().get("game1").getOccupants().get(0).getState().toString(), "{age=10}");
+        Assert.assertEquals(response.getChannels().get("game1").getOccupants().get(0).getState().toString(), "{age=10.0}");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
         assertEquals(1, requests.size());

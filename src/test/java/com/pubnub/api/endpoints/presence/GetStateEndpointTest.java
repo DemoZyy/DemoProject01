@@ -50,7 +50,7 @@ public class GetStateEndpointTest extends TestHarness {
 
         PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).uuid("sampleUUID").sync();
         Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("testChannel");
-        Assert.assertEquals(ch1Data.get("age"), 20);
+        Assert.assertEquals(ch1Data.get("age"), 20.0);
         Assert.assertEquals(ch1Data.get("status"), "online");
     }
 
@@ -63,7 +63,7 @@ public class GetStateEndpointTest extends TestHarness {
 
         PNGetStateResult result = partialGetState.channels(Arrays.asList("testChannel")).sync();
         Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("testChannel");
-        Assert.assertEquals(ch1Data.get("age"), 20);
+        Assert.assertEquals(ch1Data.get("age"), 20.0);
         Assert.assertEquals(ch1Data.get("status"), "online");
     }
 
@@ -85,10 +85,10 @@ public class GetStateEndpointTest extends TestHarness {
 
         PNGetStateResult result = partialGetState.channels(Arrays.asList("ch1", "ch2")).uuid("sampleUUID").sync();
         Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("ch1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
+        Assert.assertEquals(ch1Data.get("age"), 20.0);
         Assert.assertEquals(ch1Data.get("status"), "online");
         Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("ch2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
+        Assert.assertEquals(ch2Data.get("age"), 100.0);
         Assert.assertEquals(ch2Data.get("status"), "offline");
     }
 
@@ -100,10 +100,10 @@ public class GetStateEndpointTest extends TestHarness {
 
         PNGetStateResult result = partialGetState.channelGroups(Arrays.asList("cg1")).uuid("sampleUUID").sync();
         Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("chcg1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
+        Assert.assertEquals(ch1Data.get("age"), 20.0);
         Assert.assertEquals(ch1Data.get("status"), "online");
         Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("chcg2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
+        Assert.assertEquals(ch2Data.get("age"), 100.0);
         Assert.assertEquals(ch2Data.get("status"), "offline");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -119,10 +119,10 @@ public class GetStateEndpointTest extends TestHarness {
 
         PNGetStateResult result = partialGetState.channelGroups(Arrays.asList("cg1", "cg2")).uuid("sampleUUID").sync();
         Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("chcg1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
+        Assert.assertEquals(ch1Data.get("age"), 20.0);
         Assert.assertEquals(ch1Data.get("status"), "online");
         Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("chcg2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
+        Assert.assertEquals(ch2Data.get("age"), 100.0);
         Assert.assertEquals(ch2Data.get("status"), "offline");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));
@@ -138,10 +138,10 @@ public class GetStateEndpointTest extends TestHarness {
 
         PNGetStateResult result = partialGetState.channels(Arrays.asList("ch1")).channelGroups(Arrays.asList("cg1", "cg2")).uuid("sampleUUID").sync();
         Map<String, Object> ch1Data = (Map<String, Object>) result.getStateByUUID().get("chcg1");
-        Assert.assertEquals(ch1Data.get("age"), 20);
+        Assert.assertEquals(ch1Data.get("age"), 20.0);
         Assert.assertEquals(ch1Data.get("status"), "online");
         Map<String, Object> ch2Data = (Map<String, Object>) result.getStateByUUID().get("chcg2");
-        Assert.assertEquals(ch2Data.get("age"), 100);
+        Assert.assertEquals(ch2Data.get("age"), 100.0);
         Assert.assertEquals(ch2Data.get("status"), "offline");
 
         List<LoggedRequest> requests = findAll(getRequestedFor(urlMatching("/.*")));

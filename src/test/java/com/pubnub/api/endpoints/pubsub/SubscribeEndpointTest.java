@@ -31,7 +31,7 @@ public class SubscribeEndpointTest extends TestHarness {
     @Before
     public void beforeEach() throws IOException {
         pubnub = this.createPubNubInstance(8080);
-        RetrofitManager retrofitManager = new RetrofitManager(pubnub);
+        RetrofitManager retrofitManager = new RetrofitManager(pubnub, pubnub.getGsonParser());
         instance = new Subscribe(pubnub, retrofitManager.getSubscriptionInstance());
         wireMockRule.start();
     }

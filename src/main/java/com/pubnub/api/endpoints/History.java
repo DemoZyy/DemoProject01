@@ -134,6 +134,7 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
             return message;
         }
 
+
         Crypto crypto = new Crypto(this.getPubnub().getConfiguration().getCipherKey());
         String inputText;
         String outputText;
@@ -141,8 +142,11 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
 
         if (message.isJsonObject() && message.getAsJsonObject().has("pn_other")) {
             inputText = message.getAsJsonObject().get("pn_other").getAsString();
-        } else {
-            inputText = message.toString();
+        } else if (message.isJsonObject() || message.isJsonArray()) {
+            // if the payload is not primitive, return the payload; the message is not encrypted.
+            return message;
+    }    else {
+            inputText = message.getAsString();
         }
 
         outputText = crypto.decrypt(inputText);

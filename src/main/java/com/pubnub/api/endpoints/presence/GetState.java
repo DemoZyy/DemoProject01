@@ -1,5 +1,6 @@
 package com.pubnub.api.endpoints.presence;
 
+import com.google.gson.JsonElement;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @Accessors(chain = true, fluent = true)
-public class GetState extends Endpoint<Envelope<Object>, PNGetStateResult> {
+public class GetState extends Endpoint<Envelope<JsonElement>, PNGetStateResult> {
 
     @Setter
     private List<String> channels;
@@ -46,7 +47,7 @@ public class GetState extends Endpoint<Envelope<Object>, PNGetStateResult> {
     }
 
     @Override
-    protected Call<Envelope<Object>> doWork(Map<String, String> params) {
+    protected Call<Envelope<JsonElement>> doWork(Map<String, String> params) {
         PresenceService service = this.getRetrofit().create(PresenceService.class);
 
         if (channelGroups.size() > 0) {
@@ -61,14 +62,15 @@ public class GetState extends Endpoint<Envelope<Object>, PNGetStateResult> {
     }
 
     @Override
-    protected PNGetStateResult createResponse(final Response<Envelope<Object>> input) throws PubNubException {
-        Map<String, Object> stateMappings;
+    protected PNGetStateResult createResponse(final Response<Envelope<JsonElement>> input) throws PubNubException {
+        Map<String, JsonElement> stateMappings = new HashMap<>();
 
         if (channels.size() == 1 && channelGroups.size() == 0) {
-            stateMappings = new HashMap<>();
             stateMappings.put(channels.get(0), input.body().getPayload());
         } else {
-            stateMappings = (Map<String, Object>) input.body().getPayload();
+            for (Map.Entry<String, JsonElement> stateMapping : input.body().getPayload().getAsJsonObject().entrySet()) {
+                stateMappings.put(stateMapping.getKey(), stateMapping.getValue());
+            }
         }
 
         return PNGetStateResult.builder().stateByUUID(stateMappings).build();

@@ -1,9 +1,11 @@
 package com.pubnub.api.models.consumer.access_manager;
 
 import com.google.gson.annotations.SerializedName;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class PNAccessManagerKeyData {
 
     @SerializedName("r")

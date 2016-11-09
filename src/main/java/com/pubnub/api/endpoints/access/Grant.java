@@ -1,6 +1,7 @@
 package com.pubnub.api.endpoints.access;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -9,7 +10,6 @@ import com.pubnub.api.endpoints.Endpoint;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerGrantResult;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerKeyData;
-import com.pubnub.api.models.consumer.access_manager.PNAccessManagerKeysData;
 import com.pubnub.api.models.server.Envelope;
 import com.pubnub.api.models.server.access_manager.AccessManagerGrantPayload;
 import lombok.Setter;
@@ -119,19 +119,16 @@ public class Grant extends Endpoint<Envelope<AccessManagerGrantPayload>, PNAcces
                 constructedGroups.put(data.getChannelGroups().getAsString(), data.getAuthKeys());
             } else if (channelGroups.size() > 1) {
                 for (Map.Entry<String, JsonElement> channelGroup : data.getChannelGroups().getAsJsonObject().entrySet()) {
-                    PNAccessManagerKeysData pnAccessManagerKeysData =  this.getPubnub().getGsonParser().fromJson(channelGroup.getValue().toString(), PNAccessManagerKeysData.class);
-                    constructedGroups.put(channelGroup.getKey(), pnAccessManagerKeysData.getAuthKeys());
+                    constructedGroups.put(channelGroup.getKey(), createKeyMap(channelGroup.getValue().getAsJsonObject()));
                 }
             }
         }
-
 
         if (data.getChannels() != null) {
             for (String fetchedChannel : data.getChannels().keySet()) {
                 constructedChannels.put(fetchedChannel, data.getChannels().get(fetchedChannel).getAuthKeys());
             }
         }
-
 
         return pnAccessManagerGrantResult
                 .subscribeKey(data.getSubscribeKey())
@@ -150,6 +147,22 @@ public class Grant extends Endpoint<Envelope<AccessManagerGrantPayload>, PNAcces
     @Override
     protected boolean isAuthRequired() {
         return false;
+    }
+
+    private Map<String, PNAccessManagerKeyData> createKeyMap(JsonObject input) {
+        Map<String, PNAccessManagerKeyData> result = new HashMap<>();
+
+        for (Map.Entry<String, JsonElement> keyMap : input.get("auths").getAsJsonObject().entrySet()) {
+            PNAccessManagerKeyData pnAccessManagerKeyData = PNAccessManagerKeyData.builder()
+                    .manageEnabled(keyMap.getValue().getAsJsonObject().get("m").getAsBoolean())
+                    .writeEnabled(keyMap.getValue().getAsJsonObject().get("w").getAsBoolean())
+                    .readEnabled(keyMap.getValue().getAsJsonObject().get("r").getAsBoolean())
+                    .build();
+
+            result.put(keyMap.getKey(), pnAccessManagerKeyData);
+        }
+
+        return result;
     }
 
 }

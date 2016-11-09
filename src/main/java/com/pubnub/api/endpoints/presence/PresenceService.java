@@ -1,5 +1,6 @@
 package com.pubnub.api.endpoints.presence;
 
+import com.google.gson.JsonElement;
 import com.pubnub.api.models.server.Envelope;
 import com.pubnub.api.models.server.presence.WhereNowPayload;
 import retrofit2.Call;
@@ -27,19 +28,19 @@ public interface PresenceService {
                                              @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub_key/{subKey}")
-    Call<Envelope<Object>> globalHereNow(@Path("subKey") String subKey,
+    Call<Envelope<JsonElement>> globalHereNow(@Path("subKey") String subKey,
                                               @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub_key/{subKey}/channel/{channel}")
-    Call<Envelope<Object>> hereNow(@Path("subKey") String subKey,
+    Call<Envelope<JsonElement>> hereNow(@Path("subKey") String subKey,
                                         @Path("channel") String channel,
                                         @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub-key/{subKey}/channel/{channel}/uuid/{uuid}")
-    Call<Envelope<Object>> getState(@Path("subKey") String subKey,
-                                    @Path("channel") String channel,
-                                    @Path("uuid") String uuid,
-                                    @QueryMap Map<String, String> options);
+    Call<Envelope<JsonElement>> getState(@Path("subKey") String subKey,
+                                         @Path("channel") String channel,
+                                         @Path("uuid") String uuid,
+                                         @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub-key/{subKey}/channel/{channel}/uuid/{uuid}/data")
     Call<Envelope<Map<String, Object>>> setState(@Path("subKey") String subKey,

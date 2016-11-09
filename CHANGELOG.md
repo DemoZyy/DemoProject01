@@ -1,4 +1,14 @@
 
+## [v4.3.0](https://github.com/pubnub/java/tree/v4.3.0)
+
+
+  [Full Changelog](https://github.com/pubnub/java/compare/v4.2.0...v4.3.0)
+
+
+- ⭐(BREAKING CHANGE) switched library to use GSON as jackson did not provide good android support
+
+
+
 ## [v4.2.0](https://github.com/pubnub/java/tree/v4.2.0)
 
 

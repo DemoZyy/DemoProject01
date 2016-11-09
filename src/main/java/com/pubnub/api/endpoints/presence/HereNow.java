@@ -1,6 +1,7 @@
 package com.pubnub.api.endpoints.presence;
 
 
+import com.google.gson.internal.LinkedTreeMap;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -122,18 +123,18 @@ public class HereNow extends Endpoint<Envelope<Object>, PNHereNowResult> {
 
         PNHereNowResult hereNowData = PNHereNowResult.builder()
                 .channels(new HashMap<String, PNHereNowChannelData>())
-                .totalChannels((Integer) parsedInput.get("total_channels"))
-                .totalOccupancy((Integer) parsedInput.get("total_occupancy"))
+                .totalChannels(((Double) parsedInput.get("total_channels")).intValue())
+                .totalOccupancy(((Double) parsedInput.get("total_occupancy")).intValue())
                 .build();
 
-        Map<String, Object> channelsParam = (HashMap<String, Object>) parsedInput.get("channels");
+        LinkedTreeMap<String, Object> channelsParam = (LinkedTreeMap<String, Object>) parsedInput.get("channels");
 
         for (Map.Entry<String, Object> entry : channelsParam.entrySet()) {
             Map<String, Object> channel = (Map<String, Object>) channelsParam.get(entry.getKey());
 
             PNHereNowChannelData.PNHereNowChannelDataBuilder hereNowChannelData = PNHereNowChannelData.builder()
                     .channelName(entry.getKey())
-                    .occupancy((Integer) channel.get("occupancy"));
+                    .occupancy(((Double) channel.get("occupancy")).intValue());
 
             if (includeUUIDs) {
                 hereNowChannelData.occupants(prepareOccupantData(channel.get("uuids")));
@@ -143,22 +144,6 @@ public class HereNow extends Endpoint<Envelope<Object>, PNHereNowResult> {
 
             hereNowData.getChannels().put(entry.getKey(), hereNowChannelData.build());
         }
-
-//        for (String channelName : channelsParam.keySet()) {
-//            Map<String, Object> channel = (Map<String, Object>) channelsParam.get(channelName);
-//
-//            PNHereNowChannelData.PNHereNowChannelDataBuilder hereNowChannelData = PNHereNowChannelData.builder()
-//                    .channelName(channelName)
-//                    .occupancy((Integer) channel.get("occupancy"));
-//
-//            if (includeUUIDs) {
-//                hereNowChannelData.occupants(prepareOccupantData(channel.get("uuids")));
-//            } else {
-//                hereNowChannelData.occupants(null);
-//            }
-//
-//            hereNowData.getChannels().put(channelName, hereNowChannelData.build());
-//        }
 
         return hereNowData;
     }

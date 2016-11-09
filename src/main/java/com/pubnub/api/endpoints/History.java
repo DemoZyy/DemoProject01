@@ -146,9 +146,14 @@ public class History extends Endpoint<JsonElement, PNHistoryResult> {
         }
 
         outputText = crypto.decrypt(inputText);
-        outputObject = this.getPubnub().getGsonParser().fromJson(outputText, JsonElement.class);
 
-        // inject the decoded resposne into the payload
+        try {
+            outputObject = this.getPubnub().getGsonParser().fromJson(outputText, JsonElement.class);
+        } catch (Exception e) {
+            throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_PARSING_ERROR).errormsg(e.getMessage()).build();
+        }
+
+        // inject the decoded re into the payload
         if (message.isJsonObject() && message.getAsJsonObject().has("pn_other")) {
             JsonObject objectNode = message.getAsJsonObject();
             objectNode.add("pn_other", outputObject);

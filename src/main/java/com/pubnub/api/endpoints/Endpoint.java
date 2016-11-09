@@ -82,7 +82,11 @@ public abstract class Endpoint<Input, Output> {
                 responseBodyText = "N/A";
             }
 
-            responseBody = this.getPubnub().getGsonParser().fromJson(responseBodyText, JsonElement.class);
+            try {
+                responseBody = this.getPubnub().getGsonParser().fromJson(responseBodyText, JsonElement.class);
+            } catch (Exception e) {
+                responseBody = null;
+            }
 
             throw PubNubException.builder()
                     .pubnubError(PubNubErrorBuilder.PNERROBJ_HTTP_ERROR)
@@ -129,9 +133,13 @@ public abstract class Endpoint<Input, Output> {
                         responseBodyText = "N/A";
                     }
 
-                    responseBody = getPubnub().getGsonParser().fromJson(responseBodyText, JsonElement.class);
+                    try {
+                        responseBody = getPubnub().getGsonParser().fromJson(responseBodyText, JsonElement.class);
+                    } catch (Exception e) {
+                        responseBody = null;
+                    }
 
-                    if (responseBody != null && responseBody.getAsJsonObject().has("payload")) {
+                    if (responseBody != null && responseBody.isJsonObject() && responseBody.getAsJsonObject().has("payload")) {
                         responseBodyPayload = responseBody.getAsJsonObject().get("payload");
                     }
 

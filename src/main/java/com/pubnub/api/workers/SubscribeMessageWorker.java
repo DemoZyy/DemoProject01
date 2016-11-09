@@ -85,7 +85,18 @@ public class SubscribeMessageWorker implements Runnable {
             return null;
         }
 
-        outputObject = this.pubnub.getGsonParser().fromJson(outputText, JsonElement.class);
+        try {
+            outputObject = this.pubnub.getGsonParser().fromJson(outputText, JsonElement.class);
+        } catch (Exception e) {
+            PNStatus pnStatus = PNStatus.builder().error(true)
+                    .errorData(new PNErrorData(e.getMessage(), e))
+                    .operation(PNOperationType.PNSubscribeOperation)
+                    .category(PNStatusCategory.PNMalformedResponseCategory)
+                    .build();
+
+            listenerManager.announce(pnStatus);
+            return null;
+        }
 
         // inject the decoded response into the payload
         if (input.isJsonObject() && input.getAsJsonObject().has("pn_other")) {

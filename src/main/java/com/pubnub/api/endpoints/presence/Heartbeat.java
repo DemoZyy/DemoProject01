@@ -61,7 +61,14 @@ public class Heartbeat extends Endpoint<Envelope, Boolean> {
         }
 
         if (state != null) {
-            String stringifiedState = this.getPubnub().getGsonParser().toJson(state);
+            String stringifiedState;
+
+
+            try {
+                stringifiedState = this.getPubnub().getGsonParser().toJson(state);
+            } catch (Exception e) {
+                throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
+            }
             stringifiedState = PubNubUtil.urlEncode(stringifiedState);
             params.put("state", stringifiedState);
         }

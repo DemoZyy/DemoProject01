@@ -61,7 +61,7 @@ public class SetState extends Endpoint<Envelope<Map<String, Object>>, PNSetState
     @Override
     protected Call<Envelope<Map<String, Object>>> doWork(Map<String, String> params) throws PubNubException {
         String selectedUUID = uuid != null ? uuid : this.getPubnub().getConfiguration().getUuid();
-        String stringifiedState = this.getPubnub().getGsonParser().toJson(state);
+        String stringifiedState;
 
         // only store the state change if we are modifying it for ourselves.
         if (selectedUUID.equals(this.getPubnub().getConfiguration().getUuid())) {
@@ -77,6 +77,12 @@ public class SetState extends Endpoint<Envelope<Map<String, Object>>, PNSetState
 
         if (channelGroups.size() > 0) {
             params.put("channel-group", PubNubUtil.joinString(channelGroups, ","));
+        }
+
+        try {
+            stringifiedState = this.getPubnub().getGsonParser().toJson(state);;
+        } catch (Exception e) {
+            throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_INVALID_ARGUMENTS).errormsg(e.getMessage()).build();
         }
 
         stringifiedState = PubNubUtil.urlEncode(stringifiedState);

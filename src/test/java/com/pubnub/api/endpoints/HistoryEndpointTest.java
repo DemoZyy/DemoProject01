@@ -1,7 +1,5 @@
 package com.pubnub.api.endpoints;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 import com.jayway.awaitility.Awaitility;
@@ -48,8 +46,6 @@ public class HistoryEndpointTest extends TestHarness {
     public void testSyncSuccess() throws IOException, PubNubException {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
         Map<String, Object> historyItem1 = new HashMap<String, Object>();
@@ -73,7 +69,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         PNHistoryResult response = partialHistory.channel("niceChannel").includeTimetoken(true).sync();
 
@@ -92,14 +88,12 @@ public class HistoryEndpointTest extends TestHarness {
     }
 
     @Test
-    public void testSyncAuthSuccess() throws PubNubException, JsonProcessingException {
+    public void testSyncAuthSuccess() throws PubNubException {
 
         pubnub.getConfiguration().setAuthKey("authKey");
 
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
         Map<String, Object> historyItem1 = new HashMap<String, Object>();
@@ -123,7 +117,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         partialHistory.channel("niceChannel").includeTimetoken(true).sync();
 
@@ -185,8 +179,6 @@ public class HistoryEndpointTest extends TestHarness {
     public void testSyncSuccessWithoutTimeToken() throws IOException, PubNubException {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, Object> historyItem1 = new HashMap<>();
         historyItem1.put("a", 11);
@@ -204,7 +196,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         PNHistoryResult response = partialHistory.channel("niceChannel").sync();
 
@@ -227,11 +219,9 @@ public class HistoryEndpointTest extends TestHarness {
     public void testMissinChannel() throws IOException, PubNubException {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
 
-
-        Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
-        Map<String, Object> historyItem1 = new HashMap<String, Object>();
+        Map<String, Object> historyEnvelope1 = new HashMap<>();
+        Map<String, Object> historyItem1 = new HashMap<>();
         historyItem1.put("a", 11);
         historyItem1.put("b", 22);
         historyEnvelope1.put("timetoken", 1111);
@@ -252,7 +242,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         partialHistory.includeTimetoken(true).sync();
     }
@@ -261,8 +251,6 @@ public class HistoryEndpointTest extends TestHarness {
     public void testChannelIsEmpty() throws IOException, PubNubException {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
         Map<String, Object> historyItem1 = new HashMap<String, Object>();
@@ -286,7 +274,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         partialHistory.channel("").includeTimetoken(true).sync();
     }
@@ -296,8 +284,6 @@ public class HistoryEndpointTest extends TestHarness {
 
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
         Map<String, Object> historyItem1 = new HashMap<String, Object>();
@@ -321,7 +307,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         final AtomicInteger atomic = new AtomicInteger(0);
         partialHistory.channel("niceChannel").includeTimetoken(true).async(new PNCallback<PNHistoryResult>() {
@@ -341,8 +327,6 @@ public class HistoryEndpointTest extends TestHarness {
     public void testSyncCountReverseStartEndSuccess() throws IOException, PubNubException {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
-
 
         Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
         Map<String, Object> historyItem1 = new HashMap<String, Object>();
@@ -366,7 +350,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         PNHistoryResult response = partialHistory.channel("niceChannel").count(5).reverse(true).start(1L).end(2L).includeTimetoken(true).sync();
 
@@ -394,20 +378,18 @@ public class HistoryEndpointTest extends TestHarness {
 
     @org.junit.Test(expected=PubNubException.class)
     public void testSyncProcessMessageError() throws IOException, PubNubException {
-        List<Object> testArray = new ArrayList<Object>();
-        List<Object> historyItems = new ArrayList<Object>();
-        ObjectMapper mapper = new ObjectMapper();
+        List<Object> testArray = new ArrayList<>();
+        List<Object> historyItems = new ArrayList<>();
 
-
-        Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
-        Map<String, Object> historyItem1 = new HashMap<String, Object>();
+        Map<String, Object> historyEnvelope1 = new HashMap<>();
+        Map<String, Object> historyItem1 = new HashMap<>();
         historyItem1.put("a", 11);
         historyItem1.put("b", 22);
         historyEnvelope1.put("timetoken", 1111);
         historyEnvelope1.put("message", historyItem1);
 
-        Map<String, Object> historyEnvelope2 = new HashMap<String, Object>();
-        Map<String, Object> historyItem2 = new HashMap<String, Object>();
+        Map<String, Object> historyEnvelope2 = new HashMap<>();
+        Map<String, Object> historyItem2 = new HashMap<>();
         historyItem2.put("a", 33);
         historyItem2.put("b", 44);
         historyEnvelope2.put("timetoken", 2222);
@@ -421,7 +403,7 @@ public class HistoryEndpointTest extends TestHarness {
         testArray.add(4321);
 
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(mapper.writeValueAsString(testArray))));
+                .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
         pubnub.getConfiguration().setCipherKey("Test");
         partialHistory.channel("niceChannel").count(5).reverse(true).start(1L).end(2L).includeTimetoken(true).sync();

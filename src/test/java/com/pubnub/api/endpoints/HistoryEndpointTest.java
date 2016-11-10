@@ -177,8 +177,8 @@ public class HistoryEndpointTest extends TestHarness {
 
     @org.junit.Test
     public void testSyncSuccessWithoutTimeToken() throws IOException, PubNubException {
-        List<Object> testArray = new ArrayList<Object>();
-        List<Object> historyItems = new ArrayList<Object>();
+        List<Object> testArray = new ArrayList<>();
+        List<Object> historyItems = new ArrayList<>();
 
         Map<String, Object> historyItem1 = new HashMap<>();
         historyItem1.put("a", 11);
@@ -198,7 +198,7 @@ public class HistoryEndpointTest extends TestHarness {
         stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
                 .willReturn(aResponse().withBody(this.pubnub.getGsonParser().toJson(testArray))));
 
-        PNHistoryResult response = partialHistory.channel("niceChannel").sync();
+        PNHistoryResult response = partialHistory.channel("niceChannel").includeTimetoken(false).sync();
 
         Assert.assertTrue(response.getStartTimetoken().equals(1234L));
         Assert.assertTrue(response.getEndTimetoken().equals(4321L));
@@ -216,7 +216,7 @@ public class HistoryEndpointTest extends TestHarness {
 
 
     @org.junit.Test(expected=PubNubException.class)
-    public void testMissinChannel() throws IOException, PubNubException {
+    public void testMissingChannel() throws IOException, PubNubException {
         List<Object> testArray = new ArrayList<Object>();
         List<Object> historyItems = new ArrayList<Object>();
 

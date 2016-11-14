@@ -16,5 +16,6 @@ public class PNMessageResult {
     private Long timetoken;
     private Object userMetadata;
 
+    private String publisher;
 }
 

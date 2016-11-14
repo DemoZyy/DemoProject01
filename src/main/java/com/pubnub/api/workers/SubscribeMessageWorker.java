@@ -154,6 +154,7 @@ public class SubscribeMessageWorker implements Runnable {
                     .channel(channel)
                     .subscription(subscriptionMatch)
                     .timetoken(publishMetaData.getPublishTimetoken())
+                    .publisher(message.getIssuingClientId())
                     .build();
 
 

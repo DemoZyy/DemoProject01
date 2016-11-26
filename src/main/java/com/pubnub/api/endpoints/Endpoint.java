@@ -143,7 +143,7 @@ public abstract class Endpoint<Input, Output> {
                         responseBody = null;
                     }
 
-                    if (responseBody != null && responseBody.getAsJsonObject().has("payload")) {
+                    if (responseBody != null && responseBody.isJsonObject() && responseBody.getAsJsonObject().has("payload")) {
                         responseBodyPayload = responseBody.getAsJsonObject().get("payload");
                     }
 

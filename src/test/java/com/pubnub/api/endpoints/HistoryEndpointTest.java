@@ -376,38 +376,4 @@ public class HistoryEndpointTest extends TestHarness {
         Assert.assertEquals((response.getMessages().get(1).getEntry()).getAsJsonObject().get("b").getAsInt(), 44);
     }
 
-    @org.junit.Test(expected=PubNubException.class)
-    public void testSyncProcessMessageError() throws IOException, PubNubException {
-        List<Object> testArray = new ArrayList<Object>();
-        List<Object> historyItems = new ArrayList<Object>();
-
-        Map<String, Object> historyEnvelope1 = new HashMap<String, Object>();
-        Map<String, Object> historyItem1 = new HashMap<String, Object>();
-        historyItem1.put("a", 11);
-        historyItem1.put("b", 22);
-        historyEnvelope1.put("timetoken", 1111);
-        historyEnvelope1.put("message", historyItem1);
-
-        Map<String, Object> historyEnvelope2 = new HashMap<String, Object>();
-        Map<String, Object> historyItem2 = new HashMap<String, Object>();
-        historyItem2.put("a", 33);
-        historyItem2.put("b", 44);
-        historyEnvelope2.put("timetoken", 2222);
-        historyEnvelope2.put("message", historyItem2);
-
-        historyItems.add(historyEnvelope1);
-        historyItems.add(historyEnvelope2);
-
-        testArray.add(historyItems);
-        testArray.add(1234);
-        testArray.add(4321);
-
-        stubFor(get(urlPathEqualTo("/v2/history/sub-key/mySubscribeKey/channel/niceChannel"))
-                .willReturn(aResponse().withBody(pubnub.getMapper().toJson(testArray))));
-
-        pubnub.getConfiguration().setCipherKey("Test");
-        partialHistory.channel("niceChannel").count(5).reverse(true).start(1L).end(2L).includeTimetoken(true).sync();
-    }
-
-
 }

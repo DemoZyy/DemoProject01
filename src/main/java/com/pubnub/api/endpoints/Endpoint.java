@@ -1,7 +1,7 @@
 package com.pubnub.api.endpoints;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.builder.PubNubErrorBuilder;
@@ -78,7 +78,7 @@ public abstract class Endpoint<Input, Output> {
 
         if (!serverResponse.isSuccessful() || serverResponse.code() != SERVER_RESPONSE_SUCCESS) {
             String responseBodyText;
-            JsonNode responseBody;
+            JsonElement responseBody;
 
             try {
                 responseBodyText = serverResponse.errorBody().string();
@@ -87,7 +87,7 @@ public abstract class Endpoint<Input, Output> {
             }
 
             try {
-                responseBody = mapper.fromJson(responseBodyText, JsonNode.class);
+                responseBody = mapper.fromJson(responseBodyText, JsonElement.class);
             } catch (PubNubException e) {
                 responseBody = null;
             }
@@ -126,8 +126,8 @@ public abstract class Endpoint<Input, Output> {
                 if (!response.isSuccessful() || response.code() != SERVER_RESPONSE_SUCCESS) {
 
                     String responseBodyText;
-                    JsonNode responseBody;
-                    JsonNode responseBodyPayload = null;
+                    JsonElement responseBody;
+                    JsonElement responseBodyPayload = null;
                     ArrayList<String> affectedChannels = new ArrayList<>();
                     ArrayList<String> affectedChannelGroups = new ArrayList<>();
 
@@ -138,13 +138,13 @@ public abstract class Endpoint<Input, Output> {
                     }
 
                     try {
-                        responseBody = mapper.fromJson(responseBodyText, JsonNode.class);
+                        responseBody = mapper.fromJson(responseBodyText, JsonElement.class);
                     } catch (PubNubException e) {
                         responseBody = null;
                     }
 
-                    if (responseBody != null && responseBody.has("payload")) {
-                        responseBodyPayload = responseBody.get("payload");
+                    if (responseBody != null && responseBody.getAsJsonObject().has("payload")) {
+                        responseBodyPayload = responseBody.getAsJsonObject().get("payload");
                     }
 
                     PNStatusCategory pnStatusCategory = PNStatusCategory.PNUnknownCategory;
@@ -158,15 +158,15 @@ public abstract class Endpoint<Input, Output> {
                     if (response.code() == SERVER_RESPONSE_FORBIDDEN) {
                         pnStatusCategory = PNStatusCategory.PNAccessDeniedCategory;
 
-                        if (responseBodyPayload != null && responseBodyPayload.has("channels")) {
-                            for (final JsonNode objNode : responseBodyPayload.get("channels")) {
-                                affectedChannels.add(objNode.asText());
+                        if (responseBodyPayload != null && responseBodyPayload.getAsJsonObject().has("channels")) {
+                            for (final JsonElement objNode : responseBodyPayload.getAsJsonObject().get("channels").getAsJsonArray()) {
+                                affectedChannels.add(objNode.getAsString());
                             }
                         }
 
-                        if (responseBodyPayload != null && responseBodyPayload.has("channel-groups")) {
-                            for (final JsonNode objNode : responseBodyPayload.get("channel-groups")) {
-                                String channelGroupName = objNode.asText().substring(0, 1).equals(":") ? objNode.asText().substring(1) : objNode.asText();
+                        if (responseBodyPayload != null && responseBodyPayload.getAsJsonObject().has("channel-groups")) {
+                            for (final JsonElement objNode : responseBodyPayload.getAsJsonObject().get("channel-groups").getAsJsonArray()) {
+                                String channelGroupName = objNode.getAsString().substring(0, 1).equals(":") ? objNode.getAsString().substring(1) : objNode.getAsString();
                                 affectedChannelGroups.add(channelGroupName);
                             }
                         }

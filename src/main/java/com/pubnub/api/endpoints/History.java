@@ -1,8 +1,8 @@
 package com.pubnub.api.endpoints;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.builder.PubNubErrorBuilder;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 @Accessors(chain = true, fluent = true)
-public class History extends Endpoint<JsonNode, PNHistoryResult> {
+public class History extends Endpoint<JsonElement, PNHistoryResult> {
     private static final int MAX_COUNT = 100;
     @Setter
     private String channel;
@@ -45,7 +45,7 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
 
     private interface HistoryService {
         @GET("v2/history/sub-key/{subKey}/channel/{channel}")
-        Call<JsonNode> fetchHistory(@Path("subKey") String subKey,
+        Call<JsonElement> fetchHistory(@Path("subKey") String subKey,
                                     @Path("channel") String channel,
                                     @QueryMap Map<String, String> options);
     }
@@ -58,7 +58,7 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
     }
 
     @Override
-    protected Call<JsonNode> doWork(Map<String, String> params) {
+    protected Call<JsonElement> doWork(Map<String, String> params) {
 
         HistoryService service = this.getRetrofit().create(HistoryService.class);
 
@@ -87,23 +87,23 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
     }
 
     @Override
-    protected PNHistoryResult createResponse(Response<JsonNode> input) throws PubNubException {
+    protected PNHistoryResult createResponse(Response<JsonElement> input) throws PubNubException {
         PNHistoryResult.PNHistoryResultBuilder historyData = PNHistoryResult.builder();
         List<PNHistoryItemResult> messages = new ArrayList<>();
 
         if (input.body() != null) {
-            historyData.startTimetoken(input.body().get(1).asLong());
-            historyData.endTimetoken(input.body().get(2).asLong());
+            historyData.startTimetoken(input.body().getAsJsonArray().get(1).getAsLong());
+            historyData.endTimetoken(input.body().getAsJsonArray().get(2).getAsLong());
 
-            ArrayNode historyItems = (ArrayNode) input.body().get(0);
+            JsonArray historyItems = input.body().getAsJsonArray().get(0).getAsJsonArray();
 
-            for (final JsonNode historyEntry : historyItems) {
+            for (final JsonElement historyEntry : historyItems) {
                 PNHistoryItemResult.PNHistoryItemResultBuilder historyItem = PNHistoryItemResult.builder();
-                JsonNode message;
+                JsonElement message;
 
                 if (includeTimetoken != null && includeTimetoken) {
-                    historyItem.timetoken(historyEntry.get("timetoken").asLong());
-                    message = processMessage(historyEntry.get("message"));
+                    historyItem.timetoken(historyEntry.getAsJsonObject().get("timetoken").getAsLong());
+                    message = processMessage(historyEntry.getAsJsonObject().get("message"));
                 } else {
                     message = processMessage(historyEntry);
                 }
@@ -128,7 +128,7 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
         return true;
     }
 
-    private JsonNode processMessage(JsonNode message) throws PubNubException {
+    private JsonElement processMessage(JsonElement message) throws PubNubException {
         // if we do not have a crypto key, there is no way to process the node; let's return.
         if (this.getPubnub().getConfiguration().getCipherKey() == null) {
             return message;
@@ -137,21 +137,21 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
         Crypto crypto = new Crypto(this.getPubnub().getConfiguration().getCipherKey());
         String inputText;
         String outputText;
-        JsonNode outputObject;
+        JsonElement outputObject;
 
-        if (message.isObject() && message.has("pn_other")) {
-            inputText = message.get("pn_other").asText();
+        if (message.isJsonObject() && message.getAsJsonObject().has("pn_other")) {
+            inputText = message.getAsJsonObject().get("pn_other").getAsString();
         } else {
-            inputText = message.asText();
+            inputText = message.getAsString();
         }
 
         outputText = crypto.decrypt(inputText);
-        outputObject = this.getPubnub().getMapper().fromJson(outputText, JsonNode.class);
+        outputObject = this.getPubnub().getMapper().fromJson(outputText, JsonElement.class);
 
         // inject the decoded response into the payload
-        if (message.isObject() && message.has("pn_other")) {
-            ObjectNode objectNode = (ObjectNode) message;
-            objectNode.set("pn_other", outputObject);
+        if (message.isJsonObject() && message.getAsJsonObject().has("pn_other")) {
+            JsonObject objectNode = message.getAsJsonObject();
+            objectNode.add("pn_other", outputObject);
             outputObject = objectNode;
         }
 

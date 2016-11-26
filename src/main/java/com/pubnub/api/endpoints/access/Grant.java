@@ -7,6 +7,7 @@ import com.pubnub.api.PubNubUtil;
 import com.pubnub.api.builder.PubNubErrorBuilder;
 import com.pubnub.api.endpoints.Endpoint;
 import com.pubnub.api.enums.PNOperationType;
+import com.pubnub.api.managers.MapperManager;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerGrantResult;
 import com.pubnub.api.models.consumer.access_manager.PNAccessManagerKeyData;
 import com.pubnub.api.models.server.Envelope;
@@ -44,11 +45,16 @@ public class Grant extends Endpoint<Envelope<AccessManagerGrantPayload>, PNAcces
     @Setter
     private List<String> channelGroups;
 
+    // mount a mapper
+    private MapperManager mapper;
+
     public Grant(PubNub pubnub, Retrofit retrofit) {
         super(pubnub, retrofit);
         authKeys = new ArrayList<>();
         channels = new ArrayList<>();
         channelGroups = new ArrayList<>();
+
+        mapper = pubnub.getMapper();
     }
 
     @Override
@@ -156,9 +162,9 @@ public class Grant extends Endpoint<Envelope<AccessManagerGrantPayload>, PNAcces
         for (Iterator<Map.Entry<String, JsonNode>> it = input.get("auths").fields(); it.hasNext();) {
             Map.Entry<String, JsonNode> keyMap = it.next();
             PNAccessManagerKeyData pnAccessManagerKeyData = new PNAccessManagerKeyData()
-                    .setManageEnabled(keyMap.getValue().get("m").asBoolean())
-                    .setWriteEnabled(keyMap.getValue().get("w").asBoolean())
-                    .setReadEnabled(keyMap.getValue().get("r").asBoolean());
+                    .setManageEnabled(mapper.asBoolean(keyMap.getValue(), "m"))
+                    .setWriteEnabled(mapper.asBoolean(keyMap.getValue(), "w"))
+                    .setReadEnabled(mapper.asBoolean(keyMap.getValue(), "r"));
 
             result.put(keyMap.getKey(), pnAccessManagerKeyData);
         }

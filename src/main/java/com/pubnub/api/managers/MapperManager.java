@@ -2,6 +2,7 @@ package com.pubnub.api.managers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.builder.PubNubErrorBuilder;
@@ -47,5 +48,14 @@ public class MapperManager {
         }
     }
 
+
+    // some methods to abstract the difference in JSON libraries
+    public boolean asBoolean(JsonNode node, String field) {
+        return node.get(field).asBoolean();
+    }
+
+    public int asInt(JsonNode node, String field) {
+        return node.get(field).asInt();
+    }
 
 }

@@ -8,6 +8,7 @@ import com.pubnub.api.PubNubUtil;
 import com.pubnub.api.builder.PubNubErrorBuilder;
 import com.pubnub.api.endpoints.Endpoint;
 import com.pubnub.api.enums.PNOperationType;
+import com.pubnub.api.managers.MapperManager;
 import com.pubnub.api.models.consumer.presence.PNHereNowChannelData;
 import com.pubnub.api.models.consumer.presence.PNHereNowOccupantData;
 import com.pubnub.api.models.consumer.presence.PNHereNowResult;
@@ -35,8 +36,12 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
     @Setter
     private Boolean includeUUIDs;
 
+    private MapperManager mapper;
+
     public HereNow(PubNub pubnubInstance, Retrofit retrofit) {
         super(pubnubInstance, retrofit);
+        mapper = pubnubInstance.getMapper();
+
         channels = new ArrayList<>();
         channelGroups = new ArrayList<>();
     }
@@ -122,8 +127,8 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
     private PNHereNowResult parseMultipleChannelResponse(JsonNode input) {
         PNHereNowResult hereNowData = PNHereNowResult.builder()
                 .channels(new HashMap<String, PNHereNowChannelData>())
-                .totalChannels(input.get("total_channels").asInt())
-                .totalOccupancy(input.get("total_occupancy").asInt())
+                .totalChannels(mapper.asInt(input, "total_channels"))
+                .totalOccupancy(mapper.asInt(input, "total_occupancy"))
                 .build();
 
         for (Iterator<Map.Entry<String, JsonNode>> it = input.get("channels").fields(); it.hasNext();) {
@@ -131,7 +136,7 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
 
             PNHereNowChannelData.PNHereNowChannelDataBuilder hereNowChannelData = PNHereNowChannelData.builder()
                     .channelName(entry.getKey())
-                    .occupancy(entry.getValue().get("occupancy").asInt());
+                    .occupancy(mapper.asInt(input, "occupancy"));
 
             if (includeUUIDs) {
                 hereNowChannelData.occupants(prepareOccupantData(entry.getValue().get("uuids")));

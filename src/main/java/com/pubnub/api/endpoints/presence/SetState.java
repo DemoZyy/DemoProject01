@@ -1,6 +1,5 @@
 package com.pubnub.api.endpoints.presence;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.PubNubException;
 import com.pubnub.api.PubNubUtil;
@@ -10,6 +9,7 @@ import com.pubnub.api.endpoints.Endpoint;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.managers.SubscriptionManager;
 import com.pubnub.api.models.consumer.presence.PNSetStateResult;
+import com.pubnub.api.models.mappers.PNJsonEntity;
 import com.pubnub.api.models.server.Envelope;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,7 +25,7 @@ import java.util.Map;
 
 
 @Accessors(chain = true, fluent = true)
-public class SetState extends Endpoint<Envelope<JsonNode>, PNSetStateResult> {
+public class SetState extends Endpoint<Envelope<PNJsonEntity>, PNSetStateResult> {
 
     @Getter(AccessLevel.NONE)
     private SubscriptionManager subscriptionManager;
@@ -60,7 +60,7 @@ public class SetState extends Endpoint<Envelope<JsonNode>, PNSetStateResult> {
     }
 
     @Override
-    protected Call<Envelope<JsonNode>> doWork(Map<String, String> params) throws PubNubException {
+    protected Call<Envelope<PNJsonEntity>> doWork(Map<String, String> params) throws PubNubException {
         String selectedUUID = uuid != null ? uuid : this.getPubnub().getConfiguration().getUuid();
         String stringifiedState;
 
@@ -91,7 +91,7 @@ public class SetState extends Endpoint<Envelope<JsonNode>, PNSetStateResult> {
     }
 
     @Override
-    protected PNSetStateResult createResponse(Response<Envelope<JsonNode>> input) throws PubNubException {
+    protected PNSetStateResult createResponse(Response<Envelope<PNJsonEntity>> input) throws PubNubException {
 
         if (input.body() == null || input.body().getPayload() == null) {
             throw PubNubException.builder().pubnubError(PubNubErrorBuilder.PNERROBJ_PARSING_ERROR).build();

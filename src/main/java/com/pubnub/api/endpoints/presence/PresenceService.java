@@ -1,6 +1,6 @@
 package com.pubnub.api.endpoints.presence;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.pubnub.api.models.mappers.PNJsonEntity;
 import com.pubnub.api.models.server.Envelope;
 import com.pubnub.api.models.server.presence.WhereNowPayload;
 import retrofit2.Call;
@@ -28,24 +28,24 @@ public interface PresenceService {
                                              @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub_key/{subKey}")
-    Call<Envelope<JsonNode>> globalHereNow(@Path("subKey") String subKey,
-                                           @QueryMap Map<String, String> options);
+    Call<Envelope<PNJsonEntity>> globalHereNow(@Path("subKey") String subKey,
+                                               @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub_key/{subKey}/channel/{channel}")
-    Call<Envelope<JsonNode>> hereNow(@Path("subKey") String subKey,
-                                        @Path("channel") String channel,
-                                        @QueryMap Map<String, String> options);
+    Call<Envelope<PNJsonEntity>> hereNow(@Path("subKey") String subKey,
+                                         @Path("channel") String channel,
+                                         @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub-key/{subKey}/channel/{channel}/uuid/{uuid}")
-    Call<Envelope<JsonNode>> getState(@Path("subKey") String subKey,
-                                    @Path("channel") String channel,
-                                    @Path("uuid") String uuid,
-                                    @QueryMap Map<String, String> options);
+    Call<Envelope<PNJsonEntity>> getState(@Path("subKey") String subKey,
+                                          @Path("channel") String channel,
+                                          @Path("uuid") String uuid,
+                                          @QueryMap Map<String, String> options);
 
     @GET("v2/presence/sub-key/{subKey}/channel/{channel}/uuid/{uuid}/data")
-    Call<Envelope<JsonNode>> setState(@Path("subKey") String subKey,
-                                    @Path("channel") String channel,
-                                    @Path("uuid") String uuid,
-                                    @QueryMap(encoded = true) Map<String, String> options);
+    Call<Envelope<PNJsonEntity>> setState(@Path("subKey") String subKey,
+                                          @Path("channel") String channel,
+                                          @Path("uuid") String uuid,
+                                          @QueryMap(encoded = true) Map<String, String> options);
 
 }

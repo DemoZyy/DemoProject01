@@ -9,6 +9,7 @@ import com.pubnub.api.builder.PubNubErrorBuilder;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.history.PNHistoryItemResult;
 import com.pubnub.api.models.consumer.history.PNHistoryResult;
+import com.pubnub.api.models.mappers.PNJsonEntity;
 import com.pubnub.api.vendor.Crypto;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @Accessors(chain = true, fluent = true)
-public class History extends Endpoint<JsonNode, PNHistoryResult> {
+public class History extends Endpoint<PNJsonEntity, PNHistoryResult> {
     private static final int MAX_COUNT = 100;
     @Setter
     private String channel;
@@ -45,9 +46,9 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
 
     private interface HistoryService {
         @GET("v2/history/sub-key/{subKey}/channel/{channel}")
-        Call<JsonNode> fetchHistory(@Path("subKey") String subKey,
-                                    @Path("channel") String channel,
-                                    @QueryMap Map<String, String> options);
+        Call<PNJsonEntity> fetchHistory(@Path("subKey") String subKey,
+                                        @Path("channel") String channel,
+                                        @QueryMap Map<String, String> options);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
     }
 
     @Override
-    protected Call<JsonNode> doWork(Map<String, String> params) {
+    protected Call<PNJsonEntity> doWork(Map<String, String> params) {
 
         HistoryService service = this.getRetrofit().create(HistoryService.class);
 
@@ -87,7 +88,7 @@ public class History extends Endpoint<JsonNode, PNHistoryResult> {
     }
 
     @Override
-    protected PNHistoryResult createResponse(Response<JsonNode> input) throws PubNubException {
+    protected PNHistoryResult createResponse(Response<PNJsonEntity> input) throws PubNubException {
         PNHistoryResult.PNHistoryResultBuilder historyData = PNHistoryResult.builder();
         List<PNHistoryItemResult> messages = new ArrayList<>();
 

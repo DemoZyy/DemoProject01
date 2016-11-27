@@ -8,6 +8,7 @@ import com.pubnub.api.builder.PubNubErrorBuilder;
 import com.pubnub.api.endpoints.Endpoint;
 import com.pubnub.api.enums.PNOperationType;
 import com.pubnub.api.models.consumer.presence.PNGetStateResult;
+import com.pubnub.api.models.mappers.PNJsonEntity;
 import com.pubnub.api.models.server.Envelope;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Accessors(chain = true, fluent = true)
-public class GetState extends Endpoint<Envelope<JsonNode>, PNGetStateResult> {
+public class GetState extends Endpoint<Envelope<PNJsonEntity>, PNGetStateResult> {
 
     @Setter
     private List<String> channels;
@@ -48,7 +49,7 @@ public class GetState extends Endpoint<Envelope<JsonNode>, PNGetStateResult> {
     }
 
     @Override
-    protected Call<Envelope<JsonNode>> doWork(Map<String, String> params) {
+    protected Call<Envelope<PNJsonEntity>> doWork(Map<String, String> params) {
         PresenceService service = this.getRetrofit().create(PresenceService.class);
 
         if (channelGroups.size() > 0) {
@@ -63,7 +64,7 @@ public class GetState extends Endpoint<Envelope<JsonNode>, PNGetStateResult> {
     }
 
     @Override
-    protected PNGetStateResult createResponse(final Response<Envelope<JsonNode>> input) throws PubNubException {
+    protected PNGetStateResult createResponse(final Response<Envelope<PNJsonEntity>> input) throws PubNubException {
         Map<String, JsonNode> stateMappings = new HashMap<>();
 
         if (channels.size() == 1 && channelGroups.size() == 0) {

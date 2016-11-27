@@ -11,6 +11,7 @@ import com.pubnub.api.enums.PNStatusCategory;
 import com.pubnub.api.managers.MapperManager;
 import com.pubnub.api.models.consumer.PNErrorData;
 import com.pubnub.api.models.consumer.PNStatus;
+import com.pubnub.api.models.mappers.PNJsonEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import retrofit2.Call;
@@ -126,8 +127,8 @@ public abstract class Endpoint<Input, Output> {
                 if (!response.isSuccessful() || response.code() != SERVER_RESPONSE_SUCCESS) {
 
                     String responseBodyText;
-                    JsonNode responseBody;
-                    JsonNode responseBodyPayload = null;
+                    PNJsonEntity responseBody;
+                    PNJsonEntity responseBodyPayload = null;
                     ArrayList<String> affectedChannels = new ArrayList<>();
                     ArrayList<String> affectedChannelGroups = new ArrayList<>();
 
@@ -138,13 +139,13 @@ public abstract class Endpoint<Input, Output> {
                     }
 
                     try {
-                        responseBody = mapper.fromJson(responseBodyText, JsonNode.class);
+                        responseBody = mapper.fromJson(responseBodyText, PNJsonEntity.class);
                     } catch (PubNubException e) {
                         responseBody = null;
                     }
 
                     if (responseBody != null && responseBody.has("payload")) {
-                        responseBodyPayload = responseBody.get("payload");
+                        responseBodyPayload = (PNJsonEntity) responseBody.get("payload");
                     }
 
                     PNStatusCategory pnStatusCategory = PNStatusCategory.PNUnknownCategory;

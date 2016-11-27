@@ -12,6 +12,7 @@ import com.pubnub.api.managers.MapperManager;
 import com.pubnub.api.models.consumer.presence.PNHereNowChannelData;
 import com.pubnub.api.models.consumer.presence.PNHereNowOccupantData;
 import com.pubnub.api.models.consumer.presence.PNHereNowResult;
+import com.pubnub.api.models.mappers.PNJsonEntity;
 import com.pubnub.api.models.server.Envelope;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @Accessors(chain = true, fluent = true)
-public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
+public class HereNow extends Endpoint<Envelope<PNJsonEntity>, PNHereNowResult> {
     @Setter
     private List<String> channels;
     @Setter
@@ -55,7 +56,7 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
     }
 
     @Override
-    protected Call<Envelope<JsonNode>> doWork(Map<String, String> params) {
+    protected Call<Envelope<PNJsonEntity>> doWork(Map<String, String> params) {
 
         if (includeState == null) {
             includeState = false;
@@ -93,7 +94,7 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
     }
 
     @Override
-    protected PNHereNowResult createResponse(Response<Envelope<JsonNode>> input) {
+    protected PNHereNowResult createResponse(Response<Envelope<PNJsonEntity>> input) {
         PNHereNowResult herenowData;
 
         if (channels.size() > 1 || channelGroups.size() > 0) {
@@ -105,7 +106,7 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
         return herenowData;
     }
 
-    private PNHereNowResult parseSingleChannelResponse(Envelope<JsonNode> input) {
+    private PNHereNowResult parseSingleChannelResponse(Envelope<PNJsonEntity> input) {
         PNHereNowResult hereNowData = PNHereNowResult.builder()
                 .totalChannels(1)
                 .channels(new HashMap<String, PNHereNowChannelData>())
@@ -124,7 +125,7 @@ public class HereNow extends Endpoint<Envelope<JsonNode>, PNHereNowResult> {
         return hereNowData;
     }
 
-    private PNHereNowResult parseMultipleChannelResponse(JsonNode input) {
+    private PNHereNowResult parseMultipleChannelResponse(PNJsonEntity input) {
         PNHereNowResult hereNowData = PNHereNowResult.builder()
                 .channels(new HashMap<String, PNHereNowChannelData>())
                 .totalChannels(mapper.asInt(input, "total_channels"))

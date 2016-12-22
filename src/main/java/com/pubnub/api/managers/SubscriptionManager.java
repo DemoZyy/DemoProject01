@@ -20,9 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class SubscriptionManager {
@@ -48,7 +49,9 @@ public class SubscriptionManager {
     /**
      * Timer for heartbeat operations.
      */
-    private Timer timer;
+    private ScheduledExecutorService timer;
+    private static final int SCHEDULEPOOL = 5;
+
 
     private StateManager subscriptionState;
     private ListenerManager listenerManager;
@@ -163,25 +166,27 @@ public class SubscriptionManager {
         reconnect();
     }
 
+
+
     private void registerHeartbeatTimer() {
         // make sure only one timer is running at a time.
         stopHeartbeatTimer();
 
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
+        timer = Executors.newScheduledThreadPool(SCHEDULEPOOL);
+        timer.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 performHeartbeatLoop();
             }
-        }, 0, pubnub.getConfiguration().getHeartbeatInterval() * HEARTBEAT_INTERVAL_MULTIPLIER);
-
+        }, 0, pubnub.getConfiguration().getHeartbeatInterval() * HEARTBEAT_INTERVAL_MULTIPLIER, TimeUnit.MILLISECONDS);
     }
 
     private void stopHeartbeatTimer() {
         if (timer != null) {
-            timer.cancel();
+            timer.shutdown();
             timer = null;
         }
+
     }
 
     private void startSubscribeLoop() {
